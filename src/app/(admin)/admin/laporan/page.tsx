@@ -1,10 +1,10 @@
 'use client'
 
 import * as React from 'react'
-import { Pencil, X, Eye, History, Loader2, Search, Filter, Users, Banknote, AlertTriangle } from 'lucide-react'
+import { Pencil, X, Eye, History, Loader2, Search, Filter, Users, Banknote, AlertTriangle, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { getAllReports, getReportById, editReportWithLog, getReportEditHistory } from '@/actions/admin-reports'
+import { getAllReports, getReportById, editReportWithLog, getReportEditHistory, createManualReport } from '@/actions/admin-reports'
 import { getAllDestinations } from '@/actions/destinations'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { formatDate, formatRupiah, cn } from '@/lib/utils'
@@ -70,6 +70,24 @@ export default function AdminLaporanPage() {
     const [historyReportId, setHistoryReportId] = React.useState<string | null>(null)
     const [editHistory, setEditHistory] = React.useState<ReportEditLogWithUser[]>([])
     const [isLoadingHistory, setIsLoadingHistory] = React.useState(false)
+
+    // Add report dialog
+    const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false)
+    const [addForm, setAddForm] = React.useState({
+        destination_id: '',
+        report_date: '',
+        anak_count: 0,
+        dewasa_count: 0,
+        dewasa_male: 0,
+        dewasa_female: 0,
+        anak_male: 0,
+        anak_female: 0,
+        wna_count: 0,
+        cash_amount: 0,
+        qris_amount: 0,
+        notes: '',
+    })
+    const [isAdding, setIsAdding] = React.useState(false)
 
     const loadData = async () => {
         const [reportsResult, destResult] = await Promise.all([
@@ -161,6 +179,45 @@ export default function AdminLaporanPage() {
         setIsLoadingHistory(false)
     }
 
+    const handleAddReport = async () => {
+        if (!user?.id) return
+
+        if (!addForm.destination_id || !addForm.report_date) {
+            toast.error('Destinasi dan tanggal wajib dipilih')
+            return
+        }
+
+        setIsAdding(true)
+
+        const result = await createManualReport({
+            ...addForm,
+            created_by: user.id,
+        })
+
+        if (result.success) {
+            toast.success(result.message || 'Laporan berhasil ditambahkan')
+            setIsAddDialogOpen(false)
+            setAddForm({
+                destination_id: '',
+                report_date: '',
+                anak_count: 0,
+                dewasa_count: 0,
+                dewasa_male: 0,
+                dewasa_female: 0,
+                anak_male: 0,
+                anak_female: 0,
+                wna_count: 0,
+                cash_amount: 0,
+                qris_amount: 0,
+                notes: '',
+            })
+            await loadData()
+        } else {
+            toast.error(result.error || 'Gagal menambahkan laporan')
+        }
+        setIsAdding(false)
+    }
+
     // Validation helpers - prices must match real prices!
     const TICKET_PRICES = {
         anak: 5000,
@@ -229,9 +286,15 @@ export default function AdminLaporanPage() {
     return (
         <div className="space-y-6">
             {/* Page Header */}
-            <div>
-                <h1 className="text-2xl font-bold text-gray-900">Manajemen Laporan</h1>
-                <p className="text-gray-500">Lihat dan edit laporan dari semua destinasi</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Manajemen Laporan</h1>
+                    <p className="text-gray-500">Lihat dan edit laporan dari semua destinasi</p>
+                </div>
+                <Button onClick={() => setIsAddDialogOpen(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Tambah Laporan
+                </Button>
             </div>
 
             {/* Filters */}
@@ -600,6 +663,186 @@ export default function AdminLaporanPage() {
                             ))}
                         </div>
                     )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Add Report Dialog */}
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Tambah Laporan Manual</DialogTitle>
+                        <DialogDescription>
+                            Input laporan untuk tanggal yang terlewat
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid gap-4 py-4">
+                        {/* Destination & Date */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Destinasi *</Label>
+                                <Select
+                                    value={addForm.destination_id}
+                                    onValueChange={(v) => setAddForm(f => ({ ...f, destination_id: v }))}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Pilih destinasi..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {destinations.filter(d => d.is_active).map((dest) => (
+                                            <SelectItem key={dest.id} value={dest.id}>
+                                                {dest.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Tanggal Laporan *</Label>
+                                <Input
+                                    type="date"
+                                    value={addForm.report_date}
+                                    max={new Date().toISOString().split('T')[0]}
+                                    onChange={(e) => setAddForm(f => ({ ...f, report_date: e.target.value }))}
+                                />
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Visitor Counts */}
+                        <div className="space-y-4">
+                            <h4 className="font-medium text-sm text-gray-700">Data Pengunjung</h4>
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Anak</Label>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        value={addForm.anak_count}
+                                        onChange={(e) => setAddForm(f => ({ ...f, anak_count: parseInt(e.target.value) || 0 }))}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Dewasa</Label>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        value={addForm.dewasa_count}
+                                        onChange={(e) => setAddForm(f => ({ ...f, dewasa_count: parseInt(e.target.value) || 0 }))}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>WNA</Label>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        value={addForm.wna_count}
+                                        onChange={(e) => setAddForm(f => ({ ...f, wna_count: parseInt(e.target.value) || 0 }))}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Gender */}
+                        <div className="space-y-4">
+                            <h4 className="font-medium text-sm text-gray-700">Detail Gender</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="p-3 bg-blue-50 rounded-lg space-y-2">
+                                    <p className="text-sm font-medium text-blue-700">Anak L/P</p>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Input
+                                            type="number"
+                                            min="0"
+                                            placeholder="L"
+                                            value={addForm.anak_male}
+                                            onChange={(e) => setAddForm(f => ({ ...f, anak_male: parseInt(e.target.value) || 0 }))}
+                                        />
+                                        <Input
+                                            type="number"
+                                            min="0"
+                                            placeholder="P"
+                                            value={addForm.anak_female}
+                                            onChange={(e) => setAddForm(f => ({ ...f, anak_female: parseInt(e.target.value) || 0 }))}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="p-3 bg-purple-50 rounded-lg space-y-2">
+                                    <p className="text-sm font-medium text-purple-700">Dewasa L/P</p>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Input
+                                            type="number"
+                                            min="0"
+                                            placeholder="L"
+                                            value={addForm.dewasa_male}
+                                            onChange={(e) => setAddForm(f => ({ ...f, dewasa_male: parseInt(e.target.value) || 0 }))}
+                                        />
+                                        <Input
+                                            type="number"
+                                            min="0"
+                                            placeholder="P"
+                                            value={addForm.dewasa_female}
+                                            onChange={(e) => setAddForm(f => ({ ...f, dewasa_female: parseInt(e.target.value) || 0 }))}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Payment */}
+                        <div className="space-y-4">
+                            <h4 className="font-medium text-sm text-gray-700">Data Pembayaran</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>QRIS</Label>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        value={addForm.qris_amount}
+                                        onChange={(e) => setAddForm(f => ({ ...f, qris_amount: parseInt(e.target.value) || 0 }))}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Cash</Label>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        value={addForm.cash_amount}
+                                        onChange={(e) => setAddForm(f => ({ ...f, cash_amount: parseInt(e.target.value) || 0 }))}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Notes */}
+                        <div className="space-y-2">
+                            <Label>Catatan (Opsional)</Label>
+                            <Input
+                                value={addForm.notes}
+                                onChange={(e) => setAddForm(f => ({ ...f, notes: e.target.value }))}
+                                placeholder="Alasan input manual, keterangan tambahan..."
+                            />
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                            Batal
+                        </Button>
+                        <Button
+                            onClick={handleAddReport}
+                            disabled={isAdding || !addForm.destination_id || !addForm.report_date}
+                        >
+                            {isAdding && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                            Simpan Laporan
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

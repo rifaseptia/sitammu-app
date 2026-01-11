@@ -200,3 +200,89 @@ export async function getReportEditHistory(reportId: string): Promise<ApiRespons
         return { success: false, error: 'Gagal mengambil riwayat edit' }
     }
 }
+
+/**
+ * Create a manual report (for admin to input past/missed reports)
+ */
+export async function createManualReport(data: {
+    destination_id: string
+    report_date: string
+    anak_count: number
+    dewasa_count: number
+    dewasa_male: number
+    dewasa_female: number
+    anak_male?: number
+    anak_female?: number
+    wna_count: number
+    wna_countries?: Record<string, number>
+    cash_amount: number
+    qris_amount: number
+    notes?: string
+    created_by: string
+}): Promise<ApiResponse<DailyReport>> {
+    try {
+        const supabase = await createClient()
+
+        // 1. Check if report already exists for this date/destination
+        const { data: existing, error: checkError } = await supabase
+            .from('daily_reports')
+            .select('id')
+            .eq('destination_id', data.destination_id)
+            .eq('report_date', data.report_date)
+            .maybeSingle()
+
+        if (checkError) throw checkError
+
+        if (existing) {
+            return {
+                success: false,
+                error: 'Laporan untuk tanggal dan destinasi ini sudah ada'
+            }
+        }
+
+        // 2. Calculate revenue based on ticket prices
+        const TICKET_PRICES = { anak: 5000, dewasa: 15000, wna: 50000 }
+        const anak_revenue = data.anak_count * TICKET_PRICES.anak
+        const dewasa_revenue = data.dewasa_count * TICKET_PRICES.dewasa
+        const wna_revenue = data.wna_count * TICKET_PRICES.wna
+
+        // 3. Create the report
+        const { data: newReport, error: insertError } = await supabase
+            .from('daily_reports')
+            .insert({
+                destination_id: data.destination_id,
+                report_date: data.report_date,
+                anak_count: data.anak_count,
+                dewasa_count: data.dewasa_count,
+                dewasa_male: data.dewasa_male,
+                dewasa_female: data.dewasa_female,
+                anak_male: data.anak_male || 0,
+                anak_female: data.anak_female || 0,
+                wna_count: data.wna_count,
+                wna_countries: data.wna_countries || {},
+                anak_revenue,
+                dewasa_revenue,
+                wna_revenue,
+                cash_amount: data.cash_amount,
+                qris_amount: data.qris_amount,
+                notes: data.notes ? `[Input Manual] ${data.notes}` : '[Input Manual oleh Admin]',
+                status: 'submitted',
+                submitted_by: data.created_by,
+                submitted_at: new Date().toISOString(),
+                created_by: data.created_by,
+            })
+            .select()
+            .single()
+
+        if (insertError) throw insertError
+
+        return {
+            success: true,
+            data: newReport,
+            message: 'Laporan berhasil ditambahkan'
+        }
+    } catch (error) {
+        console.error('createManualReport error:', error)
+        return { success: false, error: 'Gagal menambahkan laporan' }
+    }
+}
