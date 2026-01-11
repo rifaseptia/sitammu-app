@@ -20,18 +20,35 @@ export default function RiwayatPage() {
     const [reports, setReports] = React.useState<DailyReport[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
 
-    React.useEffect(() => {
-        async function load() {
-            if (!user?.destination_id) return
-
-            const result = await getRecentReports(user.destination_id, 14)
-            if (result.success && result.data) {
-                setReports(result.data)
-            }
+    // Load reports
+    const loadReports = React.useCallback(async () => {
+        if (!user?.destination_id) {
             setIsLoading(false)
+            return
         }
-        load()
+
+        const result = await getRecentReports(user.destination_id, 14)
+        if (result.success && result.data) {
+            setReports(result.data)
+        }
+        setIsLoading(false)
     }, [user?.destination_id])
+
+    // Initial load
+    React.useEffect(() => {
+        loadReports()
+    }, [loadReports])
+
+    // Auto-refresh when tab becomes visible (sync across devices)
+    React.useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible' && user?.destination_id) {
+                loadReports()
+            }
+        }
+        document.addEventListener('visibilitychange', handleVisibilityChange)
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }, [loadReports, user?.destination_id])
 
     if (isLoading) {
         return (

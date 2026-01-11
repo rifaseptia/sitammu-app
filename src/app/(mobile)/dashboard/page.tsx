@@ -30,18 +30,35 @@ export default function DashboardPage() {
     const [status, setStatus] = React.useState<TodayReportStatus | null>(null)
     const [isLoading, setIsLoading] = React.useState(true)
 
-    React.useEffect(() => {
-        async function loadStatus() {
-            if (!user?.destination_id) return
-
-            const result = await getTodayReportStatus(user.destination_id)
-            if (result.success && result.data) {
-                setStatus(result.data)
-            }
+    // Load status
+    const loadStatus = React.useCallback(async () => {
+        if (!user?.destination_id) {
             setIsLoading(false)
+            return
         }
-        loadStatus()
+
+        const result = await getTodayReportStatus(user.destination_id)
+        if (result.success && result.data) {
+            setStatus(result.data)
+        }
+        setIsLoading(false)
     }, [user?.destination_id])
+
+    // Initial load
+    React.useEffect(() => {
+        loadStatus()
+    }, [loadStatus])
+
+    // Auto-refresh when tab becomes visible (sync across devices)
+    React.useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible' && user?.destination_id) {
+                loadStatus()
+            }
+        }
+        document.addEventListener('visibilitychange', handleVisibilityChange)
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }, [loadStatus, user?.destination_id])
 
     const today = new Date()
 
