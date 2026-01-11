@@ -182,7 +182,10 @@ export default function AdminLaporanPage() {
     }
 
     const handleAddReport = async () => {
-        if (!user?.id) return
+        if (!user?.id) {
+            toast.error('User tidak ditemukan')
+            return
+        }
 
         if (!addForm.destination_id || !addForm.report_date) {
             toast.error('Destinasi dan tanggal wajib dipilih')
@@ -191,33 +194,46 @@ export default function AdminLaporanPage() {
 
         setIsAdding(true)
 
-        const result = await createManualReport({
+        console.log('Creating manual report with data:', {
             ...addForm,
             ticket_blocks: ticketBlockDataToArray(addTicketBlocks),
             created_by: user.id,
         })
 
-        if (result.success) {
-            toast.success(result.message || 'Laporan berhasil ditambahkan')
-            setIsAddDialogOpen(false)
-            setAddForm({
-                destination_id: '',
-                report_date: '',
-                anak_count: 0,
-                dewasa_count: 0,
-                dewasa_male: 0,
-                dewasa_female: 0,
-                anak_male: 0,
-                anak_female: 0,
-                wna_count: 0,
-                cash_amount: 0,
-                qris_amount: 0,
-                notes: '',
+        try {
+            const result = await createManualReport({
+                ...addForm,
+                ticket_blocks: ticketBlockDataToArray(addTicketBlocks),
+                created_by: user.id,
             })
-            setAddTicketBlocks(createEmptyTicketBlockData())
-            await loadData()
-        } else {
-            toast.error(result.error || 'Gagal menambahkan laporan')
+
+            console.log('createManualReport result:', result)
+
+            if (result.success) {
+                toast.success(result.message || 'Laporan berhasil ditambahkan')
+                setIsAddDialogOpen(false)
+                setAddForm({
+                    destination_id: '',
+                    report_date: '',
+                    anak_count: 0,
+                    dewasa_count: 0,
+                    dewasa_male: 0,
+                    dewasa_female: 0,
+                    anak_male: 0,
+                    anak_female: 0,
+                    wna_count: 0,
+                    cash_amount: 0,
+                    qris_amount: 0,
+                    notes: '',
+                })
+                setAddTicketBlocks(createEmptyTicketBlockData())
+                await loadData()
+            } else {
+                toast.error(result.error || 'Gagal menambahkan laporan')
+            }
+        } catch (error) {
+            console.error('handleAddReport error:', error)
+            toast.error('Terjadi kesalahan saat menyimpan')
         }
         setIsAdding(false)
     }
@@ -242,13 +258,15 @@ export default function AdminLaporanPage() {
     // Calculate total revenue from counts
     const addTotalRevenue = (addForm.anak_count * 5000) + (addForm.dewasa_count * 15000) + (addForm.wna_count * 50000)
 
-    // Auto-sync payment when revenue changes
+    // Auto-sync payment: when revenue or QRIS changes, adjust Cash to fill the gap
     React.useEffect(() => {
-        if (addTotalRevenue > 0 && addForm.cash_amount + addForm.qris_amount !== addTotalRevenue) {
-            // Keep QRIS, adjust Cash
-            setAddForm(f => ({ ...f, cash_amount: Math.max(0, addTotalRevenue - f.qris_amount) }))
+        if (addTotalRevenue > 0) {
+            const newCash = Math.max(0, addTotalRevenue - addForm.qris_amount)
+            if (newCash !== addForm.cash_amount) {
+                setAddForm(f => ({ ...f, cash_amount: newCash }))
+            }
         }
-    }, [addTotalRevenue])
+    }, [addTotalRevenue, addForm.qris_amount])
 
     // Validation helpers - prices must match real prices!
     const TICKET_PRICES = {
