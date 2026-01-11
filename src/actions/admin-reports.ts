@@ -294,3 +294,56 @@ export async function createManualReport(data: {
         return { success: false, error: 'Gagal menambahkan laporan' }
     }
 }
+
+/**
+ * Delete a report (admin only)
+ */
+export async function deleteReport(
+    reportId: string,
+    deletedBy: string,
+    reason?: string
+): Promise<ApiResponse<null>> {
+    try {
+        const supabase = await createClient()
+
+        // Get report info for logging
+        const { data: report, error: fetchError } = await supabase
+            .from('daily_reports')
+            .select('id, report_date, destination_id, destination:destinations(name)')
+            .eq('id', reportId)
+            .single()
+
+        if (fetchError || !report) {
+            return { success: false, error: 'Laporan tidak ditemukan' }
+        }
+
+        // Delete the report
+        const { error: deleteError } = await supabase
+            .from('daily_reports')
+            .delete()
+            .eq('id', reportId)
+
+        if (deleteError) throw deleteError
+
+        // Log the deletion
+        await supabase.from('activity_logs').insert({
+            user_id: deletedBy,
+            destination_id: report.destination_id,
+            action: 'delete_report',
+            details: {
+                report_id: reportId,
+                report_date: report.report_date,
+                destination_name: (report.destination as unknown as { name: string } | null)?.name || 'Unknown',
+                reason: reason || 'Data salah input',
+            },
+        })
+
+        return {
+            success: true,
+            message: 'Laporan berhasil dihapus'
+        }
+    } catch (error) {
+        console.error('deleteReport error:', error)
+        return { success: false, error: 'Gagal menghapus laporan' }
+    }
+}

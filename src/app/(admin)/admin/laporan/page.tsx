@@ -1,10 +1,10 @@
 'use client'
 
 import * as React from 'react'
-import { Pencil, X, Eye, History, Loader2, Search, Filter, Users, Banknote, AlertTriangle, Plus } from 'lucide-react'
+import { Pencil, X, Eye, History, Loader2, Search, Filter, Users, Banknote, AlertTriangle, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { getAllReports, getReportById, editReportWithLog, getReportEditHistory, createManualReport } from '@/actions/admin-reports'
+import { getAllReports, getReportById, editReportWithLog, getReportEditHistory, createManualReport, deleteReport } from '@/actions/admin-reports'
 import { getAllDestinations } from '@/actions/destinations'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { formatDate, formatRupiah, cn } from '@/lib/utils'
@@ -90,6 +90,11 @@ export default function AdminLaporanPage() {
     })
     const [addTicketBlocks, setAddTicketBlocks] = React.useState<TicketBlockData>(createEmptyTicketBlockData())
     const [isAdding, setIsAdding] = React.useState(false)
+
+    // Delete dialog
+    const [deleteReportId, setDeleteReportId] = React.useState<string | null>(null)
+    const [deleteReason, setDeleteReason] = React.useState('')
+    const [isDeleting, setIsDeleting] = React.useState(false)
 
     const loadData = async () => {
         const [reportsResult, destResult] = await Promise.all([
@@ -236,6 +241,23 @@ export default function AdminLaporanPage() {
             toast.error('Terjadi kesalahan saat menyimpan')
         }
         setIsAdding(false)
+    }
+
+    const handleDeleteReport = async () => {
+        if (!user?.id || !deleteReportId) return
+
+        setIsDeleting(true)
+        const result = await deleteReport(deleteReportId, user.id, deleteReason)
+
+        if (result.success) {
+            toast.success(result.message || 'Laporan berhasil dihapus')
+            setDeleteReportId(null)
+            setDeleteReason('')
+            await loadData()
+        } else {
+            toast.error(result.error || 'Gagal menghapus laporan')
+        }
+        setIsDeleting(false)
     }
 
     // === AUTO-SYNC FOR ADD REPORT DIALOG ===
@@ -445,6 +467,15 @@ export default function AdminLaporanPage() {
                                                         title="Edit"
                                                     >
                                                         <Pencil className="w-4 h-4" />
+                                                    </Button>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                        onClick={() => setDeleteReportId(report.id)}
+                                                        title="Hapus"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
                                                     </Button>
                                                 </div>
                                             </td>
@@ -911,6 +942,46 @@ export default function AdminLaporanPage() {
                         >
                             {isAdding && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                             Simpan Laporan
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={!!deleteReportId} onOpenChange={() => { setDeleteReportId(null); setDeleteReason(''); }}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-red-600 flex items-center gap-2">
+                            <AlertTriangle className="w-5 h-5" />
+                            Hapus Laporan
+                        </DialogTitle>
+                        <DialogDescription>
+                            Tindakan ini tidak dapat dibatalkan. Laporan akan dihapus permanen.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>Alasan Penghapusan (Opsional)</Label>
+                            <Input
+                                value={deleteReason}
+                                onChange={(e) => setDeleteReason(e.target.value)}
+                                placeholder="Contoh: Data salah destinasi, duplikat, dll"
+                            />
+                        </div>
+                    </div>
+
+                    <DialogFooter className="gap-2">
+                        <Button variant="outline" onClick={() => { setDeleteReportId(null); setDeleteReason(''); }}>
+                            Batal
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDeleteReport}
+                            disabled={isDeleting}
+                        >
+                            {isDeleting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                            Ya, Hapus Laporan
                         </Button>
                     </DialogFooter>
                 </DialogContent>
