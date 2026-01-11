@@ -15,6 +15,33 @@ export async function saveReport(
     try {
         const supabase = await createClient()
 
+        // [SECURITY] Fetch user profile to enforce destination lock
+        const { data: userProfile, error: userError } = await supabase
+            .from('users')
+            .select('role, destination_id')
+            .eq('id', userId)
+            .single()
+
+        if (userError || !userProfile) {
+            return {
+                success: false,
+                error: 'User tidak valid/ditemukan',
+            }
+        }
+
+        // [SECURITY] Override input.destination_id with user.destination_id for non-admins
+        let destinationIdToUse = input.destination_id
+
+        if (userProfile.role !== 'admin') {
+            if (!userProfile.destination_id) {
+                return {
+                    success: false,
+                    error: 'Akun Anda tidak terhubung ke destinasi manapun',
+                }
+            }
+            destinationIdToUse = userProfile.destination_id
+        }
+
         // Calculate revenues
         const anak_revenue = input.anak_count * TICKET_PRICES.anak
         const dewasa_revenue = input.dewasa_count * TICKET_PRICES.dewasa
@@ -24,7 +51,7 @@ export async function saveReport(
         const { data: existing } = await supabase
             .from('daily_reports')
             .select('id, status')
-            .eq('destination_id', input.destination_id)
+            .eq('destination_id', destinationIdToUse)
             .eq('report_date', input.report_date)
             .maybeSingle()
 
@@ -37,7 +64,7 @@ export async function saveReport(
         }
 
         const reportData = {
-            destination_id: input.destination_id,
+            destination_id: destinationIdToUse,
             report_date: input.report_date,
             anak_count: input.anak_count,
             dewasa_count: input.dewasa_count,
