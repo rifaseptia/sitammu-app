@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { BottomNav } from '@/components/mobile/bottom-nav'
+import { APP } from '@/lib/constants'
 
 export default function MobileLayout({
     children,
@@ -98,8 +99,16 @@ export default function MobileLayout({
 
     return (
         <div className="min-h-screen bg-gray-50 pb-24">
-            <main className="max-w-md mx-auto">
-                {children}
+            <main className="max-w-md mx-auto min-h-[calc(100vh-6rem)] flex flex-col">
+                <div className="flex-1">
+                    {children}
+                </div>
+
+                <footer className="py-8 text-center space-y-1">
+                    <p className="text-xs font-medium text-gray-400">{APP.name} v{APP.version}</p>
+                    <p className="text-[10px] text-gray-300">Updated: {APP.lastUpdate}</p>
+                    <p className="text-[10px] text-gray-300">© 2026 {APP.fullName}</p>
+                </footer>
             </main>
             <BottomNav />
         </div>
