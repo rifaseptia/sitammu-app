@@ -85,11 +85,20 @@ export default function InputPage() {
 
     // Load existing report
     const loadReport = React.useCallback(async () => {
-        if (!user?.destination_id) return
+        console.log('[Input] loadReport called, user:', user?.id, 'destination_id:', user?.destination_id)
+
+        if (!user?.destination_id) {
+            console.log('[Input] No destination_id, skipping load')
+            setIsLoading(false)
+            return
+        }
 
         const result = await getTodayReport(user.destination_id)
+        console.log('[Input] getTodayReport result:', result)
+
         if (result.success && result.data) {
             const r = result.data
+            console.log('[Input] Found existing report:', r.id, 'status:', r.status)
             setExistingReport(r)
             setAnak(r.anak_count)
             setDewasa(r.dewasa_count)
@@ -103,9 +112,11 @@ export default function InputPage() {
             setQris(r.qris_amount)
             setNotes(r.notes || '')
             if (r.wna_count > 0) setShowWnaSection(true)
+        } else {
+            console.log('[Input] No existing report found')
         }
         setIsLoading(false)
-    }, [user?.destination_id])
+    }, [user?.destination_id, user?.id])
 
     // Initial load
     React.useEffect(() => {
