@@ -37,7 +37,7 @@ import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { NumberStepper } from '@/components/ui/number-stepper'
 import { CountrySelector } from '@/components/mobile/country-selector'
-import { TicketBlockInput, createEmptyTicketBlockData, ticketBlockDataToArray, type TicketBlockData } from '@/components/mobile/ticket-block-input'
+import { TicketBlockInput, createEmptyTicketBlockData, ticketBlockDataToArray, arrayToTicketBlockData, type TicketBlockData } from '@/components/mobile/ticket-block-input'
 
 import type { DailyReport, DailyReportInput } from '@/types'
 
@@ -110,7 +110,14 @@ export default function InputPage() {
             setWnaCountries(r.wna_countries || {})
             setCash(r.cash_amount)
             setQris(r.qris_amount)
+            setQris(r.qris_amount)
             setNotes(r.notes || '')
+
+            // Load ticket blocks
+            if (r.ticket_blocks && Array.isArray(r.ticket_blocks)) {
+                setTicketBlocks(arrayToTicketBlockData(r.ticket_blocks))
+            }
+
             if (r.wna_count > 0) setShowWnaSection(true)
         } else {
             console.log('[Input] No existing report found')

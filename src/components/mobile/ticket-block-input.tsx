@@ -261,3 +261,39 @@ export function ticketBlockDataToArray(data: TicketBlockData) {
 
     return result
 }
+
+/**
+ * Convert database array format back to TicketBlockData for UI
+ */
+export function arrayToTicketBlockData(data: any[]): TicketBlockData {
+    const result = createEmptyTicketBlockData()
+
+    if (!Array.isArray(data) || data.length === 0) return result
+
+    // Group by category
+    const grouped: Record<string, any[]> = {
+        anak: [],
+        dewasa: [],
+        wna: []
+    }
+
+    data.forEach(item => {
+        if (item.category && grouped[item.category]) {
+            grouped[item.category].push(item)
+        }
+    })
+
+    // Update result with loaded data
+    for (const category of ['anak', 'dewasa', 'wna'] as const) {
+        if (grouped[category].length > 0) {
+            result[category] = grouped[category].map(item => ({
+                id: generateId(), // Generate new ID for UI handling
+                block_no: item.block_no || '',
+                start_no: item.start_no || '',
+                end_no: item.end_no || '',
+            }))
+        }
+    }
+
+    return result
+}

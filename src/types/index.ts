@@ -108,6 +108,7 @@ export interface DailyReport {
 
     // Notes
     notes: string | null
+    ticket_blocks: any[] | null // JSONB
 
     // Status & submission
     status: ReportStatus
