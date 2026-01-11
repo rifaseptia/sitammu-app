@@ -154,23 +154,13 @@ export default function PenugasanPage() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pb-24">
             {/* Page Header */}
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Penugasan</h1>
                     <p className="text-gray-500">Kelola penempatan petugas di setiap destinasi</p>
                 </div>
-                {Object.keys(changes).length > 0 && (
-                    <Button onClick={handleSaveAll} disabled={isSaving}>
-                        {isSaving ? (
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        ) : (
-                            <Check className="w-4 h-4 mr-2" />
-                        )}
-                        Simpan Perubahan ({Object.keys(changes).length})
-                    </Button>
-                )}
             </div>
 
             {/* Unassigned Users */}
@@ -276,6 +266,29 @@ export default function PenugasanPage() {
                     )
                 })}
             </div>
+
+            {/* Floating Bottom Save Action */}
+            {Object.keys(changes).length > 0 && (
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t shadow-lg md:left-64 z-50 animate-in slide-in-from-bottom-5">
+                    <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+                        <div className="text-sm text-gray-600 hidden md:block">
+                            Ada {Object.keys(changes).length} perubahan yang belum disimpan
+                        </div>
+                        <Button
+                            onClick={handleSaveAll}
+                            disabled={isSaving}
+                            className="w-full md:w-auto md:min-w-[200px] h-12 text-lg font-bold bg-green-600 hover:bg-green-700 shadow-xl"
+                        >
+                            {isSaving ? (
+                                <Loader2 className="w-6 h-6 mr-2 animate-spin" />
+                            ) : (
+                                <Check className="w-6 h-6 mr-2" />
+                            )}
+                            Simpan {Object.keys(changes).length} Perubahan
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
