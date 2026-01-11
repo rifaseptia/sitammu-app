@@ -1,0 +1,163 @@
+// ============================================
+// WhatsApp Message Generator for Daily Reports
+// ============================================
+
+import { formatRupiah, formatDate, formatNumber } from './utils'
+import { POPULAR_COUNTRIES } from './constants'
+import type { DailyReport, Destination } from '@/types'
+
+/**
+ * Get country name from code
+ */
+function getCountryName(code: string): string {
+    return POPULAR_COUNTRIES.find(c => c.code === code)?.name || code
+}
+
+/**
+ * Generate WhatsApp message for a daily report
+ * Format sesuai requirement dengan format bold
+ */
+export function generateWhatsAppMessage(
+    report: DailyReport,
+    destination: Destination
+): string {
+    const lines: string[] = []
+
+    // Header
+    lines.push(`*LAPORAN HARIAN SITAMMU APPS*`)
+    lines.push(`${destination.name}`)
+    lines.push(`Tanggal: ${formatDate(report.report_date, 'dd MMMM yyyy')}`)
+    lines.push('')
+
+    // Separator
+    lines.push('━━━━━━━━━━━━━━━━━━━━')
+    lines.push('')
+
+    // Visitor Summary
+    lines.push('*PENGUNJUNG*')
+    lines.push(`• Anak-anak: ${formatNumber(report.anak_count)} orang`)
+    // Add anak gender if available
+    const anakMale = (report as any).anak_male ?? 0
+    const anakFemale = (report as any).anak_female ?? 0
+    if (report.anak_count > 0 && (anakMale > 0 || anakFemale > 0)) {
+        lines.push(`  - Laki-laki: ${formatNumber(anakMale)}`)
+        lines.push(`  - Perempuan: ${formatNumber(anakFemale)}`)
+    }
+    lines.push(`• Dewasa: ${formatNumber(report.dewasa_count)} orang`)
+    lines.push(`  - Laki-laki: ${formatNumber(report.dewasa_male)}`)
+    lines.push(`  - Perempuan: ${formatNumber(report.dewasa_female)}`)
+    lines.push(`• WNA: ${formatNumber(report.wna_count)} orang`)
+
+    // WNA Countries breakdown
+    if (report.wna_count > 0 && report.wna_countries) {
+        const countries = report.wna_countries as Record<string, number>
+        const countryList = Object.entries(countries)
+            .map(([code, count]) => `${getCountryName(code)}: ${count}`)
+            .join(', ')
+        lines.push(`  (${countryList})`)
+    }
+
+    lines.push('')
+    lines.push(`*Total Pengunjung: ${formatNumber(report.total_visitors)} orang*`)
+    lines.push('')
+
+    // Separator
+    lines.push('━━━━━━━━━━━━━━━━━━━━')
+    lines.push('')
+
+    // Revenue Summary
+    lines.push('*PENDAPATAN*')
+    lines.push(`• Anak-anak: ${formatRupiah(report.anak_revenue)}`)
+    lines.push(`• Dewasa: ${formatRupiah(report.dewasa_revenue)}`)
+    lines.push(`• WNA: ${formatRupiah(report.wna_revenue)}`)
+    lines.push('')
+    lines.push(`*Total Pendapatan: ${formatRupiah(report.total_revenue)}*`)
+    lines.push('')
+
+    // Payment breakdown
+    lines.push('*PEMBAYARAN*')
+    lines.push(`• Cash: ${formatRupiah(report.cash_amount)}`)
+    lines.push(`• QRIS: ${formatRupiah(report.qris_amount)}`)
+    lines.push('')
+
+    // Ticket blocks
+    const ticketBlocks = (report as any).ticket_blocks as Array<{
+        category: string
+        block_no: string
+        start_no: string
+        end_no: string
+        count: number
+    }> | undefined
+
+    if (ticketBlocks && ticketBlocks.length > 0) {
+        lines.push('━━━━━━━━━━━━━━━━━━━━')
+        lines.push('')
+        lines.push('*DATA TIKET*')
+
+        const anakBlocks = ticketBlocks.filter(b => b.category === 'anak')
+        const dewasaBlocks = ticketBlocks.filter(b => b.category === 'dewasa')
+        const wnaBlocks = ticketBlocks.filter(b => b.category === 'wna')
+
+        if (anakBlocks.length > 0) {
+            lines.push('• Tiket Anak:')
+            anakBlocks.forEach(b => {
+                lines.push(`  Blok ${b.block_no}: ${b.start_no} - ${b.end_no} (${b.count} tiket)`)
+            })
+        }
+
+        if (dewasaBlocks.length > 0) {
+            lines.push('• Tiket Dewasa:')
+            dewasaBlocks.forEach(b => {
+                lines.push(`  Blok ${b.block_no}: ${b.start_no} - ${b.end_no} (${b.count} tiket)`)
+            })
+        }
+
+        if (wnaBlocks.length > 0) {
+            lines.push('• Tiket WNA:')
+            wnaBlocks.forEach(b => {
+                lines.push(`  Blok ${b.block_no}: ${b.start_no} - ${b.end_no} (${b.count} tiket)`)
+            })
+        }
+        lines.push('')
+    }
+
+    // Notes
+    if (report.notes) {
+        lines.push('━━━━━━━━━━━━━━━━━━━━')
+        lines.push('')
+        lines.push('*CATATAN*')
+        lines.push(report.notes)
+        lines.push('')
+    }
+
+    // Footer
+    lines.push('━━━━━━━━━━━━━━━━━━━━')
+    lines.push('_Dikirim via SITAMMU_')
+
+    return lines.join('\n')
+}
+
+/**
+ * Open WhatsApp with pre-filled message
+ * Works on both mobile and desktop
+ */
+export function shareToWhatsApp(message: string): void {
+    const encodedMessage = encodeURIComponent(message)
+    const waUrl = `https://wa.me/?text=${encodedMessage}`
+
+    // Open in new window/tab
+    window.open(waUrl, '_blank')
+}
+
+/**
+ * Copy message to clipboard
+ */
+export async function copyToClipboard(message: string): Promise<boolean> {
+    try {
+        await navigator.clipboard.writeText(message)
+        return true
+    } catch (error) {
+        console.error('Failed to copy:', error)
+        return false
+    }
+}
