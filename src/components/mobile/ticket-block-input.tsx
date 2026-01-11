@@ -162,6 +162,7 @@ export function TicketBlockInput({
                                             value={block.block_no}
                                             onChange={(e) => updateBlock(key, block.id, 'block_no', e.target.value)}
                                             placeholder="197"
+                                            inputMode="numeric"
                                             className="h-12 text-center text-lg font-semibold border-0 bg-white"
                                             disabled={disabled}
                                         />
@@ -171,6 +172,7 @@ export function TicketBlockInput({
                                             value={block.start_no}
                                             onChange={(e) => updateBlock(key, block.id, 'start_no', e.target.value)}
                                             placeholder="00001"
+                                            inputMode="numeric"
                                             className="h-12 font-mono text-base text-center border-0 bg-white"
                                             disabled={disabled}
                                         />
@@ -180,6 +182,7 @@ export function TicketBlockInput({
                                             value={block.end_no}
                                             onChange={(e) => updateBlock(key, block.id, 'end_no', e.target.value)}
                                             placeholder="00100"
+                                            inputMode="numeric"
                                             className="h-12 font-mono text-base text-center border-0 bg-white"
                                             disabled={disabled}
                                         />
