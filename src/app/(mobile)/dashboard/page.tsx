@@ -222,14 +222,7 @@ export default function DashboardPage() {
             </section>
 
             {/* App Info */}
-            <footer className="text-center pt-4">
-                <p className="text-xs text-gray-400">
-                    {APP.name} v{APP.version}
-                </p>
-                <p className="text-xs text-gray-400 italic">
-                    {APP.tagline}
-                </p>
-            </footer>
+
         </div>
     )
 }

@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { BottomNav } from '@/components/mobile/bottom-nav'
-import { APP } from '@/lib/constants'
+import { AppFooter } from '@/components/app-footer'
 
 export default function MobileLayout({
     children,
@@ -104,11 +104,7 @@ export default function MobileLayout({
                     {children}
                 </div>
 
-                <footer className="py-8 text-center space-y-1">
-                    <p className="text-xs font-medium text-gray-400">{APP.name} v{APP.version}</p>
-                    <p className="text-[10px] text-gray-300">Updated: {APP.lastUpdate}</p>
-                    <p className="text-[10px] text-gray-300">© 2026 {APP.fullName}</p>
-                </footer>
+                <AppFooter />
             </main>
             <BottomNav />
         </div>

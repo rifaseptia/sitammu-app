@@ -9,7 +9,7 @@ import { LogOut, LayoutDashboard, MapPin, Users, ClipboardList, FileText, BarCha
 import { logoutAction } from '@/actions/auth'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { APP } from '@/lib/constants'
+import { AppFooter } from '@/components/app-footer'
 
 const navItems = [
     {
@@ -158,15 +158,7 @@ export default function AdminLayout({
             </main>
 
             {/* Footer */}
-            <footer className="border-t bg-white py-6 mt-auto">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col items-center justify-center gap-1 text-xs text-gray-500">
-                        <p className="font-medium">{APP.name} v{APP.version}</p>
-                        <p>Updated: {APP.lastUpdate}</p>
-                        <p className="font-light text-gray-400">© 2026 {APP.fullName}</p>
-                    </div>
-                </div>
-            </footer>
+            <AppFooter className="border-t bg-white mt-auto py-6" />
         </div>
     )
 }

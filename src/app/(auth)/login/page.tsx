@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { AppFooter } from '@/components/app-footer'
 import {
     Select,
     SelectContent,
@@ -291,9 +292,7 @@ export default function LoginPage() {
                     </CardContent>
                 </Card>
 
-                <p className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">
-                    SITAMMU &bull; Version {APP.version}
-                </p>
+                <AppFooter variant="minimal" className="font-bold uppercase tracking-[0.2em]" />
             </div>
         </div>
     )
