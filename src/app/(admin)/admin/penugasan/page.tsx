@@ -269,16 +269,16 @@ export default function PenugasanPage() {
 
             {/* Bottom Save Action */}
             {Object.keys(changes).length > 0 && (
-                <div className="flex justify-end pt-4 border-t">
+                <div className="flex justify-center mt-8">
                     <Button
                         onClick={handleSaveAll}
                         disabled={isSaving}
-                        className="min-w-[200px]"
+                        className="w-full max-w-md h-12 text-lg"
                     >
                         {isSaving ? (
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                         ) : (
-                            <Check className="w-4 h-4 mr-2" />
+                            <Check className="w-5 h-5 mr-2" />
                         )}
                         Simpan Perubahan ({Object.keys(changes).length})
                     </Button>
