@@ -223,51 +223,10 @@ export default function AdminLaporanPage() {
     }
 
     // === AUTO-SYNC FOR ADD REPORT DIALOG ===
+    // NOTE: We removed the aggressive auto-sync to avoid conflicts.
+    // User can input via blocks OR via gender/count fields manually.
 
-    // Helper to calculate ticket count from blocks (returns 0 for empty blocks)
-    const calculateBlockCount = (blocks: typeof addTicketBlocks.anak) => {
-        return blocks.reduce((sum, b) => {
-            // Only count if both start and end are filled
-            if (!b.start_no || !b.end_no) return sum
-            const start = parseInt(b.start_no) || 0
-            const end = parseInt(b.end_no) || 0
-            return sum + (end >= start && start > 0 ? end - start + 1 : 0)
-        }, 0)
-    }
-
-    // Sync visitor counts from ticket blocks
-    React.useEffect(() => {
-        const anakFromBlocks = calculateBlockCount(addTicketBlocks.anak)
-        const dewasaFromBlocks = calculateBlockCount(addTicketBlocks.dewasa)
-        const wnaFromBlocks = calculateBlockCount(addTicketBlocks.wna)
-
-        // Only update if blocks have meaningful data
-        if (anakFromBlocks > 0 || dewasaFromBlocks > 0 || wnaFromBlocks > 0) {
-            setAddForm(f => ({
-                ...f,
-                anak_count: anakFromBlocks,
-                dewasa_count: dewasaFromBlocks,
-                wna_count: wnaFromBlocks,
-            }))
-        }
-    }, [addTicketBlocks])
-
-    // Sync count from gender (if gender is input first, update count)
-    React.useEffect(() => {
-        const genderTotal = addForm.anak_male + addForm.anak_female
-        if (genderTotal > 0 && genderTotal !== addForm.anak_count) {
-            setAddForm(f => ({ ...f, anak_count: genderTotal }))
-        }
-    }, [addForm.anak_male, addForm.anak_female])
-
-    React.useEffect(() => {
-        const genderTotal = addForm.dewasa_male + addForm.dewasa_female
-        if (genderTotal > 0 && genderTotal !== addForm.dewasa_count) {
-            setAddForm(f => ({ ...f, dewasa_count: genderTotal }))
-        }
-    }, [addForm.dewasa_male, addForm.dewasa_female])
-
-    // Auto-sync payment when revenue changes
+    // Auto-sync payment when revenue changes (this one is safe)
     const addTotalRevenue = (addForm.anak_count * 5000) + (addForm.dewasa_count * 15000) + (addForm.wna_count * 50000)
 
     React.useEffect(() => {
@@ -736,28 +695,30 @@ export default function AdminLaporanPage() {
                     </DialogHeader>
 
                     <div className="grid gap-4 py-4">
-                        {/* Destination & Date */}
-                        <div className="grid grid-cols-2 gap-4">
+                        {/* Step 1: Destination */}
+                        <div className="space-y-2">
+                            <Label>1. Pilih Destinasi *</Label>
+                            <Select
+                                value={addForm.destination_id}
+                                onValueChange={(v) => setAddForm(f => ({ ...f, destination_id: v }))}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Pilih destinasi..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {destinations.filter(d => d.is_active).map((dest) => (
+                                        <SelectItem key={dest.id} value={dest.id}>
+                                            {dest.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Step 2: Date (shown after destination selected) */}
+                        {addForm.destination_id && (
                             <div className="space-y-2">
-                                <Label>Destinasi *</Label>
-                                <Select
-                                    value={addForm.destination_id}
-                                    onValueChange={(v) => setAddForm(f => ({ ...f, destination_id: v }))}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Pilih destinasi..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {destinations.filter(d => d.is_active).map((dest) => (
-                                            <SelectItem key={dest.id} value={dest.id}>
-                                                {dest.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Tanggal Laporan *</Label>
+                                <Label>2. Pilih Tanggal Laporan *</Label>
                                 <Input
                                     type="date"
                                     value={addForm.report_date}
@@ -765,148 +726,156 @@ export default function AdminLaporanPage() {
                                     onChange={(e) => setAddForm(f => ({ ...f, report_date: e.target.value }))}
                                 />
                             </div>
-                        </div>
+                        )}
 
-                        <Separator />
+                        {/* Step 3: Rest of form (shown after both destination and date selected) */}
+                        {addForm.destination_id && addForm.report_date && (
+                            <>
+                                <Separator />
 
-                        {/* Visitor Counts */}
-                        <div className="space-y-4">
-                            <h4 className="font-medium text-sm text-gray-700">Data Pengunjung</h4>
-                            <div className="grid grid-cols-3 gap-4">
-                                <div className="space-y-2">
-                                    <Label>Anak</Label>
-                                    <Input
-                                        type="number"
-                                        min="0"
-                                        value={addForm.anak_count}
-                                        onChange={(e) => setAddForm(f => ({ ...f, anak_count: parseInt(e.target.value) || 0 }))}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Dewasa</Label>
-                                    <Input
-                                        type="number"
-                                        min="0"
-                                        value={addForm.dewasa_count}
-                                        onChange={(e) => setAddForm(f => ({ ...f, dewasa_count: parseInt(e.target.value) || 0 }))}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>WNA</Label>
-                                    <Input
-                                        type="number"
-                                        min="0"
-                                        value={addForm.wna_count}
-                                        onChange={(e) => setAddForm(f => ({ ...f, wna_count: parseInt(e.target.value) || 0 }))}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <Separator />
-
-                        {/* Gender */}
-                        <div className="space-y-4">
-                            <h4 className="font-medium text-sm text-gray-700">Detail Gender</h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="p-3 bg-blue-50 rounded-lg space-y-2">
-                                    <p className="text-sm font-medium text-blue-700">Anak L/P</p>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <Input
-                                            type="number"
-                                            min="0"
-                                            placeholder="L"
-                                            value={addForm.anak_male}
-                                            onChange={(e) => setAddForm(f => ({ ...f, anak_male: parseInt(e.target.value) || 0 }))}
-                                        />
-                                        <Input
-                                            type="number"
-                                            min="0"
-                                            placeholder="P"
-                                            value={addForm.anak_female}
-                                            onChange={(e) => setAddForm(f => ({ ...f, anak_female: parseInt(e.target.value) || 0 }))}
-                                        />
+                                {/* Visitor Counts */}
+                                <div className="space-y-4">
+                                    <h4 className="font-medium text-sm text-gray-700">Data Pengunjung</h4>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>Anak</Label>
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                value={addForm.anak_count}
+                                                onChange={(e) => setAddForm(f => ({ ...f, anak_count: parseInt(e.target.value) || 0 }))}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Dewasa</Label>
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                value={addForm.dewasa_count}
+                                                onChange={(e) => setAddForm(f => ({ ...f, dewasa_count: parseInt(e.target.value) || 0 }))}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>WNA</Label>
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                value={addForm.wna_count}
+                                                onChange={(e) => setAddForm(f => ({ ...f, wna_count: parseInt(e.target.value) || 0 }))}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="p-3 bg-purple-50 rounded-lg space-y-2">
-                                    <p className="text-sm font-medium text-purple-700">Dewasa L/P</p>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <Input
-                                            type="number"
-                                            min="0"
-                                            placeholder="L"
-                                            value={addForm.dewasa_male}
-                                            onChange={(e) => setAddForm(f => ({ ...f, dewasa_male: parseInt(e.target.value) || 0 }))}
-                                        />
-                                        <Input
-                                            type="number"
-                                            min="0"
-                                            placeholder="P"
-                                            value={addForm.dewasa_female}
-                                            onChange={(e) => setAddForm(f => ({ ...f, dewasa_female: parseInt(e.target.value) || 0 }))}
-                                        />
+
+                                <Separator />
+
+                                {/* Gender */}
+                                <div className="space-y-4">
+                                    <h4 className="font-medium text-sm text-gray-700">Detail Gender</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="p-3 bg-blue-50 rounded-lg space-y-2">
+                                            <p className="text-sm font-medium text-blue-700">Anak L/P</p>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <Input
+                                                    type="number"
+                                                    min="0"
+                                                    placeholder="L"
+                                                    value={addForm.anak_male}
+                                                    onChange={(e) => setAddForm(f => ({ ...f, anak_male: parseInt(e.target.value) || 0 }))}
+                                                />
+                                                <Input
+                                                    type="number"
+                                                    min="0"
+                                                    placeholder="P"
+                                                    value={addForm.anak_female}
+                                                    onChange={(e) => setAddForm(f => ({ ...f, anak_female: parseInt(e.target.value) || 0 }))}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="p-3 bg-purple-50 rounded-lg space-y-2">
+                                            <p className="text-sm font-medium text-purple-700">Dewasa L/P</p>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <Input
+                                                    type="number"
+                                                    min="0"
+                                                    placeholder="L"
+                                                    value={addForm.dewasa_male}
+                                                    onChange={(e) => setAddForm(f => ({ ...f, dewasa_male: parseInt(e.target.value) || 0 }))}
+                                                />
+                                                <Input
+                                                    type="number"
+                                                    min="0"
+                                                    placeholder="P"
+                                                    value={addForm.dewasa_female}
+                                                    onChange={(e) => setAddForm(f => ({ ...f, dewasa_female: parseInt(e.target.value) || 0 }))}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <Separator />
+                                <Separator />
 
-                        {/* Ticket Blocks */}
-                        <div className="space-y-4">
-                            <h4 className="font-medium text-sm text-gray-700">Data Blok Tiket</h4>
-                            <TicketBlockInput
-                                value={addTicketBlocks}
-                                onChange={setAddTicketBlocks}
-                                expectedCounts={{
-                                    anak: addForm.anak_count,
-                                    dewasa: addForm.dewasa_count,
-                                    wna: addForm.wna_count,
-                                }}
-                            />
-                        </div>
-
-                        <Separator />
-
-                        {/* Payment */}
-                        <div className="space-y-4">
-                            <h4 className="font-medium text-sm text-gray-700">Data Pembayaran</h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label>QRIS</Label>
-                                    <Input
-                                        type="number"
-                                        min="0"
-                                        value={addForm.qris_amount}
-                                        onChange={(e) => setAddForm(f => ({ ...f, qris_amount: parseInt(e.target.value) || 0 }))}
+                                {/* Ticket Blocks */}
+                                <div className="space-y-4">
+                                    <h4 className="font-medium text-sm text-gray-700">Data Blok Tiket</h4>
+                                    <TicketBlockInput
+                                        value={addTicketBlocks}
+                                        onChange={setAddTicketBlocks}
+                                        expectedCounts={{
+                                            anak: addForm.anak_count,
+                                            dewasa: addForm.dewasa_count,
+                                            wna: addForm.wna_count,
+                                        }}
                                     />
                                 </div>
+
+                                <Separator />
+
+                                {/* Payment */}
+                                <div className="space-y-4">
+                                    <h4 className="font-medium text-sm text-gray-700">Data Pembayaran</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>QRIS</Label>
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                value={addForm.qris_amount}
+                                                onChange={(e) => setAddForm(f => ({ ...f, qris_amount: parseInt(e.target.value) || 0 }))}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Cash</Label>
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                value={addForm.cash_amount}
+                                                onChange={(e) => setAddForm(f => ({ ...f, cash_amount: parseInt(e.target.value) || 0 }))}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="p-2 bg-gray-100 rounded text-sm">
+                                        Total Pendapatan: <strong>{formatRupiah(addTotalRevenue)}</strong>
+                                    </div>
+                                </div>
+
+                                <Separator />
+
+                                {/* Notes */}
                                 <div className="space-y-2">
-                                    <Label>Cash</Label>
+                                    <Label>Catatan (Opsional)</Label>
                                     <Input
-                                        type="number"
-                                        min="0"
-                                        value={addForm.cash_amount}
-                                        onChange={(e) => setAddForm(f => ({ ...f, cash_amount: parseInt(e.target.value) || 0 }))}
+                                        value={addForm.notes}
+                                        onChange={(e) => setAddForm(f => ({ ...f, notes: e.target.value }))}
+                                        placeholder="Alasan input manual, keterangan tambahan..."
                                     />
                                 </div>
-                            </div>
-                        </div>
-
-                        <Separator />
-
-                        {/* Notes */}
-                        <div className="space-y-2">
-                            <Label>Catatan (Opsional)</Label>
-                            <Input
-                                value={addForm.notes}
-                                onChange={(e) => setAddForm(f => ({ ...f, notes: e.target.value }))}
-                                placeholder="Alasan input manual, keterangan tambahan..."
-                            />
-                        </div>
+                            </>
+                        )}
                     </div>
 
-                    <DialogFooter>
+                    <DialogFooter className="gap-2">
                         <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                             Batal
                         </Button>
