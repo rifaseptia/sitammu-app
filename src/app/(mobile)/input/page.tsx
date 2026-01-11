@@ -131,15 +131,16 @@ export default function InputPage() {
     }, [loadReport])
 
     // Auto-refresh when tab becomes visible (sync across devices)
+    // But skip if save is in progress to avoid race condition
     React.useEffect(() => {
         const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible' && user?.destination_id) {
+            if (document.visibilityState === 'visible' && user?.destination_id && !isSaving && !isSubmitting) {
                 loadReport()
             }
         }
         document.addEventListener('visibilitychange', handleVisibilityChange)
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }, [loadReport, user?.destination_id])
+    }, [loadReport, user?.destination_id, isSaving, isSubmitting])
 
     // Auto-sync handlers: when one gender is input, auto-fill the other
     const handleDewasaMaleChange = (val: number) => {
