@@ -27,7 +27,7 @@ export default function RiwayatPage() {
             return
         }
 
-        const result = await getRecentReports(user.destination_id, 14)
+        const result = await getRecentReports(user.destination_id, 7)
         if (result.success && result.data) {
             setReports(result.data)
         }
@@ -63,7 +63,7 @@ export default function RiwayatPage() {
             {/* Header */}
             <header>
                 <h1 className="text-xl font-bold text-gray-900">Riwayat Laporan</h1>
-                <p className="text-sm text-gray-600">14 hari terakhir</p>
+                <p className="text-sm text-gray-600">7 hari terakhir</p>
             </header>
 
             {reports.length === 0 ? (
@@ -85,12 +85,8 @@ export default function RiwayatPage() {
                             key={report.id}
                             className="hover:shadow-md transition-shadow cursor-pointer"
                             onClick={() => {
-                                // Navigate based on status
-                                if (report.status === 'submitted') {
-                                    router.push('/laporan')
-                                } else {
-                                    router.push('/input')
-                                }
+                                // Navigate to report view with date param
+                                router.push(`/laporan?date=${report.report_date}`)
                             }}
                         >
                             <CardContent className="py-4">

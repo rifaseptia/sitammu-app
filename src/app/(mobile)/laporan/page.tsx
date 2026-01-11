@@ -1,13 +1,13 @@
 'use client'
 
 import * as React from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { FileText, Share2, Download, Copy, CheckCircle2, Users, Banknote } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useAuthStore } from '@/lib/stores/auth-store'
-import { getTodayReport } from '@/actions/reports'
-import { formatDate, formatRupiah, formatTime, cn } from '@/lib/utils'
+import { getTodayReport, getReportByDate } from '@/actions/reports'
+import { formatDate, formatRupiah, formatTime, cn, getTodayDateString } from '@/lib/utils'
 import { POPULAR_COUNTRIES } from '@/lib/constants'
 import { generateWhatsAppMessage, shareToWhatsApp, copyToClipboard } from '@/lib/whatsapp'
 
@@ -20,7 +20,12 @@ import type { DailyReport, Destination } from '@/types'
 
 export default function LaporanPage() {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const { user } = useAuthStore()
+
+    const dateParam = searchParams.get('date')
+    const today = getTodayDateString()
+    const isToday = !dateParam || dateParam === today
 
     const [report, setReport] = React.useState<DailyReport | null>(null)
     const [isLoading, setIsLoading] = React.useState(true)
@@ -29,14 +34,18 @@ export default function LaporanPage() {
         async function load() {
             if (!user?.destination_id) return
 
-            const result = await getTodayReport(user.destination_id)
+            const reportDate = dateParam || today
+            const result = isToday
+                ? await getTodayReport(user.destination_id)
+                : await getReportByDate(user.destination_id, reportDate)
+
             if (result.success) {
                 setReport(result.data ?? null)
             }
             setIsLoading(false)
         }
         load()
-    }, [user?.destination_id])
+    }, [user?.destination_id, dateParam, isToday, today])
 
     if (isLoading) {
         return (

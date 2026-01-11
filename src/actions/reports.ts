@@ -79,6 +79,32 @@ export async function getTodayReport(
 }
 
 /**
+ * Get report for a specific date
+ */
+export async function getReportByDate(
+    destinationId: string,
+    reportDate: string
+): Promise<ApiResponse<DailyReport | null>> {
+    try {
+        const supabase = await createClient()
+
+        const { data, error } = await supabase
+            .from('daily_reports')
+            .select('*')
+            .eq('destination_id', destinationId)
+            .eq('report_date', reportDate)
+            .maybeSingle()
+
+        if (error) throw error
+
+        return { success: true, data }
+    } catch (error) {
+        console.error('Get report by date error:', error)
+        return { success: false, error: 'Gagal memuat laporan' }
+    }
+}
+
+/**
  * Get recent reports for a destination
  */
 export async function getRecentReports(
