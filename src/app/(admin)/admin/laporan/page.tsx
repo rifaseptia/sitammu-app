@@ -223,12 +223,26 @@ export default function AdminLaporanPage() {
     }
 
     // === AUTO-SYNC FOR ADD REPORT DIALOG ===
-    // NOTE: We removed the aggressive auto-sync to avoid conflicts.
-    // User can input via blocks OR via gender/count fields manually.
 
-    // Auto-sync payment when revenue changes (this one is safe)
+    // Derive visitor counts from gender totals (L + P = total)
+    React.useEffect(() => {
+        const anakTotal = addForm.anak_male + addForm.anak_female
+        const dewasaTotal = addForm.dewasa_male + addForm.dewasa_female
+
+        // Only update if different to avoid loops
+        if (anakTotal !== addForm.anak_count || dewasaTotal !== addForm.dewasa_count) {
+            setAddForm(f => ({
+                ...f,
+                anak_count: anakTotal,
+                dewasa_count: dewasaTotal,
+            }))
+        }
+    }, [addForm.anak_male, addForm.anak_female, addForm.dewasa_male, addForm.dewasa_female])
+
+    // Calculate total revenue from counts
     const addTotalRevenue = (addForm.anak_count * 5000) + (addForm.dewasa_count * 15000) + (addForm.wna_count * 50000)
 
+    // Auto-sync payment when revenue changes
     React.useEffect(() => {
         if (addTotalRevenue > 0 && addForm.cash_amount + addForm.qris_amount !== addTotalRevenue) {
             // Keep QRIS, adjust Cash
@@ -733,81 +747,75 @@ export default function AdminLaporanPage() {
                             <>
                                 <Separator />
 
-                                {/* Visitor Counts */}
+                                {/* Gender Input (PRIMARY - user inputs here) */}
                                 <div className="space-y-4">
-                                    <h4 className="font-medium text-sm text-gray-700">Data Pengunjung</h4>
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>Anak</Label>
-                                            <Input
-                                                type="number"
-                                                min="0"
-                                                value={addForm.anak_count}
-                                                onChange={(e) => setAddForm(f => ({ ...f, anak_count: parseInt(e.target.value) || 0 }))}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Dewasa</Label>
-                                            <Input
-                                                type="number"
-                                                min="0"
-                                                value={addForm.dewasa_count}
-                                                onChange={(e) => setAddForm(f => ({ ...f, dewasa_count: parseInt(e.target.value) || 0 }))}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>WNA</Label>
-                                            <Input
-                                                type="number"
-                                                min="0"
-                                                value={addForm.wna_count}
-                                                onChange={(e) => setAddForm(f => ({ ...f, wna_count: parseInt(e.target.value) || 0 }))}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <Separator />
-
-                                {/* Gender */}
-                                <div className="space-y-4">
-                                    <h4 className="font-medium text-sm text-gray-700">Detail Gender</h4>
+                                    <h4 className="font-medium text-sm text-gray-700">3. Input Gender (L/P)</h4>
+                                    <p className="text-xs text-gray-500">Jumlah pengunjung akan dihitung otomatis dari L + P</p>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="p-3 bg-blue-50 rounded-lg space-y-2">
-                                            <p className="text-sm font-medium text-blue-700">Anak L/P</p>
+                                            <p className="text-sm font-medium text-blue-700">Anak</p>
                                             <div className="grid grid-cols-2 gap-2">
-                                                <Input
-                                                    type="number"
-                                                    min="0"
-                                                    placeholder="L"
-                                                    value={addForm.anak_male}
-                                                    onChange={(e) => setAddForm(f => ({ ...f, anak_male: parseInt(e.target.value) || 0 }))}
-                                                />
-                                                <Input
-                                                    type="number"
-                                                    min="0"
-                                                    placeholder="P"
-                                                    value={addForm.anak_female}
-                                                    onChange={(e) => setAddForm(f => ({ ...f, anak_female: parseInt(e.target.value) || 0 }))}
-                                                />
+                                                <div>
+                                                    <Label className="text-xs">Laki-laki</Label>
+                                                    <Input
+                                                        type="number"
+                                                        min="0"
+                                                        value={addForm.anak_male}
+                                                        onChange={(e) => setAddForm(f => ({ ...f, anak_male: parseInt(e.target.value) || 0 }))}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label className="text-xs">Perempuan</Label>
+                                                    <Input
+                                                        type="number"
+                                                        min="0"
+                                                        value={addForm.anak_female}
+                                                        onChange={(e) => setAddForm(f => ({ ...f, anak_female: parseInt(e.target.value) || 0 }))}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="text-center text-sm font-semibold text-blue-800">
+                                                Total: {addForm.anak_count}
                                             </div>
                                         </div>
                                         <div className="p-3 bg-purple-50 rounded-lg space-y-2">
-                                            <p className="text-sm font-medium text-purple-700">Dewasa L/P</p>
+                                            <p className="text-sm font-medium text-purple-700">Dewasa</p>
                                             <div className="grid grid-cols-2 gap-2">
+                                                <div>
+                                                    <Label className="text-xs">Laki-laki</Label>
+                                                    <Input
+                                                        type="number"
+                                                        min="0"
+                                                        value={addForm.dewasa_male}
+                                                        onChange={(e) => setAddForm(f => ({ ...f, dewasa_male: parseInt(e.target.value) || 0 }))}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label className="text-xs">Perempuan</Label>
+                                                    <Input
+                                                        type="number"
+                                                        min="0"
+                                                        value={addForm.dewasa_female}
+                                                        onChange={(e) => setAddForm(f => ({ ...f, dewasa_female: parseInt(e.target.value) || 0 }))}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="text-center text-sm font-semibold text-purple-800">
+                                                Total: {addForm.dewasa_count}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* WNA (no gender breakdown) */}
+                                    <div className="p-3 bg-orange-50 rounded-lg">
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-sm font-medium text-orange-700">WNA</p>
+                                            <div className="w-24">
                                                 <Input
                                                     type="number"
                                                     min="0"
-                                                    placeholder="L"
-                                                    value={addForm.dewasa_male}
-                                                    onChange={(e) => setAddForm(f => ({ ...f, dewasa_male: parseInt(e.target.value) || 0 }))}
-                                                />
-                                                <Input
-                                                    type="number"
-                                                    min="0"
-                                                    placeholder="P"
-                                                    value={addForm.dewasa_female}
-                                                    onChange={(e) => setAddForm(f => ({ ...f, dewasa_female: parseInt(e.target.value) || 0 }))}
+                                                    value={addForm.wna_count}
+                                                    onChange={(e) => setAddForm(f => ({ ...f, wna_count: parseInt(e.target.value) || 0 }))}
                                                 />
                                             </div>
                                         </div>
