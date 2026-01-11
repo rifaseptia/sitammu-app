@@ -74,9 +74,8 @@ export const useAuthStore = create<AuthState>()(
         }),
         {
             name: 'sitammu-auth',
-            // Revert to localStorage (default)
-            // Session persists even if browser is closed
-            storage: createJSONStorage(() => localStorage),
+            // Session clears when tab/app is closed
+            storage: createJSONStorage(() => sessionStorage),
             partialize: (state) => ({
                 user: state.user,
                 isAuthenticated: state.isAuthenticated,
