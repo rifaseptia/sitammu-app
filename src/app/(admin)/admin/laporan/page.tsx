@@ -144,39 +144,15 @@ export default function AdminLaporanPage() {
         setEditReason('')
     }
 
-    // Auto-sync ticket blocks to counts in Edit Dialog
+    // Auto-calculate totals in Edit Form (Gender -> Count)
+    // Matches Add Report logic
     React.useEffect(() => {
-        // Only run if editingReport exists to avoid running on initial render/other states
-        if (!editingReport) return
-
-        const anakTotal = editTicketBlocks.anak.reduce((sum, b) => {
-            if (!b.start_no || !b.end_no) return sum
-            return sum + calculateCount(b.start_no, b.end_no)
-        }, 0)
-
-        const dewasaTotal = editTicketBlocks.dewasa.reduce((sum, b) => {
-            if (!b.start_no || !b.end_no) return sum
-            return sum + calculateCount(b.start_no, b.end_no)
-        }, 0)
-
-        const wnaTotal = editTicketBlocks.wna.reduce((sum, b) => {
-            if (!b.start_no || !b.end_no) return sum
-            return sum + calculateCount(b.start_no, b.end_no)
-        }, 0)
-
-        // Determine if we should sync based on whether valid blocks exist
-        const hasAnakBlocks = editTicketBlocks.anak.some(b => b.start_no && b.end_no)
-        const hasDewasaBlocks = editTicketBlocks.dewasa.some(b => b.start_no && b.end_no)
-        const hasWnaBlocks = editTicketBlocks.wna.some(b => b.start_no && b.end_no)
-
         setEditForm(prev => ({
             ...prev,
-            anak_count: hasAnakBlocks ? anakTotal : prev.anak_count,
-            dewasa_count: hasDewasaBlocks ? dewasaTotal : prev.dewasa_count,
-            wna_count: hasWnaBlocks ? wnaTotal : prev.wna_count
+            anak_count: (prev.anak_male || 0) + (prev.anak_female || 0),
+            dewasa_count: (prev.dewasa_male || 0) + (prev.dewasa_female || 0)
         }))
-
-    }, [editTicketBlocks, editingReport])
+    }, [editForm.anak_male, editForm.anak_female, editForm.dewasa_male, editForm.dewasa_female])
 
     const handleSaveEdit = async () => {
         if (!editingReport || !user?.id) return
@@ -546,78 +522,15 @@ export default function AdminLaporanPage() {
                     </DialogHeader>
 
                     <div className="grid gap-4 py-4">
-                        {/* Ticket Blocks */}
+                        {/* Gender Input (PRIMARY - user inputs here) */}
                         <div className="space-y-4">
-                            <h4 className="font-medium text-sm text-gray-700">Data Blok Tiket</h4>
-                            <p className="text-xs text-gray-500">
-                                Masukkan nomor seri tiket untuk menghitung jumlah pengunjung secara otomatis.
-                            </p>
-                            <TicketBlockInput
-                                value={editTicketBlocks}
-                                onChange={setEditTicketBlocks}
-                                expectedCounts={{
-                                    anak: editForm.anak_count,
-                                    dewasa: editForm.dewasa_count,
-                                    wna: editForm.wna_count
-                                }}
-                            />
-                        </div>
-
-                        <Separator />
-
-                        {/* Visitor Counts */}
-                        <div className="space-y-4">
-                            <h4 className="font-medium text-sm text-gray-700">Data Pengunjung</h4>
-                            <div className="grid grid-cols-3 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="anak">Anak (Rp 5.000)</Label>
-                                    <Input
-                                        id="anak"
-                                        type="number"
-                                        min="0"
-                                        value={editForm.anak_count}
-                                        onChange={(e) => setEditForm(f => ({ ...f, anak_count: parseInt(e.target.value) || 0 }))}
-                                    />
-                                    <p className="text-xs text-gray-500">Subtotal: {formatRupiah(subtotalAnak)}</p>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="dewasa">Dewasa (Rp 15.000)</Label>
-                                    <Input
-                                        id="dewasa"
-                                        type="number"
-                                        min="0"
-                                        value={editForm.dewasa_count}
-                                        onChange={(e) => setEditForm(f => ({ ...f, dewasa_count: parseInt(e.target.value) || 0 }))}
-                                    />
-                                    <p className="text-xs text-gray-500">Subtotal: {formatRupiah(subtotalDewasa)}</p>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="wna">WNA (Rp 50.000)</Label>
-                                    <Input
-                                        id="wna"
-                                        type="number"
-                                        min="0"
-                                        value={editForm.wna_count}
-                                        onChange={(e) => setEditForm(f => ({ ...f, wna_count: parseInt(e.target.value) || 0 }))}
-                                    />
-                                    <p className="text-xs text-gray-500">Subtotal: {formatRupiah(subtotalWNA)}</p>
-                                </div>
-                            </div>
-                            <p className="text-sm font-medium">Total Pengunjung: {totalVisitors}</p>
-                        </div>
-
-                        <Separator />
-
-                        {/* Gender Details */}
-                        <div className="space-y-4">
-                            <h4 className="font-medium text-sm text-gray-700">Detail Gender</h4>
-
-                            {/* Anak Gender */}
-                            {editForm.anak_count > 0 && (
+                            <h4 className="font-medium text-sm text-gray-700">1. Input Gender (L/P)</h4>
+                            <p className="text-xs text-gray-500">Jumlah pengunjung akan dihitung otomatis dari L + P</p>
+                            <div className="grid grid-cols-2 gap-4">
                                 <div className="p-3 bg-blue-50 rounded-lg space-y-2">
-                                    <p className="text-sm font-medium text-blue-700">Anak ({editForm.anak_count})</p>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1">
+                                    <p className="text-sm font-medium text-blue-700">Anak (Rp 5.000)</p>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div>
                                             <Label className="text-xs">Laki-laki</Label>
                                             <Input
                                                 type="number"
@@ -626,7 +539,7 @@ export default function AdminLaporanPage() {
                                                 onChange={(e) => setEditForm(f => ({ ...f, anak_male: parseInt(e.target.value) || 0 }))}
                                             />
                                         </div>
-                                        <div className="space-y-1">
+                                        <div>
                                             <Label className="text-xs">Perempuan</Label>
                                             <Input
                                                 type="number"
@@ -636,20 +549,14 @@ export default function AdminLaporanPage() {
                                             />
                                         </div>
                                     </div>
-                                    {(editForm.anak_male + editForm.anak_female) !== editForm.anak_count && (
-                                        <p className="text-xs text-amber-600">
-                                            ⚠️ L+P ({editForm.anak_male + editForm.anak_female}) ≠ Anak ({editForm.anak_count})
-                                        </p>
-                                    )}
+                                    <div className="text-center text-sm font-semibold text-blue-800">
+                                        Total: {editForm.anak_count}
+                                    </div>
                                 </div>
-                            )}
-
-                            {/* Dewasa Gender */}
-                            {editForm.dewasa_count > 0 && (
                                 <div className="p-3 bg-purple-50 rounded-lg space-y-2">
-                                    <p className="text-sm font-medium text-purple-700">Dewasa ({editForm.dewasa_count})</p>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1">
+                                    <p className="text-sm font-medium text-purple-700">Dewasa (Rp 15.000)</p>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div>
                                             <Label className="text-xs">Laki-laki</Label>
                                             <Input
                                                 type="number"
@@ -658,7 +565,7 @@ export default function AdminLaporanPage() {
                                                 onChange={(e) => setEditForm(f => ({ ...f, dewasa_male: parseInt(e.target.value) || 0 }))}
                                             />
                                         </div>
-                                        <div className="space-y-1">
+                                        <div>
                                             <Label className="text-xs">Perempuan</Label>
                                             <Input
                                                 type="number"
@@ -668,28 +575,57 @@ export default function AdminLaporanPage() {
                                             />
                                         </div>
                                     </div>
-                                    {(editForm.dewasa_male + editForm.dewasa_female) !== editForm.dewasa_count && (
-                                        <p className="text-xs text-amber-600">
-                                            ⚠️ L+P ({editForm.dewasa_male + editForm.dewasa_female}) ≠ Dewasa ({editForm.dewasa_count})
-                                        </p>
-                                    )}
+                                    <div className="text-center text-sm font-semibold text-purple-800">
+                                        Total: {editForm.dewasa_count}
+                                    </div>
                                 </div>
-                            )}
+                            </div>
+
+                            {/* WNA (no gender breakdown) */}
+                            <div className="p-3 bg-orange-50 rounded-lg">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-sm font-medium text-orange-700">WNA (Rp 50.000)</p>
+                                    <div className="w-24">
+                                        <Input
+                                            type="number"
+                                            min="0"
+                                            value={editForm.wna_count}
+                                            onChange={(e) => setEditForm(f => ({ ...f, wna_count: parseInt(e.target.value) || 0 }))}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Ticket Blocks */}
+                        <div className="space-y-4">
+                            <h4 className="font-medium text-sm text-gray-700">2. Data Blok Tiket</h4>
+                            <p className="text-xs text-gray-500">
+                                Jumlah tiket harus sesuai dengan total pengunjung di atas.
+                            </p>
+                            <TicketBlockInput
+                                value={editTicketBlocks}
+                                onChange={setEditTicketBlocks}
+                                expectedCounts={{
+                                    anak: editForm.anak_count,
+                                    dewasa: editForm.dewasa_count,
+                                    wna: editForm.wna_count
+                                }}
+                                alwaysShow={true}
+                            />
                         </div>
 
                         <Separator />
 
                         {/* Payment */}
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h4 className="font-medium text-sm text-gray-700">Data Pembayaran</h4>
-                                <p className="text-sm">Total Seharusnya: <span className="font-bold">{formatRupiah(expectedRevenue)}</span></p>
-                            </div>
+                            <h4 className="font-medium text-sm text-gray-700">3. Data Pembayaran</h4>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="qris">QRIS</Label>
+                                    <Label>QRIS</Label>
                                     <Input
-                                        id="qris"
                                         type="number"
                                         min="0"
                                         value={editForm.qris_amount}
@@ -697,35 +633,28 @@ export default function AdminLaporanPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <Label htmlFor="cash">Cash</Label>
-                                        {isRevenueMismatch && (
-                                            <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={handleAutoAdjustCash}>
-                                                Auto-fix
-                                            </Button>
-                                        )}
-                                    </div>
+                                    <Label>Cash</Label>
                                     <Input
-                                        id="cash"
                                         type="number"
                                         min="0"
                                         value={editForm.cash_amount}
-                                        readOnly
-                                        className="bg-gray-50"
+                                        onChange={(e) => setEditForm(f => ({ ...f, cash_amount: parseInt(e.target.value) || 0 }))}
                                     />
                                 </div>
                             </div>
                             <div className={cn(
-                                "p-3 rounded-lg text-sm",
-                                isRevenueMismatch ? "bg-amber-50 text-amber-800" : "bg-green-50 text-green-800"
+                                "p-2 rounded text-sm",
+                                isRevenueMismatch ? "bg-red-50 text-red-700" : "bg-gray-100"
                             )}>
-                                <p className="font-medium">
-                                    Total Input: {formatRupiah(totalInputRevenue)}
-                                    {isRevenueMismatch && ` (Selisih: ${formatRupiah(totalInputRevenue - expectedRevenue)})`}
-                                </p>
-                                <p className="text-xs mt-1">
-                                    {isRevenueMismatch ? "Total tidak sesuai dengan harga tiket" : "✓ Total sesuai"}
-                                </p>
+                                <div className="flex justify-between font-bold">
+                                    <span>Total Pendapatan:</span>
+                                    <span>{formatRupiah(editForm.cash_amount + editForm.qris_amount)}</span>
+                                </div>
+                                {isRevenueMismatch && (
+                                    <p className="text-xs mt-1">
+                                        Perhatian: Tidak sesuai estimasi tiket ({formatRupiah(expectedRevenue)})
+                                    </p>
+                                )}
                             </div>
                         </div>
 

@@ -29,6 +29,7 @@ interface TicketBlockInputProps {
         wna: number
     }
     disabled?: boolean
+    alwaysShow?: boolean
 }
 
 /**
@@ -51,6 +52,7 @@ export function TicketBlockInput({
     onChange,
     expectedCounts,
     disabled = false,
+    alwaysShow = false,
 }: TicketBlockInputProps) {
     const addBlock = (category: 'anak' | 'dewasa' | 'wna') => {
         const newBlock: TicketBlockEntry = {
@@ -104,8 +106,11 @@ export function TicketBlockInput({
                 const isMatch = totalCount === expected
                 const hasBlocks = blocks.length > 0 && blocks.some(b => b.start_no && b.end_no)
 
-                // Skip if no expected count for this category
-                if (expected === 0) return null
+                // Check if any block has content (user is typing)
+                const hasInput = blocks.some(b => b.block_no || b.start_no || b.end_no)
+
+                // Skip if no expected count AND no input AND not forced to show
+                if (!alwaysShow && expected === 0 && !hasInput) return null
 
                 return (
                     <div key={key} className={cn('rounded-xl overflow-hidden', bgColor)}>
