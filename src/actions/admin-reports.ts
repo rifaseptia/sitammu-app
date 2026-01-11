@@ -306,6 +306,8 @@ export async function deleteReport(
     try {
         const supabase = await createClient()
 
+        console.log('[deleteReport] Starting delete for reportId:', reportId, 'by user:', deletedBy)
+
         // Get report info for logging
         const { data: report, error: fetchError } = await supabase
             .from('daily_reports')
@@ -313,17 +315,31 @@ export async function deleteReport(
             .eq('id', reportId)
             .single()
 
+        console.log('[deleteReport] Fetch result:', { report, fetchError })
+
         if (fetchError || !report) {
+            console.log('[deleteReport] Report not found')
             return { success: false, error: 'Laporan tidak ditemukan' }
         }
 
         // Delete the report
-        const { error: deleteError } = await supabase
+        const { error: deleteError, count } = await supabase
             .from('daily_reports')
-            .delete()
+            .delete({ count: 'exact' })
             .eq('id', reportId)
 
-        if (deleteError) throw deleteError
+        console.log('[deleteReport] Delete result:', { deleteError, count })
+
+        if (deleteError) {
+            console.error('[deleteReport] Delete error:', deleteError)
+            throw deleteError
+        }
+
+        // Verify deletion was successful
+        if (count === 0) {
+            console.log('[deleteReport] No rows deleted - possible RLS issue')
+            return { success: false, error: 'Tidak dapat menghapus - periksa izin akses database' }
+        }
 
         // Log the deletion
         await supabase.from('activity_logs').insert({
@@ -337,6 +353,8 @@ export async function deleteReport(
                 reason: reason || 'Data salah input',
             },
         })
+
+        console.log('[deleteReport] Successfully deleted report')
 
         return {
             success: true,
