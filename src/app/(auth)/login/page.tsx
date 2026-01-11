@@ -28,7 +28,7 @@ import type { Destination, User as UserType } from '@/types'
 
 export default function LoginPage() {
     const router = useRouter()
-    const { login } = useAuthStore()
+    const { login, logout } = useAuthStore()
 
     const [destinations, setDestinations] = React.useState<Destination[]>([])
     const [users, setUsers] = React.useState<Pick<UserType, 'id' | 'name' | 'role'>[]>([])
@@ -110,6 +110,11 @@ export default function LoginPage() {
         setError(null)
         const result = await loginAction(data)
         if (result.success && result.data) {
+            // Clear old session data first to prevent stale destination_id
+            logout()
+            // Small delay to ensure localStorage is cleared
+            await new Promise(resolve => setTimeout(resolve, 50))
+            // Set new user data
             login(result.data)
             router.push('/dashboard')
         } else {
@@ -127,6 +132,11 @@ export default function LoginPage() {
             pin: adminPin,
         })
         if (result.success && result.data) {
+            // Clear old session data first to prevent stale destination_id
+            logout()
+            // Small delay to ensure localStorage is cleared
+            await new Promise(resolve => setTimeout(resolve, 50))
+            // Set new user data
             login(result.data)
             router.push('/admin')
         } else {
