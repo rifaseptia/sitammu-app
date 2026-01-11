@@ -87,6 +87,7 @@ export async function editReportWithLog(
         cash_amount: number
         qris_amount: number
         notes: string
+        ticket_blocks: any[] // JSONB
     }>,
     editorId: string,
     reason?: string

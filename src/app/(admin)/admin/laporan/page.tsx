@@ -31,7 +31,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import { TicketBlockInput, createEmptyTicketBlockData, ticketBlockDataToArray, type TicketBlockData } from '@/components/mobile/ticket-block-input'
+import { TicketBlockInput, createEmptyTicketBlockData, ticketBlockDataToArray, arrayToTicketBlockData, calculateCount, type TicketBlockData } from '@/components/mobile/ticket-block-input'
 
 import type { DailyReport, Destination, ReportEditLogWithUser } from '@/types'
 
@@ -64,6 +64,7 @@ export default function AdminLaporanPage() {
         qris_amount: 0,
         notes: '',
     })
+    const [editTicketBlocks, setEditTicketBlocks] = React.useState<TicketBlockData>(createEmptyTicketBlockData())
     const [editReason, setEditReason] = React.useState('')
     const [isSaving, setIsSaving] = React.useState(false)
 
@@ -120,6 +121,14 @@ export default function AdminLaporanPage() {
 
     const handleEdit = (report: ReportWithDestination) => {
         setEditingReport(report)
+        // Populate form
+        // If report has ticket_blocks, use them. Else create empty.
+        const blocks = report.ticket_blocks && Array.isArray(report.ticket_blocks)
+            ? arrayToTicketBlockData(report.ticket_blocks)
+            : createEmptyTicketBlockData()
+
+        setEditTicketBlocks(blocks)
+
         setEditForm({
             anak_count: report.anak_count,
             dewasa_count: report.dewasa_count,
@@ -134,6 +143,40 @@ export default function AdminLaporanPage() {
         })
         setEditReason('')
     }
+
+    // Auto-sync ticket blocks to counts in Edit Dialog
+    React.useEffect(() => {
+        // Only run if editingReport exists to avoid running on initial render/other states
+        if (!editingReport) return
+
+        const anakTotal = editTicketBlocks.anak.reduce((sum, b) => {
+            if (!b.start_no || !b.end_no) return sum
+            return sum + calculateCount(b.start_no, b.end_no)
+        }, 0)
+
+        const dewasaTotal = editTicketBlocks.dewasa.reduce((sum, b) => {
+            if (!b.start_no || !b.end_no) return sum
+            return sum + calculateCount(b.start_no, b.end_no)
+        }, 0)
+
+        const wnaTotal = editTicketBlocks.wna.reduce((sum, b) => {
+            if (!b.start_no || !b.end_no) return sum
+            return sum + calculateCount(b.start_no, b.end_no)
+        }, 0)
+
+        // Determine if we should sync based on whether valid blocks exist
+        const hasAnakBlocks = editTicketBlocks.anak.some(b => b.start_no && b.end_no)
+        const hasDewasaBlocks = editTicketBlocks.dewasa.some(b => b.start_no && b.end_no)
+        const hasWnaBlocks = editTicketBlocks.wna.some(b => b.start_no && b.end_no)
+
+        setEditForm(prev => ({
+            ...prev,
+            anak_count: hasAnakBlocks ? anakTotal : prev.anak_count,
+            dewasa_count: hasDewasaBlocks ? dewasaTotal : prev.dewasa_count,
+            wna_count: hasWnaBlocks ? wnaTotal : prev.wna_count
+        }))
+
+    }, [editTicketBlocks, editingReport])
 
     const handleSaveEdit = async () => {
         if (!editingReport || !user?.id) return
@@ -156,7 +199,11 @@ export default function AdminLaporanPage() {
 
         const result = await editReportWithLog(
             editingReport.id,
-            editForm,
+            {
+                ...editForm,
+                // Include ticket blocks
+                ticket_blocks: ticketBlockDataToArray(editTicketBlocks)
+            },
             user.id,
             editReason
         )
@@ -499,6 +546,25 @@ export default function AdminLaporanPage() {
                     </DialogHeader>
 
                     <div className="grid gap-4 py-4">
+                        {/* Ticket Blocks */}
+                        <div className="space-y-4">
+                            <h4 className="font-medium text-sm text-gray-700">Data Blok Tiket</h4>
+                            <p className="text-xs text-gray-500">
+                                Masukkan nomor seri tiket untuk menghitung jumlah pengunjung secara otomatis.
+                            </p>
+                            <TicketBlockInput
+                                value={editTicketBlocks}
+                                onChange={setEditTicketBlocks}
+                                expectedCounts={{
+                                    anak: editForm.anak_count,
+                                    dewasa: editForm.dewasa_count,
+                                    wna: editForm.wna_count
+                                }}
+                            />
+                        </div>
+
+                        <Separator />
+
                         {/* Visitor Counts */}
                         <div className="space-y-4">
                             <h4 className="font-medium text-sm text-gray-700">Data Pengunjung</h4>

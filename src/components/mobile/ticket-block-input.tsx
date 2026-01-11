@@ -34,7 +34,7 @@ interface TicketBlockInputProps {
 /**
  * Calculate count from ticket range (end - start + 1)
  */
-function calculateCount(start: string, end: string): number {
+export function calculateCount(start: string, end: string): number {
     const startNum = parseInt(start, 10)
     const endNum = parseInt(end, 10)
     if (isNaN(startNum) || isNaN(endNum)) return 0
