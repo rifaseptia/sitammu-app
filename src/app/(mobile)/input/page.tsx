@@ -84,29 +84,44 @@ export default function InputPage() {
     const isFormValid = isGenderValid && isAnakGenderValid && isCountryValid && isPaymentValid
 
     // Load existing report
-    React.useEffect(() => {
-        async function load() {
-            if (!user?.destination_id) return
+    const loadReport = React.useCallback(async () => {
+        if (!user?.destination_id) return
 
-            const result = await getTodayReport(user.destination_id)
-            if (result.success && result.data) {
-                const r = result.data
-                setExistingReport(r)
-                setAnak(r.anak_count)
-                setDewasa(r.dewasa_count)
-                setDewasaMale(r.dewasa_male)
-                setDewasaFemale(r.dewasa_female)
-                setWna(r.wna_count)
-                setWnaCountries(r.wna_countries || {})
-                setCash(r.cash_amount)
-                setQris(r.qris_amount)
-                setNotes(r.notes || '')
-                if (r.wna_count > 0) setShowWnaSection(true)
-            }
-            setIsLoading(false)
+        const result = await getTodayReport(user.destination_id)
+        if (result.success && result.data) {
+            const r = result.data
+            setExistingReport(r)
+            setAnak(r.anak_count)
+            setDewasa(r.dewasa_count)
+            setDewasaMale(r.dewasa_male)
+            setDewasaFemale(r.dewasa_female)
+            setAnakMale(r.anak_male || 0)
+            setAnakFemale(r.anak_female || 0)
+            setWna(r.wna_count)
+            setWnaCountries(r.wna_countries || {})
+            setCash(r.cash_amount)
+            setQris(r.qris_amount)
+            setNotes(r.notes || '')
+            if (r.wna_count > 0) setShowWnaSection(true)
         }
-        load()
+        setIsLoading(false)
     }, [user?.destination_id])
+
+    // Initial load
+    React.useEffect(() => {
+        loadReport()
+    }, [loadReport])
+
+    // Auto-refresh when tab becomes visible (sync across devices)
+    React.useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible' && user?.destination_id) {
+                loadReport()
+            }
+        }
+        document.addEventListener('visibilitychange', handleVisibilityChange)
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }, [loadReport, user?.destination_id])
 
     // Auto-sync handlers: when one gender is input, auto-fill the other
     const handleDewasaMaleChange = (val: number) => {
