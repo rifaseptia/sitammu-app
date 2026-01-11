@@ -224,12 +224,14 @@ export default function AdminLaporanPage() {
 
     // === AUTO-SYNC FOR ADD REPORT DIALOG ===
 
-    // Helper to calculate ticket count from blocks
+    // Helper to calculate ticket count from blocks (returns 0 for empty blocks)
     const calculateBlockCount = (blocks: typeof addTicketBlocks.anak) => {
         return blocks.reduce((sum, b) => {
+            // Only count if both start and end are filled
+            if (!b.start_no || !b.end_no) return sum
             const start = parseInt(b.start_no) || 0
             const end = parseInt(b.end_no) || 0
-            return sum + (end >= start ? end - start + 1 : 0)
+            return sum + (end >= start && start > 0 ? end - start + 1 : 0)
         }, 0)
     }
 
@@ -239,31 +241,31 @@ export default function AdminLaporanPage() {
         const dewasaFromBlocks = calculateBlockCount(addTicketBlocks.dewasa)
         const wnaFromBlocks = calculateBlockCount(addTicketBlocks.wna)
 
-        setAddForm(f => ({
-            ...f,
-            anak_count: anakFromBlocks,
-            dewasa_count: dewasaFromBlocks,
-            wna_count: wnaFromBlocks,
-        }))
+        // Only update if blocks have meaningful data
+        if (anakFromBlocks > 0 || dewasaFromBlocks > 0 || wnaFromBlocks > 0) {
+            setAddForm(f => ({
+                ...f,
+                anak_count: anakFromBlocks,
+                dewasa_count: dewasaFromBlocks,
+                wna_count: wnaFromBlocks,
+            }))
+        }
     }, [addTicketBlocks])
 
-    // Sync gender when anak count changes
+    // Sync count from gender (if gender is input first, update count)
     React.useEffect(() => {
-        if (addForm.anak_count === 0) {
-            setAddForm(f => ({ ...f, anak_male: 0, anak_female: 0 }))
-        } else if (addForm.anak_male + addForm.anak_female !== addForm.anak_count) {
-            setAddForm(f => ({ ...f, anak_female: Math.max(0, f.anak_count - f.anak_male) }))
+        const genderTotal = addForm.anak_male + addForm.anak_female
+        if (genderTotal > 0 && genderTotal !== addForm.anak_count) {
+            setAddForm(f => ({ ...f, anak_count: genderTotal }))
         }
-    }, [addForm.anak_count])
+    }, [addForm.anak_male, addForm.anak_female])
 
-    // Sync gender when dewasa count changes
     React.useEffect(() => {
-        if (addForm.dewasa_count === 0) {
-            setAddForm(f => ({ ...f, dewasa_male: 0, dewasa_female: 0 }))
-        } else if (addForm.dewasa_male + addForm.dewasa_female !== addForm.dewasa_count) {
-            setAddForm(f => ({ ...f, dewasa_female: Math.max(0, f.dewasa_count - f.dewasa_male) }))
+        const genderTotal = addForm.dewasa_male + addForm.dewasa_female
+        if (genderTotal > 0 && genderTotal !== addForm.dewasa_count) {
+            setAddForm(f => ({ ...f, dewasa_count: genderTotal }))
         }
-    }, [addForm.dewasa_count])
+    }, [addForm.dewasa_male, addForm.dewasa_female])
 
     // Auto-sync payment when revenue changes
     const addTotalRevenue = (addForm.anak_count * 5000) + (addForm.dewasa_count * 15000) + (addForm.wna_count * 50000)
