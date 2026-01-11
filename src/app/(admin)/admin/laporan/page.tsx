@@ -31,6 +31,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
+import { TicketBlockInput, createEmptyTicketBlockData, ticketBlockDataToArray, type TicketBlockData } from '@/components/mobile/ticket-block-input'
 
 import type { DailyReport, Destination, ReportEditLogWithUser } from '@/types'
 
@@ -87,6 +88,7 @@ export default function AdminLaporanPage() {
         qris_amount: 0,
         notes: '',
     })
+    const [addTicketBlocks, setAddTicketBlocks] = React.useState<TicketBlockData>(createEmptyTicketBlockData())
     const [isAdding, setIsAdding] = React.useState(false)
 
     const loadData = async () => {
@@ -191,6 +193,7 @@ export default function AdminLaporanPage() {
 
         const result = await createManualReport({
             ...addForm,
+            ticket_blocks: ticketBlockDataToArray(addTicketBlocks),
             created_by: user.id,
         })
 
@@ -211,6 +214,7 @@ export default function AdminLaporanPage() {
                 qris_amount: 0,
                 notes: '',
             })
+            setAddTicketBlocks(createEmptyTicketBlockData())
             await loadData()
         } else {
             toast.error(result.error || 'Gagal menambahkan laporan')
@@ -789,6 +793,22 @@ export default function AdminLaporanPage() {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Ticket Blocks */}
+                        <div className="space-y-4">
+                            <h4 className="font-medium text-sm text-gray-700">Data Blok Tiket</h4>
+                            <TicketBlockInput
+                                value={addTicketBlocks}
+                                onChange={setAddTicketBlocks}
+                                expectedCounts={{
+                                    anak: addForm.anak_count,
+                                    dewasa: addForm.dewasa_count,
+                                    wna: addForm.wna_count,
+                                }}
+                            />
                         </div>
 
                         <Separator />

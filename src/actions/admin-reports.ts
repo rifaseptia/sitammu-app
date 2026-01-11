@@ -217,6 +217,13 @@ export async function createManualReport(data: {
     wna_countries?: Record<string, number>
     cash_amount: number
     qris_amount: number
+    ticket_blocks?: Array<{
+        category: string
+        block_no: string
+        start_no: string
+        end_no: string
+        count: number
+    }>
     notes?: string
     created_by: string
 }): Promise<ApiResponse<DailyReport>> {
@@ -265,6 +272,7 @@ export async function createManualReport(data: {
                 wna_revenue,
                 cash_amount: data.cash_amount,
                 qris_amount: data.qris_amount,
+                ticket_blocks: data.ticket_blocks || [],
                 notes: data.notes ? `[Input Manual] ${data.notes}` : '[Input Manual oleh Admin]',
                 status: 'submitted',
                 submitted_by: data.created_by,
