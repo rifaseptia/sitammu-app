@@ -89,10 +89,14 @@ export function formatRelativeTime(date: Date | string): string {
 }
 
 /**
- * Get tanggal hari ini dalam format YYYY-MM-DD
+ * Get tanggal hari ini dalam format YYYY-MM-DD (local timezone)
  */
 export function getTodayDateString(): string {
-  return format(new Date(), 'yyyy-MM-dd')
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 // ============================================
