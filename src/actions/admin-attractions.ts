@@ -81,9 +81,9 @@ export async function createAttraction(input: {
         if (error) throw error
 
         return { success: true, data, message: 'Atraksi berhasil ditambahkan' }
-    } catch (error) {
+    } catch (error: any) {
         console.error('Create attraction error:', error)
-        return { success: false, error: 'Gagal menambahkan atraksi' }
+        return { success: false, error: error?.message || 'Gagal menambahkan atraksi' }
     }
 }
 

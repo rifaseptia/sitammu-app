@@ -40,22 +40,11 @@ CREATE INDEX IF NOT EXISTS idx_attraction_reports_report ON attraction_reports(r
 CREATE INDEX IF NOT EXISTS idx_attraction_reports_attraction ON attraction_reports(attraction_id);
 
 -- ============================================
--- RLS POLICIES
+-- RLS - Disabled for simplicity
 -- ============================================
-ALTER TABLE attractions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE attraction_reports ENABLE ROW LEVEL SECURITY;
-
--- Attractions: read for all authenticated, write for admins
-CREATE POLICY "attractions_select" ON attractions FOR SELECT TO authenticated USING (true);
-CREATE POLICY "attractions_insert" ON attractions FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "attractions_update" ON attractions FOR UPDATE TO authenticated USING (true);
-CREATE POLICY "attractions_delete" ON attractions FOR DELETE TO authenticated USING (true);
-
--- Attraction Reports: full access for authenticated users
-CREATE POLICY "attraction_reports_select" ON attraction_reports FOR SELECT TO authenticated USING (true);
-CREATE POLICY "attraction_reports_insert" ON attraction_reports FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "attraction_reports_update" ON attraction_reports FOR UPDATE TO authenticated USING (true);
-CREATE POLICY "attraction_reports_delete" ON attraction_reports FOR DELETE TO authenticated USING (true);
+-- These tables are admin-managed, RLS not strictly needed
+ALTER TABLE attractions DISABLE ROW LEVEL SECURITY;
+ALTER TABLE attraction_reports DISABLE ROW LEVEL SECURITY;
 
 -- ============================================
 -- COMMENTS

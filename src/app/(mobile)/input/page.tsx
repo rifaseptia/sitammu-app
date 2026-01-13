@@ -20,6 +20,8 @@ import { TICKET_PRICES, TICKET_CONFIG } from '@/lib/constants'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { getTodayReport } from '@/actions/reports'
 import { saveReport, submitReport } from '@/actions/report-form'
+import { getAttractionsByDestination } from '@/actions/admin-attractions'
+import { getAttractionReports, saveAllAttractionReports } from '@/actions/attraction-reports'
 import {
     formatRupiah,
     formatDate,
@@ -38,8 +40,9 @@ import { Separator } from '@/components/ui/separator'
 import { NumberStepper } from '@/components/ui/number-stepper'
 import { CountrySelector } from '@/components/mobile/country-selector'
 import { TicketBlockInput, createEmptyTicketBlockData, ticketBlockDataToArray, arrayToTicketBlockData, type TicketBlockData } from '@/components/mobile/ticket-block-input'
+import { AttractionInput, createEmptyAttractionData, attractionDataToDbFormat, dbToAttractionData, type AttractionInputData } from '@/components/mobile/attraction-input'
 
-import type { DailyReport, DailyReportInput } from '@/types'
+import type { DailyReport, DailyReportInput, Attraction } from '@/types'
 
 export default function InputPage() {
     const router = useRouter()
@@ -62,6 +65,10 @@ export default function InputPage() {
     const [notes, setNotes] = React.useState('')
     const [ticketBlocks, setTicketBlocks] = React.useState<TicketBlockData>(createEmptyTicketBlockData())
 
+    // Attractions state
+    const [attractions, setAttractions] = React.useState<Attraction[]>([])
+    const [attractionData, setAttractionData] = React.useState<Record<string, AttractionInputData>>({})
+
     // UI state
     const [isLoading, setIsLoading] = React.useState(true)
     const [isSaving, setIsSaving] = React.useState(false)
@@ -83,7 +90,7 @@ export default function InputPage() {
     const isPaymentValid = validatePayment(totalRevenue, cash, qris)
     const isFormValid = isGenderValid && isAnakGenderValid && isCountryValid && isPaymentValid
 
-    // Load existing report
+    // Load existing report and attractions
     const loadReport = React.useCallback(async () => {
         console.log('[Input] loadReport called, user:', user?.id, 'destination_id:', user?.destination_id)
 
@@ -91,6 +98,18 @@ export default function InputPage() {
             console.log('[Input] No destination_id, skipping load')
             setIsLoading(false)
             return
+        }
+
+        // Load attractions for this destination
+        const attResult = await getAttractionsByDestination(user.destination_id)
+        if (attResult.success && attResult.data) {
+            setAttractions(attResult.data)
+            // Initialize empty attraction data for each attraction
+            const initialData: Record<string, AttractionInputData> = {}
+            attResult.data.forEach(att => {
+                initialData[att.id] = createEmptyAttractionData(att.id)
+            })
+            setAttractionData(initialData)
         }
 
         const result = await getTodayReport(user.destination_id)
@@ -110,7 +129,6 @@ export default function InputPage() {
             setWnaCountries(r.wna_countries || {})
             setCash(r.cash_amount)
             setQris(r.qris_amount)
-            setQris(r.qris_amount)
             setNotes(r.notes || '')
 
             // Load ticket blocks
@@ -119,6 +137,17 @@ export default function InputPage() {
             }
 
             if (r.wna_count > 0) setShowWnaSection(true)
+
+            // Load attraction reports
+            const attReportResult = await getAttractionReports(r.id)
+            if (attReportResult.success && attReportResult.data) {
+                const loadedData: Record<string, AttractionInputData> = {}
+                attReportResult.data.forEach(ar => {
+                    loadedData[ar.attraction_id] = dbToAttractionData(ar)
+                })
+                // Merge with initialized data (keep empty for attractions without reports)
+                setAttractionData(prev => ({ ...prev, ...loadedData }))
+            }
         } else {
             console.log('[Input] No existing report found')
         }
@@ -238,8 +267,24 @@ export default function InputPage() {
         const result = await saveReport(input, user.id)
 
         if (result.success) {
+            if (result.data) {
+                setExistingReport(result.data)
+
+                // Save attraction reports
+                if (attractions.length > 0) {
+                    const attData = attractions.map(att =>
+                        attractionDataToDbFormat(
+                            attractionData[att.id] || createEmptyAttractionData(att.id),
+                            att.price
+                        )
+                    ).filter(d => d.visitor_count > 0)
+
+                    if (attData.length > 0) {
+                        await saveAllAttractionReports(result.data.id, attData)
+                    }
+                }
+            }
             toast.success('Draft berhasil disimpan')
-            if (result.data) setExistingReport(result.data)
         } else {
             toast.error(result.error || 'Gagal menyimpan')
         }
@@ -502,6 +547,29 @@ export default function InputPage() {
                     />
                 </CardContent>
             </Card>
+
+            {/* Attractions Section */}
+            {attractions.length > 0 && (
+                <div className="space-y-3">
+                    <h2 className="text-base font-bold text-gray-800 flex items-center gap-2">
+                        ⭐ Atraksi
+                    </h2>
+                    {attractions.map(att => (
+                        <AttractionInput
+                            key={att.id}
+                            attraction={att}
+                            data={attractionData[att.id] || createEmptyAttractionData(att.id)}
+                            onChange={(newData) => {
+                                setAttractionData(prev => ({
+                                    ...prev,
+                                    [att.id]: newData
+                                }))
+                            }}
+                            disabled={isSubmitted}
+                        />
+                    ))}
+                </div>
+            )}
 
             {/* Payment Section */}
             <Card>
