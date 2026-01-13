@@ -391,7 +391,12 @@ export default function AdminLaporanPage() {
     }, [addForm.anak_male, addForm.anak_female, addForm.dewasa_male, addForm.dewasa_female])
 
     // Calculate total revenue from counts
-    const addTotalRevenue = (addForm.anak_count * 5000) + (addForm.dewasa_count * 15000) + (addForm.wna_count * 50000)
+    const addAttractionRevenue = addAttractions.reduce((sum, att) => {
+        const data = addAttractionData[att.id]
+        return sum + (data ? data.visitor_count * att.price : 0)
+    }, 0)
+
+    const addTotalRevenue = (addForm.anak_count * 5000) + (addForm.dewasa_count * 15000) + (addForm.wna_count * 50000) + addAttractionRevenue
 
     // Auto-sync payment: when revenue or QRIS changes, adjust Cash to fill the gap
     React.useEffect(() => {
@@ -414,7 +419,12 @@ export default function AdminLaporanPage() {
     const subtotalDewasa = editForm.dewasa_count * TICKET_PRICES.dewasa
     const subtotalWNA = editForm.wna_count * TICKET_PRICES.wna
 
-    const expectedRevenue = subtotalAnak + subtotalDewasa + subtotalWNA
+    const editAttractionRevenue = editAttractions.reduce((sum, att) => {
+        const data = editAttractionData[att.id]
+        return sum + (data ? data.visitor_count * att.price : 0)
+    }, 0)
+
+    const expectedRevenue = subtotalAnak + subtotalDewasa + subtotalWNA + editAttractionRevenue
     const totalVisitors = editForm.anak_count + editForm.dewasa_count + editForm.wna_count
 
     const totalInputRevenue = editForm.cash_amount + editForm.qris_amount

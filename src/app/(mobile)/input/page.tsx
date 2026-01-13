@@ -77,10 +77,16 @@ export default function InputPage() {
     const [showWnaSection, setShowWnaSection] = React.useState(false)
 
     // Calculated values
+    // Calculate attraction revenue
+    const attractionRevenue = attractions.reduce((sum, att) => {
+        const data = attractionData[att.id]
+        return sum + (data ? data.visitor_count * att.price : 0)
+    }, 0)
+
     const anakRevenue = anak * TICKET_PRICES.anak
     const dewasaRevenue = dewasa * TICKET_PRICES.dewasa
     const wnaRevenue = wna * TICKET_PRICES.wna
-    const totalRevenue = anakRevenue + dewasaRevenue + wnaRevenue
+    const totalRevenue = anakRevenue + dewasaRevenue + wnaRevenue + attractionRevenue
     const totalVisitors = anak + dewasa + wna
 
     // Validations (functions return boolean)
