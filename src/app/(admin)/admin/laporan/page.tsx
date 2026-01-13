@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { getAllReports, getReportById, editReportWithLog, getReportEditHistory, createManualReport, deleteReport } from '@/actions/admin-reports'
 import { getAllDestinations } from '@/actions/destinations'
 import { getAttractionsByDestination } from '@/actions/admin-attractions'
-import { saveAllAttractionReports } from '@/actions/attraction-reports'
+import { saveAllAttractionReports, getAttractionReports } from '@/actions/attraction-reports'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { formatDate, formatRupiah, cn } from '@/lib/utils'
 
@@ -34,7 +34,7 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import { TicketBlockInput, createEmptyTicketBlockData, ticketBlockDataToArray, arrayToTicketBlockData, calculateCount, type TicketBlockData } from '@/components/mobile/ticket-block-input'
-import { AttractionInput, createEmptyAttractionData, attractionDataToDbFormat, type AttractionInputData } from '@/components/mobile/attraction-input'
+import { AttractionInput, createEmptyAttractionData, attractionDataToDbFormat, dbToAttractionData, type AttractionInputData } from '@/components/mobile/attraction-input'
 
 import type { DailyReport, Destination, ReportEditLogWithUser, Attraction } from '@/types'
 
@@ -68,6 +68,8 @@ export default function AdminLaporanPage() {
         notes: '',
     })
     const [editTicketBlocks, setEditTicketBlocks] = React.useState<TicketBlockData>(createEmptyTicketBlockData())
+    const [editAttractions, setEditAttractions] = React.useState<Attraction[]>([])
+    const [editAttractionData, setEditAttractionData] = React.useState<Record<string, AttractionInputData>>({})
     const [editReason, setEditReason] = React.useState('')
     const [isSaving, setIsSaving] = React.useState(false)
 
@@ -145,7 +147,7 @@ export default function AdminLaporanPage() {
         loadAttractions()
     }, [addForm.destination_id])
 
-    const handleEdit = (report: ReportWithDestination) => {
+    const handleEdit = async (report: ReportWithDestination) => {
         setEditingReport(report)
         // Populate form
         // If report has ticket_blocks, use them. Else create empty.
@@ -168,6 +170,30 @@ export default function AdminLaporanPage() {
             notes: report.notes || '',
         })
         setEditReason('')
+
+        // Load attractions for this destination
+        const attResult = await getAttractionsByDestination(report.destination_id)
+        if (attResult.success && attResult.data) {
+            setEditAttractions(attResult.data)
+            // Initialize empty attraction data
+            const initialData: Record<string, AttractionInputData> = {}
+            attResult.data.forEach(att => {
+                initialData[att.id] = createEmptyAttractionData(att.id)
+            })
+
+            // Load existing attraction reports
+            const attReportResult = await getAttractionReports(report.id)
+            if (attReportResult.success && attReportResult.data) {
+                attReportResult.data.forEach(ar => {
+                    initialData[ar.attraction_id] = dbToAttractionData(ar)
+                })
+            }
+
+            setEditAttractionData(initialData)
+        } else {
+            setEditAttractions([])
+            setEditAttractionData({})
+        }
     }
 
     // Auto-calculate totals in Edit Form (Gender -> Count)
@@ -213,8 +239,22 @@ export default function AdminLaporanPage() {
         console.log('Save result:', result)
 
         if (result.success) {
+            // Save attraction reports
+            if (editAttractions.length > 0) {
+                const attData = editAttractions.map(att =>
+                    attractionDataToDbFormat(
+                        editAttractionData[att.id] || createEmptyAttractionData(att.id),
+                        att.price
+                    )
+                ).filter(d => d.visitor_count > 0)
+
+                await saveAllAttractionReports(editingReport.id, attData)
+            }
+
             toast.success(result.message || 'Laporan berhasil diperbarui')
             setEditingReport(null)
+            setEditAttractions([])
+            setEditAttractionData({})
             await loadData()
         } else {
             toast.error(result.error || 'Gagal memperbarui')
@@ -658,6 +698,29 @@ export default function AdminLaporanPage() {
                                 alwaysShow={true}
                             />
                         </div>
+
+                        {/* Attractions Section */}
+                        {editAttractions.length > 0 && (
+                            <>
+                                <Separator />
+                                <div className="space-y-3">
+                                    <h4 className="font-medium text-sm text-gray-700">⭐ Atraksi</h4>
+                                    {editAttractions.map(att => (
+                                        <AttractionInput
+                                            key={att.id}
+                                            attraction={att}
+                                            data={editAttractionData[att.id] || createEmptyAttractionData(att.id)}
+                                            onChange={(newData) => {
+                                                setEditAttractionData(prev => ({
+                                                    ...prev,
+                                                    [att.id]: newData
+                                                }))
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            </>
+                        )}
 
                         <Separator />
 
