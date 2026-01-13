@@ -6,6 +6,8 @@ import { toast } from 'sonner'
 
 import { getAllReports, getReportById, editReportWithLog, getReportEditHistory, createManualReport, deleteReport } from '@/actions/admin-reports'
 import { getAllDestinations } from '@/actions/destinations'
+import { getAttractionsByDestination } from '@/actions/admin-attractions'
+import { saveAllAttractionReports } from '@/actions/attraction-reports'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { formatDate, formatRupiah, cn } from '@/lib/utils'
 
@@ -32,8 +34,9 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import { TicketBlockInput, createEmptyTicketBlockData, ticketBlockDataToArray, arrayToTicketBlockData, calculateCount, type TicketBlockData } from '@/components/mobile/ticket-block-input'
+import { AttractionInput, createEmptyAttractionData, attractionDataToDbFormat, type AttractionInputData } from '@/components/mobile/attraction-input'
 
-import type { DailyReport, Destination, ReportEditLogWithUser } from '@/types'
+import type { DailyReport, Destination, ReportEditLogWithUser, Attraction } from '@/types'
 
 interface ReportWithDestination extends DailyReport {
     destination: { id: string; code: string; name: string }
@@ -90,6 +93,8 @@ export default function AdminLaporanPage() {
         notes: '',
     })
     const [addTicketBlocks, setAddTicketBlocks] = React.useState<TicketBlockData>(createEmptyTicketBlockData())
+    const [addAttractions, setAddAttractions] = React.useState<Attraction[]>([])
+    const [addAttractionData, setAddAttractionData] = React.useState<Record<string, AttractionInputData>>({})
     const [isAdding, setIsAdding] = React.useState(false)
 
     // Delete dialog
@@ -118,6 +123,27 @@ export default function AdminLaporanPage() {
     React.useEffect(() => {
         loadData()
     }, [filterDestination, filterStatus])
+
+    // Load attractions when destination changes in add form
+    React.useEffect(() => {
+        async function loadAttractions() {
+            if (!addForm.destination_id) {
+                setAddAttractions([])
+                setAddAttractionData({})
+                return
+            }
+            const result = await getAttractionsByDestination(addForm.destination_id)
+            if (result.success && result.data) {
+                setAddAttractions(result.data)
+                const initialData: Record<string, AttractionInputData> = {}
+                result.data.forEach(att => {
+                    initialData[att.id] = createEmptyAttractionData(att.id)
+                })
+                setAddAttractionData(initialData)
+            }
+        }
+        loadAttractions()
+    }, [addForm.destination_id])
 
     const handleEdit = (report: ReportWithDestination) => {
         setEditingReport(report)
@@ -237,7 +263,21 @@ export default function AdminLaporanPage() {
 
             console.log('createManualReport result:', result)
 
-            if (result.success) {
+            if (result.success && result.data) {
+                // Save attraction reports
+                if (addAttractions.length > 0) {
+                    const attData = addAttractions.map(att =>
+                        attractionDataToDbFormat(
+                            addAttractionData[att.id] || createEmptyAttractionData(att.id),
+                            att.price
+                        )
+                    ).filter(d => d.visitor_count > 0)
+
+                    if (attData.length > 0) {
+                        await saveAllAttractionReports(result.data.id, attData)
+                    }
+                }
+
                 toast.success(result.message || 'Laporan berhasil ditambahkan')
                 setIsAddDialogOpen(false)
                 setAddForm({
@@ -255,6 +295,8 @@ export default function AdminLaporanPage() {
                     notes: '',
                 })
                 setAddTicketBlocks(createEmptyTicketBlockData())
+                setAddAttractions([])
+                setAddAttractionData({})
                 await loadData()
             } else {
                 toast.error(result.error || 'Gagal menambahkan laporan')
@@ -881,6 +923,29 @@ export default function AdminLaporanPage() {
                                         }}
                                     />
                                 </div>
+
+                                {/* Attractions Section */}
+                                {addAttractions.length > 0 && (
+                                    <>
+                                        <Separator />
+                                        <div className="space-y-3">
+                                            <h4 className="font-medium text-sm text-gray-700">⭐ Atraksi</h4>
+                                            {addAttractions.map(att => (
+                                                <AttractionInput
+                                                    key={att.id}
+                                                    attraction={att}
+                                                    data={addAttractionData[att.id] || createEmptyAttractionData(att.id)}
+                                                    onChange={(newData) => {
+                                                        setAddAttractionData(prev => ({
+                                                            ...prev,
+                                                            [att.id]: newData
+                                                        }))
+                                                    }}
+                                                />
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
 
                                 <Separator />
 
