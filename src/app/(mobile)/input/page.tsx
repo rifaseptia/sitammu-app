@@ -268,6 +268,7 @@ export default function InputPage() {
             qris_amount: qris,
             notes: notes || undefined,
             ticket_blocks: ticketBlockDataToArray(ticketBlocks),
+            attraction_revenue: attractionRevenue,
         }
 
         const result = await saveReport(input, user.id)

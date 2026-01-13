@@ -87,6 +87,7 @@ export async function editReportWithLog(
         cash_amount: number
         qris_amount: number
         notes: string
+        attraction_revenue: number
         ticket_blocks: any[] // JSONB
     }>,
     editorId: string,
@@ -218,6 +219,7 @@ export async function createManualReport(data: {
     wna_countries?: Record<string, number>
     cash_amount: number
     qris_amount: number
+    attraction_revenue?: number
     ticket_blocks?: Array<{
         category: string
         block_no: string

@@ -233,10 +233,17 @@ export default function AdminLaporanPage() {
         setIsSaving(true)
         console.log('Saving edit:', { reportId: editingReport.id, editForm, userId: user.id, reason: editReason })
 
+        // Calculate attraction revenue
+        const attractionRevenue = editAttractions.reduce((sum, att) => {
+            const data = editAttractionData[att.id]
+            return sum + (data ? data.visitor_count * att.price : 0)
+        }, 0)
+
         const result = await editReportWithLog(
             editingReport.id,
             {
                 ...editForm,
+                attraction_revenue: attractionRevenue,
                 // Include ticket blocks
                 ticket_blocks: ticketBlockDataToArray(editTicketBlocks)
             },
@@ -303,9 +310,16 @@ export default function AdminLaporanPage() {
         })
 
         try {
+            // Calculate attraction revenue
+            const attractionRevenue = addAttractions.reduce((sum, att) => {
+                const data = addAttractionData[att.id]
+                return sum + (data ? data.visitor_count * att.price : 0)
+            }, 0)
+
             const result = await createManualReport({
                 ...addForm,
                 ticket_blocks: ticketBlockDataToArray(addTicketBlocks),
+                attraction_revenue: attractionRevenue,
                 created_by: user.id,
             })
 

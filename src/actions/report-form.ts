@@ -77,6 +77,7 @@ export async function saveReport(
             anak_revenue,
             dewasa_revenue,
             wna_revenue,
+            attraction_revenue: input.attraction_revenue || 0,
             cash_amount: input.cash_amount,
             qris_amount: input.qris_amount,
             notes: input.notes || null,
@@ -219,7 +220,7 @@ export async function submitReport(
             }
         }
 
-        const totalRevenue = report.anak_revenue + report.dewasa_revenue + report.wna_revenue
+        const totalRevenue = report.anak_revenue + report.dewasa_revenue + report.wna_revenue + (report.attraction_revenue || 0)
         if (report.cash_amount + report.qris_amount !== totalRevenue) {
             return {
                 success: false,

@@ -132,6 +132,7 @@ export interface DailyReport {
     anak_revenue: number
     dewasa_revenue: number
     wna_revenue: number
+    attraction_revenue: number
 
     // Payment methods
     cash_amount: number
@@ -277,6 +278,7 @@ export interface DailyReportInput {
     // Payment methods
     cash_amount: number
     qris_amount: number
+    attraction_revenue?: number
 
     // Notes
     notes?: string
