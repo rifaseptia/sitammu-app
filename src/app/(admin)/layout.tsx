@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/auth-store'
-import { LogOut, LayoutDashboard, MapPin, Users, ClipboardList, FileText, BarChart3 } from 'lucide-react'
+import { LogOut, LayoutDashboard, MapPin, Users, ClipboardList, FileText, BarChart3, Ticket } from 'lucide-react'
 import { logoutAction } from '@/actions/auth'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -26,6 +26,11 @@ const navItems = [
         label: 'Laporan',
         href: '/admin/laporan',
         icon: FileText,
+    },
+    {
+        label: 'Tiket',
+        href: '/admin/tiket',
+        icon: Ticket,
     },
     {
         label: 'Destinasi',
