@@ -64,6 +64,41 @@ export interface Country {
 }
 
 /**
+ * Atraksi per Destinasi
+ */
+export interface Attraction {
+    id: string
+    destination_id: string
+    name: string
+    price: number
+    requires_ticket_block: boolean
+    is_active: boolean
+    sort_order: number
+    created_at: string
+    updated_at: string
+}
+
+/**
+ * Attraction with destination relation
+ */
+export interface AttractionWithDestination extends Attraction {
+    destination: Destination
+}
+
+/**
+ * Laporan Atraksi (per atraksi per laporan)
+ */
+export interface AttractionReport {
+    id: string
+    report_id: string
+    attraction_id: string
+    visitor_count: number
+    ticket_blocks: any[]
+    revenue: number
+    created_at: string
+}
+
+/**
  * WNA Countries breakdown (JSONB)
  * Key: country code, Value: count
  */
