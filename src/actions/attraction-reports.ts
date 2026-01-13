@@ -103,6 +103,6 @@ export async function saveAllAttractionReports(
         return { success: true, data: null }
     } catch (error: any) {
         console.error('Save all attraction reports error:', error)
-        return { success: false, error: error?.message || 'Gagal menyimpan data atraksi' }
+        return { success: false, error: `Gagal menyimpan data atraksi: ${error?.message || JSON.stringify(error)}` }
     }
 }

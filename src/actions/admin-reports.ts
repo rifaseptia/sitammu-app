@@ -171,9 +171,9 @@ export async function editReportWithLog(
             data: updatedReport,
             message: `Laporan berhasil diperbarui (${Object.keys(changes).length} field diubah)`
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error('editReportWithLog error:', error)
-        return { success: false, error: 'Gagal memperbarui laporan' }
+        return { success: false, error: `Gagal memperbarui laporan: ${error?.message || JSON.stringify(error)}` }
     }
 }
 
