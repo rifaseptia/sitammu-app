@@ -173,6 +173,8 @@ export default function AdminLaporanPage() {
 
         // Load attractions for this destination
         const attResult = await getAttractionsByDestination(report.destination_id)
+        console.log('[Edit] Attractions for destination:', report.destination_id, attResult)
+
         if (attResult.success && attResult.data) {
             setEditAttractions(attResult.data)
             // Initialize empty attraction data
@@ -183,12 +185,18 @@ export default function AdminLaporanPage() {
 
             // Load existing attraction reports
             const attReportResult = await getAttractionReports(report.id)
+            console.log('[Edit] Attraction reports for report:', report.id, attReportResult)
+
             if (attReportResult.success && attReportResult.data) {
+                console.log('[Edit] Converting attraction reports:', attReportResult.data)
                 attReportResult.data.forEach(ar => {
-                    initialData[ar.attraction_id] = dbToAttractionData(ar)
+                    const converted = dbToAttractionData(ar)
+                    console.log('[Edit] Converted:', ar.attraction_id, converted)
+                    initialData[ar.attraction_id] = converted
                 })
             }
 
+            console.log('[Edit] Final initialData:', initialData)
             setEditAttractionData(initialData)
         } else {
             setEditAttractions([])
