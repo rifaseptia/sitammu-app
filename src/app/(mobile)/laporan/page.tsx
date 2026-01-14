@@ -208,6 +208,92 @@ export default function LaporanPage() {
                 </CardContent>
             </Card>
 
+            {/* Ticket Block Details */}
+            {((report as any).ticket_blocks?.length > 0 || attractionReportsForWA.length > 0) && (
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base">🎟️ Rincian Tiket</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {/* Regular Ticket Blocks */}
+                        {(() => {
+                            const ticketBlocks = (report as any).ticket_blocks as Array<{
+                                category: string
+                                block_no: string
+                                start_no: string
+                                end_no: string
+                                count: number
+                            }> || []
+
+                            const anakBlocks = ticketBlocks.filter(b => b.category === 'anak')
+                            const dewasaBlocks = ticketBlocks.filter(b => b.category === 'dewasa')
+                            const wnaBlocks = ticketBlocks.filter(b => b.category === 'wna')
+
+                            return (
+                                <>
+                                    {anakBlocks.length > 0 && (
+                                        <div>
+                                            <p className="font-semibold text-gray-700 mb-2">Tiket Anak</p>
+                                            <div className="space-y-1 ml-3">
+                                                {anakBlocks.map((b, i) => (
+                                                    <p key={i} className="text-sm text-gray-600">
+                                                        Blok {b.block_no}: {b.start_no} - {b.end_no} <span className="text-gray-500">({b.count} tiket)</span>
+                                                    </p>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {dewasaBlocks.length > 0 && (
+                                        <div>
+                                            <p className="font-semibold text-gray-700 mb-2">Tiket Dewasa</p>
+                                            <div className="space-y-1 ml-3">
+                                                {dewasaBlocks.map((b, i) => (
+                                                    <p key={i} className="text-sm text-gray-600">
+                                                        Blok {b.block_no}: {b.start_no} - {b.end_no} <span className="text-gray-500">({b.count} tiket)</span>
+                                                    </p>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {wnaBlocks.length > 0 && (
+                                        <div>
+                                            <p className="font-semibold text-gray-700 mb-2">Tiket WNA</p>
+                                            <div className="space-y-1 ml-3">
+                                                {wnaBlocks.map((b, i) => (
+                                                    <p key={i} className="text-sm text-gray-600">
+                                                        Blok {b.block_no}: {b.start_no} - {b.end_no} <span className="text-gray-500">({b.count} tiket)</span>
+                                                    </p>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            )
+                        })()}
+
+                        {/* Attraction/Toilet Ticket Blocks */}
+                        {attractionReportsForWA.map((att, idx) => (
+                            <div key={idx}>
+                                <p className="font-semibold text-gray-700 mb-2">{att.attraction_name}</p>
+                                {att.ticket_blocks && att.ticket_blocks.length > 0 ? (
+                                    <div className="space-y-1 ml-3">
+                                        {att.ticket_blocks.map((b, i) => (
+                                            <p key={i} className="text-sm text-gray-600">
+                                                Blok {b.block_no}: {b.start_no} - {b.end_no} <span className="text-gray-500">({b.count} tiket)</span>
+                                            </p>
+                                        ))}
+                                    </div>
+                                ) : att.visitor_count > 0 ? (
+                                    <p className="text-sm text-gray-600 ml-3">{att.visitor_count} pengunjung</p>
+                                ) : null}
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
+            )}
+
             {/* Payment Breakdown */}
             <Card>
                 <CardHeader className="pb-3">
