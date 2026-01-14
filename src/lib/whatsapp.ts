@@ -73,10 +73,6 @@ export function generateWhatsAppMessage(
     lines.push(`*Total Pengunjung: ${formatNumber(report.total_visitors)} orang*`)
     lines.push('')
 
-    // Separator
-    lines.push('━━━━━━━━━━━━━━━━━━━━')
-    lines.push('')
-
     // Ticket blocks
     const ticketBlocks = (report as any).ticket_blocks as Array<{
         category: string
@@ -153,18 +149,18 @@ export function generateWhatsAppMessage(
     lines.push('*RINGKASAN PENDAPATAN*')
 
     // Revenue Summary
-    lines.push('*PENDAPATAN*')
     lines.push(`• Anak-anak: ${formatRupiah(report.anak_revenue)}`)
     lines.push(`• Dewasa: ${formatRupiah(report.dewasa_revenue)}`)
     lines.push(`• WNA: ${formatRupiah(report.wna_revenue)}`)
+    lines.push('')
 
     // Payment breakdown
     lines.push('*PEMBAYARAN*')
     lines.push(`• Cash: ${formatRupiah(report.cash_amount)}`)
     lines.push(`• QRIS: ${formatRupiah(report.qris_amount)}`)
+    lines.push(`*Pendapatan: ${formatRupiah(report.total_revenue)}*`)
     lines.push('')
-    lines.push(`*Total Pendapatan: ${formatRupiah(report.total_revenue)}*`)
-    lines.push('')
+
 
     // Total tiket masuk = anak + dewasa + wna revenue
     const totalTiketMasuk = report.anak_revenue + report.dewasa_revenue + report.wna_revenue
@@ -190,6 +186,7 @@ export function generateWhatsAppMessage(
     }
 
     lines.push('')
+
     lines.push(`*Grand Total: ${formatRupiah(report.total_revenue)}*`)
     lines.push('')
 
