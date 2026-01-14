@@ -77,15 +77,6 @@ export function generateWhatsAppMessage(
     lines.push('━━━━━━━━━━━━━━━━━━━━')
     lines.push('')
 
-    // Revenue Summary
-    lines.push('*PENDAPATAN*')
-    lines.push(`• Anak-anak: ${formatRupiah(report.anak_revenue)}`)
-    lines.push(`• Dewasa: ${formatRupiah(report.dewasa_revenue)}`)
-    lines.push(`• WNA: ${formatRupiah(report.wna_revenue)}`)
-    lines.push('')
-    lines.push(`*Total Pendapatan: ${formatRupiah(report.total_revenue)}*`)
-    lines.push('')
-
     // Ticket blocks
     const ticketBlocks = (report as any).ticket_blocks as Array<{
         category: string
@@ -147,13 +138,6 @@ export function generateWhatsAppMessage(
         lines.push('')
     }
 
-    // Payment breakdown
-    lines.push('*PEMBAYARAN*')
-    lines.push(`• Cash: ${formatRupiah(report.cash_amount)}`)
-    lines.push(`• QRIS: ${formatRupiah(report.qris_amount)}`)
-    lines.push('')
-
-
     // Notes
     if (report.notes) {
         lines.push('━━━━━━━━━━━━━━━━━━━━')
@@ -167,6 +151,20 @@ export function generateWhatsAppMessage(
     lines.push('━━━━━━━━━━━━━━━━━━━━')
     lines.push('')
     lines.push('*RINGKASAN PENDAPATAN*')
+
+    // Revenue Summary
+    lines.push('*PENDAPATAN*')
+    lines.push(`• Anak-anak: ${formatRupiah(report.anak_revenue)}`)
+    lines.push(`• Dewasa: ${formatRupiah(report.dewasa_revenue)}`)
+    lines.push(`• WNA: ${formatRupiah(report.wna_revenue)}`)
+
+    // Payment breakdown
+    lines.push('*PEMBAYARAN*')
+    lines.push(`• Cash: ${formatRupiah(report.cash_amount)}`)
+    lines.push(`• QRIS: ${formatRupiah(report.qris_amount)}`)
+    lines.push('')
+    lines.push(`*Total Pendapatan: ${formatRupiah(report.total_revenue)}*`)
+    lines.push('')
 
     // Total tiket masuk = anak + dewasa + wna revenue
     const totalTiketMasuk = report.anak_revenue + report.dewasa_revenue + report.wna_revenue
@@ -197,7 +195,7 @@ export function generateWhatsAppMessage(
 
     // Footer
     lines.push('━━━━━━━━━━━━━━━━━━━━')
-    lines.push('_Dikirim via SITAMMU_')
+    lines.push('_Dikirim via SITAMMU APP_')
 
     return lines.join('\n')
 }
