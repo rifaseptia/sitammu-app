@@ -173,8 +173,6 @@ export default function AdminLaporanPage() {
 
         // Load attractions for this destination
         const attResult = await getAttractionsByDestination(report.destination_id)
-        console.log('[Edit] Attractions for destination:', report.destination_id, attResult)
-
         if (attResult.success && attResult.data) {
             setEditAttractions(attResult.data)
             // Initialize empty attraction data
@@ -185,18 +183,15 @@ export default function AdminLaporanPage() {
 
             // Load existing attraction reports
             const attReportResult = await getAttractionReports(report.id)
-            console.log('[Edit] Attraction reports for report:', report.id, attReportResult)
-
             if (attReportResult.success && attReportResult.data) {
-                console.log('[Edit] Converting attraction reports:', attReportResult.data)
                 attReportResult.data.forEach(ar => {
-                    const converted = dbToAttractionData(ar)
-                    console.log('[Edit] Converted:', ar.attraction_id, converted)
-                    initialData[ar.attraction_id] = converted
+                    initialData[ar.attraction_id] = dbToAttractionData(ar)
                 })
+            } else if (!attReportResult.success) {
+                console.error('Failed to load attraction reports:', attReportResult.error)
+                toast.error('Gagal memuat detail atraksi: ' + attReportResult.error)
             }
 
-            console.log('[Edit] Final initialData:', initialData)
             setEditAttractionData(initialData)
         } else {
             setEditAttractions([])
@@ -256,14 +251,24 @@ export default function AdminLaporanPage() {
         if (result.success) {
             // Save attraction reports
             if (editAttractions.length > 0) {
-                const attData = editAttractions.map(att =>
-                    attractionDataToDbFormat(
-                        editAttractionData[att.id] || createEmptyAttractionData(att.id),
-                        att.price
-                    )
-                ).filter(d => d.visitor_count > 0)
+                const attData = editAttractions.map(att => {
+                    const inputData = editAttractionData[att.id] || createEmptyAttractionData(att.id)
+                    const dbFormat = attractionDataToDbFormat(inputData, att.price)
+                    console.log('[Save] Attraction data for', att.name, ':', { inputData, dbFormat })
+                    return dbFormat
+                }).filter(d => d.visitor_count > 0 || d.ticket_blocks.length > 0)
 
-                await saveAllAttractionReports(editingReport.id, attData)
+                console.log('[Save] Final attraction data to save:', attData)
+
+                if (attData.length > 0) {
+                    const attResult = await saveAllAttractionReports(editingReport.id, attData)
+                    console.log('[Save] Attraction reports save result:', attResult)
+                    if (!attResult.success) {
+                        toast.error('Gagal menyimpan data atraksi: ' + attResult.error)
+                    }
+                } else {
+                    console.log('[Save] No attraction data to save (all empty)')
+                }
             }
 
             toast.success(result.message || 'Laporan berhasil diperbarui')
@@ -563,7 +568,8 @@ export default function AdminLaporanPage() {
                                         <th className="text-right py-3 px-3 font-medium">Dewasa</th>
                                         <th className="text-right py-3 px-3 font-medium">WNA</th>
                                         <th className="text-right py-3 px-3 font-medium">Total</th>
-                                        <th className="text-right py-3 px-3 font-medium">Pendapatan</th>
+                                        <th className="text-right py-3 px-3 font-medium">Pend. Atraksi</th>
+                                        <th className="text-right py-3 px-3 font-medium">Total Pendapatan</th>
                                         <th className="text-center py-3 px-3 font-medium">Aksi</th>
                                     </tr>
                                 </thead>
@@ -586,6 +592,7 @@ export default function AdminLaporanPage() {
                                             <td className="py-3 px-3 text-right">{report.dewasa_count}</td>
                                             <td className="py-3 px-3 text-right">{report.wna_count}</td>
                                             <td className="py-3 px-3 text-right font-semibold">{report.total_visitors}</td>
+                                            <td className="py-3 px-3 text-right text-blue-600">{formatRupiah(report.attraction_revenue || 0)}</td>
                                             <td className="py-3 px-3 text-right text-green-600 font-semibold">{formatRupiah(report.total_revenue)}</td>
                                             <td className="py-3 px-3 text-center">
                                                 <div className="flex items-center justify-center gap-1">
