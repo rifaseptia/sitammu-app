@@ -134,15 +134,6 @@ export function generateWhatsAppMessage(
         lines.push('')
     }
 
-    // Notes
-    if (report.notes) {
-        lines.push('━━━━━━━━━━━━━━━━━━━━')
-        lines.push('')
-        lines.push('*CATATAN*')
-        lines.push(report.notes)
-        lines.push('')
-    }
-
     // Revenue Breakdown Summary (NEW)
     lines.push('━━━━━━━━━━━━━━━━━━━━')
     lines.push('')
@@ -158,7 +149,7 @@ export function generateWhatsAppMessage(
     lines.push('*PEMBAYARAN*')
     lines.push(`• Cash: ${formatRupiah(report.cash_amount)}`)
     lines.push(`• QRIS: ${formatRupiah(report.qris_amount)}`)
-    lines.push(`*Pendapatan: ${formatRupiah(report.total_revenue)}*`)
+    // lines.push(`*Pendapatan: ${formatRupiah(report.total_revenue)}*`)
     lines.push('')
 
 
@@ -189,6 +180,16 @@ export function generateWhatsAppMessage(
 
     lines.push(`*Grand Total: ${formatRupiah(report.total_revenue)}*`)
     lines.push('')
+
+    // Notes
+    if (report.notes) {
+        lines.push('━━━━━━━━━━━━━━━━━━━━')
+        lines.push('')
+        lines.push('*CATATAN*')
+        lines.push(report.notes)
+        lines.push('')
+    }
+
 
     // Footer
     lines.push('━━━━━━━━━━━━━━━━━━━━')
