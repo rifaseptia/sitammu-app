@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth-guard'
 import type { ApiResponse } from '@/types'
 
@@ -27,7 +27,7 @@ export async function getTicketUsage(adminUserId: string): Promise<ApiResponse<T
             return { success: false, error: auth.error }
         }
 
-        const supabase = await createClient()
+        const supabase = createAdminClient()
         const ticketUsage: TicketUsageItem[] = []
 
         // 1. Fetch MAIN reports (Tiket Masuk)

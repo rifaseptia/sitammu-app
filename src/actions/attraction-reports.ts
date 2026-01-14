@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { requireAuth } from '@/lib/auth-guard'
 import type { ApiResponse, AttractionReport } from '@/types'
 
@@ -44,7 +44,7 @@ export async function saveAttractionReport(input: {
             return { success: false, error: auth.error }
         }
 
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('attraction_reports')
@@ -89,7 +89,7 @@ export async function saveAllAttractionReports(
             return { success: false, error: auth.error }
         }
 
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         // Prepare data with report_id
         const records = attractionData.map(item => ({
