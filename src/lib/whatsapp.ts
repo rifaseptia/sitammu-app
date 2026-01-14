@@ -36,7 +36,7 @@ export function generateWhatsAppMessage(
     const lines: string[] = []
 
     // Header
-    lines.push(`*LAPORAN HARIAN SITAMMU APPS*`)
+    lines.push(`*LAPORAN HARIAN RETRIBUSI DESTINASI WISATA*`)
     lines.push(`${destination.name}`)
     lines.push(`Tanggal: ${formatDate(report.report_date, 'dd MMMM yyyy')}`)
     lines.push('')
@@ -84,12 +84,6 @@ export function generateWhatsAppMessage(
     lines.push(`• WNA: ${formatRupiah(report.wna_revenue)}`)
     lines.push('')
     lines.push(`*Total Pendapatan: ${formatRupiah(report.total_revenue)}*`)
-    lines.push('')
-
-    // Payment breakdown
-    lines.push('*PEMBAYARAN*')
-    lines.push(`• Cash: ${formatRupiah(report.cash_amount)}`)
-    lines.push(`• QRIS: ${formatRupiah(report.qris_amount)}`)
     lines.push('')
 
     // Ticket blocks
@@ -152,6 +146,13 @@ export function generateWhatsAppMessage(
         })
         lines.push('')
     }
+
+    // Payment breakdown
+    lines.push('*PEMBAYARAN*')
+    lines.push(`• Cash: ${formatRupiah(report.cash_amount)}`)
+    lines.push(`• QRIS: ${formatRupiah(report.qris_amount)}`)
+    lines.push('')
+
 
     // Notes
     if (report.notes) {
