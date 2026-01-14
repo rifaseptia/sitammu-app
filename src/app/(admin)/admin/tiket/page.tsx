@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Ticket, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
 import { getTicketUsage, type TicketUsageItem } from '@/actions/admin-tickets'
+import { useAuthStore } from '@/lib/stores/auth-store'
 import { formatDateShort } from '@/lib/utils'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -23,6 +24,7 @@ type SortField = 'block_no' | 'report_date' | 'destination_name'
 type SortDirection = 'asc' | 'desc'
 
 export default function AdminTiketPage() {
+    const { user } = useAuthStore()
     const [tickets, setTickets] = React.useState<TicketUsageItem[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
     const [sortField, setSortField] = React.useState<SortField>('report_date')
@@ -30,14 +32,18 @@ export default function AdminTiketPage() {
 
     React.useEffect(() => {
         async function load() {
-            const result = await getTicketUsage()
+            if (!user?.id) {
+                setIsLoading(false)
+                return
+            }
+            const result = await getTicketUsage(user.id)
             if (result.success && result.data) {
                 setTickets(result.data)
             }
             setIsLoading(false)
         }
         load()
-    }, [])
+    }, [user?.id])
 
     const handleSort = (field: SortField) => {
         if (sortField === field) {

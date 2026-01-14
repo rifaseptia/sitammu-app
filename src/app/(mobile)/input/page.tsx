@@ -287,7 +287,7 @@ export default function InputPage() {
                     ).filter(d => d.visitor_count > 0)
 
                     if (attData.length > 0) {
-                        await saveAllAttractionReports(result.data.id, attData)
+                        await saveAllAttractionReports(result.data.id, attData, user!.id)
                     }
                 }
             }

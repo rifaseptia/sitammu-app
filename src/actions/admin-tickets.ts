@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth-guard'
 import type { ApiResponse } from '@/types'
 
 export interface TicketUsageItem {
@@ -18,8 +19,14 @@ export interface TicketUsageItem {
 /**
  * Get all ticket usage from all reports (including attractions)
  */
-export async function getTicketUsage(): Promise<ApiResponse<TicketUsageItem[]>> {
+export async function getTicketUsage(adminUserId: string): Promise<ApiResponse<TicketUsageItem[]>> {
     try {
+        // Validate admin access
+        const auth = await requireAdmin(adminUserId)
+        if (!auth.success) {
+            return { success: false, error: auth.error }
+        }
+
         const supabase = await createClient()
         const ticketUsage: TicketUsageItem[] = []
 

@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { requireAuth } from '@/lib/auth-guard'
 import type { ApiResponse, AttractionReport } from '@/types'
 
 /**
@@ -35,8 +36,14 @@ export async function saveAttractionReport(input: {
     visitor_count: number
     ticket_blocks: any[]
     revenue: number
-}): Promise<ApiResponse<AttractionReport>> {
+}, userId: string): Promise<ApiResponse<AttractionReport>> {
     try {
+        // Validate user
+        const auth = await requireAuth(userId)
+        if (!auth.success) {
+            return { success: false, error: auth.error }
+        }
+
         const supabase = await createClient()
 
         const { data, error } = await supabase
@@ -72,9 +79,16 @@ export async function saveAllAttractionReports(
         visitor_count: number
         ticket_blocks: any[]
         revenue: number
-    }>
+    }>,
+    userId: string
 ): Promise<ApiResponse<null>> {
     try {
+        // Validate user
+        const auth = await requireAuth(userId)
+        if (!auth.success) {
+            return { success: false, error: auth.error }
+        }
+
         const supabase = await createClient()
 
         // Prepare data with report_id

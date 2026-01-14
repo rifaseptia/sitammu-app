@@ -282,7 +282,7 @@ export default function AdminLaporanPage() {
                 console.log('[Save] Final attraction data to save:', attData)
 
                 if (attData.length > 0) {
-                    const attResult = await saveAllAttractionReports(editingReport.id, attData)
+                    const attResult = await saveAllAttractionReports(editingReport.id, attData, user!.id)
                     console.log('[Save] Attraction reports save result:', attResult)
                     if (!attResult.success) {
                         toast.error('Gagal menyimpan data atraksi: ' + attResult.error)
@@ -362,7 +362,7 @@ export default function AdminLaporanPage() {
                     ).filter(d => d.visitor_count > 0)
 
                     if (attData.length > 0) {
-                        await saveAllAttractionReports(result.data.id, attData)
+                        await saveAllAttractionReports(result.data.id, attData, user!.id)
                     }
                 }
 
