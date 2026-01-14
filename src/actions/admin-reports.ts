@@ -273,6 +273,7 @@ export async function createManualReport(data: {
                 anak_revenue,
                 dewasa_revenue,
                 wna_revenue,
+                attraction_revenue: data.attraction_revenue || 0,
                 cash_amount: data.cash_amount,
                 qris_amount: data.qris_amount,
                 ticket_blocks: data.ticket_blocks || [],
