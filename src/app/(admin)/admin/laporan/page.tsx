@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/select'
 import { TicketBlockInput, createEmptyTicketBlockData, ticketBlockDataToArray, arrayToTicketBlockData, calculateCount, type TicketBlockData } from '@/components/mobile/ticket-block-input'
 import { AttractionInput, createEmptyAttractionData, attractionDataToDbFormat, dbToAttractionData, type AttractionInputData } from '@/components/mobile/attraction-input'
+import { PaginationControls, usePagination } from '@/components/pagination-controls'
 
 import type { DailyReport, Destination, ReportEditLogWithUser, Attraction } from '@/types'
 
@@ -103,6 +104,21 @@ export default function AdminLaporanPage() {
     const [deleteReportId, setDeleteReportId] = React.useState<string | null>(null)
     const [deleteReason, setDeleteReason] = React.useState('')
     const [isDeleting, setIsDeleting] = React.useState(false)
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = React.useState(1)
+    const [itemsPerPage, setItemsPerPage] = React.useState(10)
+
+    // Calculate paginated reports
+    const paginatedReports = React.useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage
+        return reports.slice(start, start + itemsPerPage)
+    }, [reports, currentPage, itemsPerPage])
+
+    // Reset page when filter changes
+    React.useEffect(() => {
+        setCurrentPage(1)
+    }, [filterDestination, filterStatus])
 
     const loadData = async () => {
         const [reportsResult, destResult] = await Promise.all([
@@ -553,81 +569,92 @@ export default function AdminLaporanPage() {
                 <CardHeader>
                     <CardTitle>Daftar Laporan ({reports.length})</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                     {reports.length === 0 ? (
-                        <p className="text-center py-8 text-gray-500">Tidak ada laporan</p>
+                        <p className="text-center py-8 text-gray-500 px-6">Tidak ada laporan</p>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b bg-gray-50">
-                                        <th className="text-left py-3 px-3 font-medium">Tanggal</th>
-                                        <th className="text-left py-3 px-3 font-medium">Destinasi</th>
-                                        <th className="text-center py-3 px-3 font-medium">Status</th>
-                                        <th className="text-right py-3 px-3 font-medium">Anak</th>
-                                        <th className="text-right py-3 px-3 font-medium">Dewasa</th>
-                                        <th className="text-right py-3 px-3 font-medium">WNA</th>
-                                        <th className="text-right py-3 px-3 font-medium">Total</th>
-                                        <th className="text-right py-3 px-3 font-medium">Pend. Atraksi</th>
-                                        <th className="text-right py-3 px-3 font-medium">Total Pendapatan</th>
-                                        <th className="text-center py-3 px-3 font-medium">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {reports.map((report) => (
-                                        <tr key={report.id} className="border-b hover:bg-gray-50">
-                                            <td className="py-3 px-3 font-medium">{formatDate(report.report_date)}</td>
-                                            <td className="py-3 px-3">{report.destination?.name}</td>
-                                            <td className="py-3 px-3 text-center">
-                                                <Badge className={cn(
-                                                    'text-xs',
-                                                    report.status === 'submitted'
-                                                        ? 'bg-green-100 text-green-700'
-                                                        : 'bg-yellow-100 text-yellow-700'
-                                                )}>
-                                                    {report.status === 'submitted' ? 'Submitted' : 'Draft'}
-                                                </Badge>
-                                            </td>
-                                            <td className="py-3 px-3 text-right">{report.anak_count}</td>
-                                            <td className="py-3 px-3 text-right">{report.dewasa_count}</td>
-                                            <td className="py-3 px-3 text-right">{report.wna_count}</td>
-                                            <td className="py-3 px-3 text-right font-semibold">{report.total_visitors}</td>
-                                            <td className="py-3 px-3 text-right text-blue-600">{formatRupiah(report.attraction_revenue || 0)}</td>
-                                            <td className="py-3 px-3 text-right text-green-600 font-semibold">{formatRupiah(report.total_revenue)}</td>
-                                            <td className="py-3 px-3 text-center">
-                                                <div className="flex items-center justify-center gap-1">
-                                                    <Button
-                                                        size="icon"
-                                                        variant="ghost"
-                                                        onClick={() => handleViewHistory(report.id)}
-                                                        title="Riwayat Edit"
-                                                    >
-                                                        <History className="w-4 h-4" />
-                                                    </Button>
-                                                    <Button
-                                                        size="icon"
-                                                        variant="ghost"
-                                                        onClick={() => handleEdit(report)}
-                                                        title="Edit"
-                                                    >
-                                                        <Pencil className="w-4 h-4" />
-                                                    </Button>
-                                                    <Button
-                                                        size="icon"
-                                                        variant="ghost"
-                                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                        onClick={() => setDeleteReportId(report.id)}
-                                                        title="Hapus"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </Button>
-                                                </div>
-                                            </td>
+                        <>
+                            <div className="overflow-x-auto px-6 pt-4">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="border-b bg-gray-50">
+                                            <th className="text-left py-3 px-3 font-medium">Tanggal</th>
+                                            <th className="text-left py-3 px-3 font-medium">Destinasi</th>
+                                            <th className="text-center py-3 px-3 font-medium">Status</th>
+                                            <th className="text-right py-3 px-3 font-medium">Anak</th>
+                                            <th className="text-right py-3 px-3 font-medium">Dewasa</th>
+                                            <th className="text-right py-3 px-3 font-medium">WNA</th>
+                                            <th className="text-right py-3 px-3 font-medium">Total</th>
+                                            <th className="text-right py-3 px-3 font-medium">Pend. Atraksi</th>
+                                            <th className="text-right py-3 px-3 font-medium">Total Pendapatan</th>
+                                            <th className="text-center py-3 px-3 font-medium">Aksi</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        {paginatedReports.map((report) => (
+                                            <tr key={report.id} className="border-b hover:bg-gray-50">
+                                                <td className="py-3 px-3 font-medium">{formatDate(report.report_date)}</td>
+                                                <td className="py-3 px-3">{report.destination?.name}</td>
+                                                <td className="py-3 px-3 text-center">
+                                                    <Badge className={cn(
+                                                        'text-xs',
+                                                        report.status === 'submitted'
+                                                            ? 'bg-green-100 text-green-700'
+                                                            : 'bg-yellow-100 text-yellow-700'
+                                                    )}>
+                                                        {report.status === 'submitted' ? 'Submitted' : 'Draft'}
+                                                    </Badge>
+                                                </td>
+                                                <td className="py-3 px-3 text-right">{report.anak_count}</td>
+                                                <td className="py-3 px-3 text-right">{report.dewasa_count}</td>
+                                                <td className="py-3 px-3 text-right">{report.wna_count}</td>
+                                                <td className="py-3 px-3 text-right font-semibold">{report.total_visitors}</td>
+                                                <td className="py-3 px-3 text-right text-blue-600">{formatRupiah(report.attraction_revenue || 0)}</td>
+                                                <td className="py-3 px-3 text-right text-green-600 font-semibold">{formatRupiah(report.total_revenue)}</td>
+                                                <td className="py-3 px-3 text-center">
+                                                    <div className="flex items-center justify-center gap-1">
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            onClick={() => handleViewHistory(report.id)}
+                                                            title="Riwayat Edit"
+                                                        >
+                                                            <History className="w-4 h-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            onClick={() => handleEdit(report)}
+                                                            title="Edit"
+                                                        >
+                                                            <Pencil className="w-4 h-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                            onClick={() => setDeleteReportId(report.id)}
+                                                            title="Hapus"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Pagination Controls */}
+                            <PaginationControls
+                                currentPage={currentPage}
+                                totalItems={reports.length}
+                                itemsPerPage={itemsPerPage}
+                                onPageChange={setCurrentPage}
+                                onItemsPerPageChange={setItemsPerPage}
+                            />
+                        </>
                     )}
                 </CardContent>
             </Card>

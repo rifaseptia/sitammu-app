@@ -17,6 +17,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
+import { PaginationControls, usePagination } from '@/components/pagination-controls'
 
 type SortField = 'block_no' | 'report_date' | 'destination_name'
 type SortDirection = 'asc' | 'desc'
@@ -63,6 +64,16 @@ export default function AdminTiketPage() {
             return 0
         })
     }, [tickets, sortField, sortDirection])
+
+    // Pagination
+    const {
+        paginatedItems: paginatedTickets,
+        currentPage,
+        setCurrentPage,
+        itemsPerPage,
+        setItemsPerPage,
+        totalItems,
+    } = usePagination(sortedTickets, 10)
 
     const SortIcon = ({ field }: { field: SortField }) => {
         if (sortField !== field) return <ArrowUpDown className="w-4 h-4 ml-1 opacity-50" />
@@ -149,14 +160,14 @@ export default function AdminTiketPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {sortedTickets.length === 0 ? (
+                            {paginatedTickets.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={7} className="text-center py-12 text-gray-500">
                                         Belum ada data penggunaan tiket
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                sortedTickets.map((ticket) => (
+                                paginatedTickets.map((ticket) => (
                                     <TableRow key={ticket.id}>
                                         <TableCell>
                                             <Badge className={getCategoryColor(ticket.category)}>
@@ -186,6 +197,15 @@ export default function AdminTiketPage() {
                             )}
                         </TableBody>
                     </Table>
+
+                    {/* Pagination */}
+                    <PaginationControls
+                        currentPage={currentPage}
+                        totalItems={totalItems}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={setCurrentPage}
+                        onItemsPerPageChange={setItemsPerPage}
+                    />
                 </CardContent>
             </Card>
         </div>
