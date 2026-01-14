@@ -19,7 +19,12 @@ function getCountryName(code: string): string {
  */
 export function generateWhatsAppMessage(
     report: DailyReport,
-    destination: Destination
+    destination: Destination,
+    attractionReports?: Array<{
+        attraction_name: string
+        revenue: number
+        is_toilet?: boolean
+    }>
 ): string {
     const lines: string[] = []
 
@@ -129,6 +134,38 @@ export function generateWhatsAppMessage(
         lines.push(report.notes)
         lines.push('')
     }
+
+    // Revenue Breakdown Summary (NEW)
+    lines.push('━━━━━━━━━━━━━━━━━━━━')
+    lines.push('')
+    lines.push('*RINGKASAN PENDAPATAN*')
+
+    // Total tiket masuk = anak + dewasa + wna revenue
+    const totalTiketMasuk = report.anak_revenue + report.dewasa_revenue + report.wna_revenue
+    lines.push(`• Total Tiket Masuk: ${formatRupiah(totalTiketMasuk)}`)
+
+    // Calculate attraction and toilet totals from attractionReports if provided
+    if (attractionReports && attractionReports.length > 0) {
+        const toiletReports = attractionReports.filter(a => a.is_toilet || a.attraction_name.toLowerCase().includes('toilet'))
+        const atraksiReports = attractionReports.filter(a => !a.is_toilet && !a.attraction_name.toLowerCase().includes('toilet'))
+
+        const totalAtraksi = atraksiReports.reduce((sum, a) => sum + a.revenue, 0)
+        const totalToilet = toiletReports.reduce((sum, a) => sum + a.revenue, 0)
+
+        if (totalAtraksi > 0) {
+            lines.push(`• Total Tiket Atraksi: ${formatRupiah(totalAtraksi)}`)
+        }
+        if (totalToilet > 0) {
+            lines.push(`• Total Tiket Toilet: ${formatRupiah(totalToilet)}`)
+        }
+    } else if ((report as any).attraction_revenue && (report as any).attraction_revenue > 0) {
+        // Fallback: use attraction_revenue from report if no detailed breakdown
+        lines.push(`• Total Atraksi/Toilet: ${formatRupiah((report as any).attraction_revenue)}`)
+    }
+
+    lines.push('')
+    lines.push(`*Grand Total: ${formatRupiah(report.total_revenue)}*`)
+    lines.push('')
 
     // Footer
     lines.push('━━━━━━━━━━━━━━━━━━━━')

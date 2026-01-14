@@ -7,16 +7,18 @@ import { toast } from 'sonner'
 
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { getTodayReport, getReportByDate } from '@/actions/reports'
+import { getAttractionReports } from '@/actions/attraction-reports'
 import { formatDate, formatRupiah, formatTime, cn, getTodayDateString } from '@/lib/utils'
 import { POPULAR_COUNTRIES } from '@/lib/constants'
 import { generateWhatsAppMessage, shareToWhatsApp, copyToClipboard } from '@/lib/whatsapp'
+import { getAttractionsByDestination } from '@/actions/admin-attractions'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 
-import type { DailyReport, Destination } from '@/types'
+import type { DailyReport, Destination, AttractionReport } from '@/types'
 
 export default function LaporanPage() {
     const router = useRouter()
@@ -29,6 +31,11 @@ export default function LaporanPage() {
 
     const [report, setReport] = React.useState<DailyReport | null>(null)
     const [isLoading, setIsLoading] = React.useState(true)
+    const [attractionReportsForWA, setAttractionReportsForWA] = React.useState<Array<{
+        attraction_name: string
+        revenue: number
+        is_toilet?: boolean
+    }>>([])
 
     React.useEffect(() => {
         async function load() {
@@ -39,8 +46,32 @@ export default function LaporanPage() {
                 ? await getTodayReport(user.destination_id)
                 : await getReportByDate(user.destination_id, reportDate)
 
-            if (result.success) {
-                setReport(result.data ?? null)
+            if (result.success && result.data) {
+                setReport(result.data)
+
+                // Fetch attraction reports for WhatsApp breakdown
+                const attResult = await getAttractionReports(result.data.id)
+                if (attResult.success && attResult.data && attResult.data.length > 0) {
+                    // Get attraction names
+                    const attractionsResult = await getAttractionsByDestination(user.destination_id)
+                    const attractionMap = new Map(
+                        attractionsResult.success && attractionsResult.data
+                            ? attractionsResult.data.map(a => [a.id, a])
+                            : []
+                    )
+
+                    const waReports = attResult.data.map((ar: AttractionReport) => {
+                        const attraction = attractionMap.get(ar.attraction_id)
+                        return {
+                            attraction_name: attraction?.name || 'Unknown',
+                            revenue: ar.revenue,
+                            is_toilet: attraction?.name.toLowerCase().includes('toilet')
+                        }
+                    })
+                    setAttractionReportsForWA(waReports)
+                }
+            } else {
+                setReport(null)
             }
             setIsLoading(false)
         }
@@ -225,7 +256,7 @@ export default function LaporanPage() {
                             variant="outline"
                             className="w-full"
                             onClick={() => {
-                                const message = generateWhatsAppMessage(report, user.destination as Destination)
+                                const message = generateWhatsAppMessage(report, user.destination as Destination, attractionReportsForWA)
                                 shareToWhatsApp(message)
                                 toast.success('Membuka WhatsApp...')
                             }}
@@ -237,7 +268,7 @@ export default function LaporanPage() {
                             variant="outline"
                             className="w-full"
                             onClick={async () => {
-                                const message = generateWhatsAppMessage(report, user.destination as Destination)
+                                const message = generateWhatsAppMessage(report, user.destination as Destination, attractionReportsForWA)
                                 const success = await copyToClipboard(message)
                                 if (success) {
                                     toast.success('Pesan berhasil disalin!')
