@@ -23,7 +23,14 @@ export function generateWhatsAppMessage(
     attractionReports?: Array<{
         attraction_name: string
         revenue: number
+        visitor_count: number
         is_toilet?: boolean
+        ticket_blocks?: Array<{
+            block_no: string
+            start_no: string
+            end_no: string
+            count: number
+        }>
     }>
 ): string {
     const lines: string[] = []
@@ -123,6 +130,26 @@ export function generateWhatsAppMessage(
                 lines.push(`  Blok ${b.block_no}: ${b.start_no} - ${b.end_no} (${b.count} tiket)`)
             })
         }
+        lines.push('')
+    }
+
+    // Attraction/Toilet Ticket Blocks
+    if (attractionReports && attractionReports.some(a => a.ticket_blocks && a.ticket_blocks.length > 0)) {
+        lines.push('━━━━━━━━━━━━━━━━━━━━')
+        lines.push('')
+        lines.push('*DATA TIKET ATRAKSI/TOILET*')
+
+        attractionReports.forEach(att => {
+            if (att.ticket_blocks && att.ticket_blocks.length > 0) {
+                lines.push(`• ${att.attraction_name}:`)
+                att.ticket_blocks.forEach(b => {
+                    lines.push(`  Blok ${b.block_no}: ${b.start_no} - ${b.end_no} (${b.count} tiket)`)
+                })
+            } else if (att.visitor_count > 0) {
+                // For non-ticket attractions like Toilet
+                lines.push(`• ${att.attraction_name}: ${formatNumber(att.visitor_count)} pengunjung`)
+            }
+        })
         lines.push('')
     }
 

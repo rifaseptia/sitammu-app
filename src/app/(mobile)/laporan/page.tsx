@@ -34,7 +34,14 @@ export default function LaporanPage() {
     const [attractionReportsForWA, setAttractionReportsForWA] = React.useState<Array<{
         attraction_name: string
         revenue: number
+        visitor_count: number
         is_toilet?: boolean
+        ticket_blocks?: Array<{
+            block_no: string
+            start_no: string
+            end_no: string
+            count: number
+        }>
     }>>([])
 
     React.useEffect(() => {
@@ -65,7 +72,14 @@ export default function LaporanPage() {
                         return {
                             attraction_name: attraction?.name || 'Unknown',
                             revenue: ar.revenue,
-                            is_toilet: attraction?.name.toLowerCase().includes('toilet')
+                            visitor_count: ar.visitor_count,
+                            is_toilet: attraction?.name.toLowerCase().includes('toilet'),
+                            ticket_blocks: ar.ticket_blocks as Array<{
+                                block_no: string
+                                start_no: string
+                                end_no: string
+                                count: number
+                            }> || []
                         }
                     })
                     setAttractionReportsForWA(waReports)
