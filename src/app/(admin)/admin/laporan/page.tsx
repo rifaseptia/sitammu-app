@@ -121,8 +121,13 @@ export default function AdminLaporanPage() {
     }, [filterDestination, filterStatus])
 
     const loadData = async () => {
+        if (!user?.id) {
+            setIsLoading(false)
+            return
+        }
+
         const [reportsResult, destResult] = await Promise.all([
-            getAllReports({
+            getAllReports(user.id, {
                 destinationId: filterDestination && filterDestination !== 'all' ? filterDestination : undefined,
                 status: filterStatus && filterStatus !== 'all' ? filterStatus as 'draft' | 'submitted' : undefined,
             }),

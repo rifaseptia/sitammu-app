@@ -1,18 +1,28 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth-guard'
 import type { DailyReport, ApiResponse, ReportEditLog, ReportEditLogWithUser } from '@/types'
 
 /**
  * Get all reports for admin view
  */
-export async function getAllReports(options?: {
-    dateFrom?: string
-    dateTo?: string
-    destinationId?: string
-    status?: 'draft' | 'submitted'
-}): Promise<ApiResponse<DailyReport[]>> {
+export async function getAllReports(
+    adminUserId: string,
+    options?: {
+        dateFrom?: string
+        dateTo?: string
+        destinationId?: string
+        status?: 'draft' | 'submitted'
+    }
+): Promise<ApiResponse<DailyReport[]>> {
     try {
+        // Validate admin access
+        const auth = await requireAdmin(adminUserId)
+        if (!auth.success) {
+            return { success: false, error: auth.error }
+        }
+
         const supabase = await createClient()
 
         let query = supabase
@@ -94,6 +104,12 @@ export async function editReportWithLog(
     reason?: string
 ): Promise<ApiResponse<DailyReport>> {
     try {
+        // Validate admin access
+        const auth = await requireAdmin(editorId)
+        if (!auth.success) {
+            return { success: false, error: auth.error }
+        }
+
         const supabase = await createClient()
 
         // 1. Get current report data
@@ -231,6 +247,12 @@ export async function createManualReport(data: {
     created_by: string
 }): Promise<ApiResponse<DailyReport>> {
     try {
+        // Validate admin access
+        const auth = await requireAdmin(data.created_by)
+        if (!auth.success) {
+            return { success: false, error: auth.error }
+        }
+
         const supabase = await createClient()
 
         // 1. Check if report already exists for this date/destination
@@ -308,6 +330,12 @@ export async function deleteReport(
     reason?: string
 ): Promise<ApiResponse<null>> {
     try {
+        // Validate admin access
+        const auth = await requireAdmin(deletedBy)
+        if (!auth.success) {
+            return { success: false, error: auth.error }
+        }
+
         const supabase = await createClient()
 
         console.log('[deleteReport] Starting delete for reportId:', reportId, 'by user:', deletedBy)
