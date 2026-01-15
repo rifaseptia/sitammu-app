@@ -275,7 +275,189 @@ export default function AnalyticsPage() {
                 </CardContent>
             </Card>
 
-            {/* Payment & Demographics */}
+            {/* Demographics - Full Width Section with Multi-Chart */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Users className="w-5 h-5" />
+                        Demografi Pengunjung
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {!demographics ? (
+                        <p className="text-center text-gray-500 py-4">Belum ada data</p>
+                    ) : (
+                        <div className="space-y-6">
+                            {/* Row 1: Category Stats + Percentage Bars */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {/* Category Cards */}
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500 mb-3">Kategori Pengunjung</p>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <div className="text-center p-4 bg-gray-50 rounded-lg border">
+                                            <Baby className="w-6 h-6 mx-auto text-gray-600 mb-2" />
+                                            <p className="font-bold text-2xl">{formatNumber(demographics.total_anak)}</p>
+                                            <p className="text-xs text-gray-500">Anak</p>
+                                            <p className="text-xs text-gray-400 mt-1">
+                                                {totalVisitors > 0 ? ((demographics.total_anak / totalVisitors) * 100).toFixed(1) : 0}%
+                                            </p>
+                                        </div>
+                                        <div className="text-center p-4 bg-gray-50 rounded-lg border">
+                                            <UserCircle className="w-6 h-6 mx-auto text-gray-600 mb-2" />
+                                            <p className="font-bold text-2xl">{formatNumber(demographics.total_dewasa)}</p>
+                                            <p className="text-xs text-gray-500">Dewasa</p>
+                                            <p className="text-xs text-gray-400 mt-1">
+                                                {totalVisitors > 0 ? ((demographics.total_dewasa / totalVisitors) * 100).toFixed(1) : 0}%
+                                            </p>
+                                        </div>
+                                        <div className="text-center p-4 bg-gray-50 rounded-lg border">
+                                            <Globe className="w-6 h-6 mx-auto text-gray-600 mb-2" />
+                                            <p className="font-bold text-2xl">{formatNumber(demographics.total_wna)}</p>
+                                            <p className="text-xs text-gray-500">WNA</p>
+                                            <p className="text-xs text-gray-400 mt-1">
+                                                {totalVisitors > 0 ? ((demographics.total_wna / totalVisitors) * 100).toFixed(1) : 0}%
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Category Distribution Bar */}
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500 mb-3">Distribusi Kategori</p>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <div className="flex justify-between text-sm mb-1">
+                                                <span className="text-gray-600">Dewasa</span>
+                                                <span className="text-gray-500">{formatNumber(demographics.total_dewasa)}</span>
+                                            </div>
+                                            <div className="h-6 bg-gray-100 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-gray-600 rounded-full transition-all"
+                                                    style={{ width: `${totalVisitors > 0 ? (demographics.total_dewasa / totalVisitors) * 100 : 0}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="flex justify-between text-sm mb-1">
+                                                <span className="text-gray-600">Anak</span>
+                                                <span className="text-gray-500">{formatNumber(demographics.total_anak)}</span>
+                                            </div>
+                                            <div className="h-6 bg-gray-100 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-gray-500 rounded-full transition-all"
+                                                    style={{ width: `${totalVisitors > 0 ? (demographics.total_anak / totalVisitors) * 100 : 0}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="flex justify-between text-sm mb-1">
+                                                <span className="text-gray-600">WNA</span>
+                                                <span className="text-gray-500">{formatNumber(demographics.total_wna)}</span>
+                                            </div>
+                                            <div className="h-6 bg-gray-100 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-gray-400 rounded-full transition-all"
+                                                    style={{ width: `${totalVisitors > 0 ? (demographics.total_wna / totalVisitors) * 100 : 0}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Row 2: Gender Breakdown */}
+                            <div className="border-t pt-6">
+                                <p className="text-sm font-medium text-gray-500 mb-4">Rasio Gender</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Gender Dewasa */}
+                                    {demographics.total_dewasa > 0 && (
+                                        <div className="p-4 bg-gray-50 rounded-lg">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <span className="font-medium text-gray-700">Dewasa</span>
+                                                <span className="text-sm text-gray-500">{formatNumber(demographics.total_dewasa)} total</span>
+                                            </div>
+                                            <div className="flex h-8 rounded-full overflow-hidden bg-gray-200">
+                                                <div
+                                                    className="bg-gray-700 flex items-center justify-center text-xs text-white font-medium"
+                                                    style={{ width: `${(demographics.dewasa_male / demographics.total_dewasa) * 100}%` }}
+                                                >
+                                                    {((demographics.dewasa_male / demographics.total_dewasa) * 100).toFixed(0)}%
+                                                </div>
+                                                <div
+                                                    className="bg-gray-400 flex items-center justify-center text-xs text-white font-medium"
+                                                    style={{ width: `${(demographics.dewasa_female / demographics.total_dewasa) * 100}%` }}
+                                                >
+                                                    {((demographics.dewasa_female / demographics.total_dewasa) * 100).toFixed(0)}%
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-between text-xs text-gray-500 mt-2">
+                                                <span>♂ Laki-laki: {formatNumber(demographics.dewasa_male)}</span>
+                                                <span>♀ Perempuan: {formatNumber(demographics.dewasa_female)}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Gender Anak */}
+                                    {demographics.total_anak > 0 && (
+                                        <div className="p-4 bg-gray-50 rounded-lg">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <span className="font-medium text-gray-700">Anak</span>
+                                                <span className="text-sm text-gray-500">{formatNumber(demographics.total_anak)} total</span>
+                                            </div>
+                                            <div className="flex h-8 rounded-full overflow-hidden bg-gray-200">
+                                                <div
+                                                    className="bg-gray-700 flex items-center justify-center text-xs text-white font-medium"
+                                                    style={{ width: `${(demographics.anak_male / demographics.total_anak) * 100}%` }}
+                                                >
+                                                    {((demographics.anak_male / demographics.total_anak) * 100).toFixed(0)}%
+                                                </div>
+                                                <div
+                                                    className="bg-gray-400 flex items-center justify-center text-xs text-white font-medium"
+                                                    style={{ width: `${(demographics.anak_female / demographics.total_anak) * 100}%` }}
+                                                >
+                                                    {((demographics.anak_female / demographics.total_anak) * 100).toFixed(0)}%
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-between text-xs text-gray-500 mt-2">
+                                                <span>♂ Laki-laki: {formatNumber(demographics.anak_male)}</span>
+                                                <span>♀ Perempuan: {formatNumber(demographics.anak_female)}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Row 3: Summary Stats */}
+                            <div className="border-t pt-4 flex items-center justify-center gap-8 text-center">
+                                <div>
+                                    <p className="text-3xl font-bold text-gray-900">{formatNumber(totalVisitors)}</p>
+                                    <p className="text-sm text-gray-500">Total Pengunjung</p>
+                                </div>
+                                <div className="h-12 w-px bg-gray-200" />
+                                <div>
+                                    <p className="text-3xl font-bold text-gray-900">
+                                        {totalVisitors > 0
+                                            ? (((demographics.dewasa_male + demographics.anak_male) / totalVisitors) * 100).toFixed(0)
+                                            : 0}%
+                                    </p>
+                                    <p className="text-sm text-gray-500">Laki-laki</p>
+                                </div>
+                                <div className="h-12 w-px bg-gray-200" />
+                                <div>
+                                    <p className="text-3xl font-bold text-gray-900">
+                                        {totalVisitors > 0
+                                            ? (((demographics.dewasa_female + demographics.anak_female) / totalVisitors) * 100).toFixed(0)
+                                            : 0}%
+                                    </p>
+                                    <p className="text-sm text-gray-500">Perempuan</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* Payment & Destinations - Side by Side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Payment Method */}
                 <Card>
@@ -291,25 +473,25 @@ export default function AnalyticsPage() {
                         ) : (
                             <div className="space-y-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-green-100 rounded-full">
-                                        <Wallet className="w-6 h-6 text-green-600" />
+                                    <div className="p-3 bg-gray-100 rounded-full">
+                                        <Wallet className="w-6 h-6 text-gray-600" />
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex justify-between items-center">
-                                            <p className="text-sm text-gray-500">Cash</p>
-                                            <p className="text-sm text-gray-400">{payment.cash_percentage}%</p>
+                                            <p className="font-medium text-gray-700">Cash</p>
+                                            <p className="text-sm text-gray-500">{payment.cash_percentage}%</p>
                                         </div>
                                         <p className="text-xl font-bold">{formatRupiah(payment.total_cash, { compact: true })}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-blue-100 rounded-full">
-                                        <CreditCard className="w-6 h-6 text-blue-600" />
+                                    <div className="p-3 bg-gray-100 rounded-full">
+                                        <CreditCard className="w-6 h-6 text-gray-600" />
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex justify-between items-center">
-                                            <p className="text-sm text-gray-500">QRIS</p>
-                                            <p className="text-sm text-gray-400">{payment.qris_percentage}%</p>
+                                            <p className="font-medium text-gray-700">QRIS</p>
+                                            <p className="text-sm text-gray-500">{payment.qris_percentage}%</p>
                                         </div>
                                         <p className="text-xl font-bold">{formatRupiah(payment.total_qris, { compact: true })}</p>
                                     </div>
@@ -319,132 +501,46 @@ export default function AnalyticsPage() {
                     </CardContent>
                 </Card>
 
-                {/* Demographics */}
+                {/* Top Destinations */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Users className="w-5 h-5" />
-                            Demografi Pengunjung
+                            <MapPin className="w-5 h-5" />
+                            Destinasi Terpopuler
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {!demographics ? (
+                        {rankings.length === 0 ? (
                             <p className="text-center text-gray-500 py-4">Belum ada data</p>
                         ) : (
-                            <div className="space-y-4">
-                                {/* Category breakdown */}
-                                <div className="grid grid-cols-3 gap-3">
-                                    <div className="text-center p-3 bg-blue-50 rounded-lg">
-                                        <Baby className="w-5 h-5 mx-auto text-blue-600 mb-1" />
-                                        <p className="font-bold text-lg">{formatNumber(demographics.total_anak)}</p>
-                                        <p className="text-xs text-gray-500">Anak</p>
-                                    </div>
-                                    <div className="text-center p-3 bg-purple-50 rounded-lg">
-                                        <UserCircle className="w-5 h-5 mx-auto text-purple-600 mb-1" />
-                                        <p className="font-bold text-lg">{formatNumber(demographics.total_dewasa)}</p>
-                                        <p className="text-xs text-gray-500">Dewasa</p>
-                                    </div>
-                                    <div className="text-center p-3 bg-green-50 rounded-lg">
-                                        <Globe className="w-5 h-5 mx-auto text-green-600 mb-1" />
-                                        <p className="font-bold text-lg">{formatNumber(demographics.total_wna)}</p>
-                                        <p className="text-xs text-gray-500">WNA</p>
-                                    </div>
-                                </div>
-
-                                {/* Gender ratio - Anak */}
-                                {demographics.total_anak > 0 && (
-                                    <div>
-                                        <p className="text-sm font-medium mb-2 text-blue-700">Gender Anak</p>
-                                        <div className="flex h-4 rounded-full overflow-hidden bg-gray-100">
-                                            <div
-                                                className="bg-blue-400"
-                                                style={{
-                                                    width: `${demographics.total_anak > 0 ? (demographics.anak_male / demographics.total_anak) * 100 : 50}%`
-                                                }}
-                                            />
-                                            <div
-                                                className="bg-pink-400"
-                                                style={{
-                                                    width: `${demographics.total_anak > 0 ? (demographics.anak_female / demographics.total_anak) * 100 : 50}%`
-                                                }}
-                                            />
+                            <div className="space-y-3">
+                                {rankings.slice(0, 5).map((dest, idx) => (
+                                    <div key={dest.destination_id} className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <span className={cn(
+                                                'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
+                                                idx === 0 ? 'bg-gray-800 text-white' :
+                                                    idx === 1 ? 'bg-gray-600 text-white' :
+                                                        idx === 2 ? 'bg-gray-400 text-white' :
+                                                            'bg-gray-200 text-gray-600'
+                                            )}>
+                                                {idx + 1}
+                                            </span>
+                                            <div>
+                                                <p className="font-medium">{dest.destination_name}</p>
+                                                <p className="text-xs text-gray-500">{formatNumber(dest.total_visitors)} pengunjung</p>
+                                            </div>
                                         </div>
-                                        <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                            <span>L: {formatNumber(demographics.anak_male)}</span>
-                                            <span>P: {formatNumber(demographics.anak_female)}</span>
-                                        </div>
+                                        <span className="font-semibold text-gray-700">
+                                            {formatRupiah(dest.total_revenue, { compact: true })}
+                                        </span>
                                     </div>
-                                )}
-
-                                {/* Gender ratio - Dewasa */}
-                                {demographics.total_dewasa > 0 && (
-                                    <div>
-                                        <p className="text-sm font-medium mb-2 text-purple-700">Gender Dewasa</p>
-                                        <div className="flex h-4 rounded-full overflow-hidden bg-gray-100">
-                                            <div
-                                                className="bg-blue-500"
-                                                style={{
-                                                    width: `${demographics.total_dewasa > 0 ? (demographics.dewasa_male / demographics.total_dewasa) * 100 : 50}%`
-                                                }}
-                                            />
-                                            <div
-                                                className="bg-pink-500"
-                                                style={{
-                                                    width: `${demographics.total_dewasa > 0 ? (demographics.dewasa_female / demographics.total_dewasa) * 100 : 50}%`
-                                                }}
-                                            />
-                                        </div>
-                                        <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                            <span>L: {formatNumber(demographics.dewasa_male)}</span>
-                                            <span>P: {formatNumber(demographics.dewasa_female)}</span>
-                                        </div>
-                                    </div>
-                                )}
+                                ))}
                             </div>
                         )}
                     </CardContent>
                 </Card>
             </div>
-
-            {/* Top Destinations - Bottom */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <MapPin className="w-5 h-5" />
-                        Destinasi Terpopuler
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {rankings.length === 0 ? (
-                        <p className="text-center text-gray-500 py-4">Belum ada data</p>
-                    ) : (
-                        <div className="space-y-3">
-                            {rankings.slice(0, 5).map((dest, idx) => (
-                                <div key={dest.destination_id} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <span className={cn(
-                                            'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
-                                            idx === 0 ? 'bg-yellow-100 text-yellow-700' :
-                                                idx === 1 ? 'bg-gray-100 text-gray-600' :
-                                                    idx === 2 ? 'bg-orange-100 text-orange-700' :
-                                                        'bg-gray-50 text-gray-500'
-                                        )}>
-                                            {idx + 1}
-                                        </span>
-                                        <div>
-                                            <p className="font-medium">{dest.destination_name}</p>
-                                            <p className="text-xs text-gray-500">{formatNumber(dest.total_visitors)} pengunjung</p>
-                                        </div>
-                                    </div>
-                                    <span className="font-semibold text-green-600">
-                                        {formatRupiah(dest.total_revenue, { compact: true })}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
         </div>
     )
 }
