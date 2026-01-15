@@ -169,15 +169,15 @@ export function generateWhatsAppMessage(
     lines.push(`• Total Tiket Masuk: ${formatRupiah(totalTiketMasuk)}`)
     lines.push('')
 
+    // lines.push(`*Pendapatan: ${formatRupiah(report.total_revenue)}*`)
+    lines.push('')
+    lines.push(`*Grand Total Pendapatan: ${formatRupiah(report.total_revenue)}*`)
+    lines.push('')
+
     // Payment breakdown
     lines.push('*PEMBAYARAN*')
     lines.push(`• Cash: ${formatRupiah(report.cash_amount)}`)
     lines.push(`• QRIS: ${formatRupiah(report.qris_amount)}`)
-
-    // lines.push(`*Pendapatan: ${formatRupiah(report.total_revenue)}*`)
-    lines.push('')
-    lines.push(`*Grand Total: ${formatRupiah(report.total_revenue)}*`)
-    lines.push('')
 
     // Notes
     if (report.notes) {
