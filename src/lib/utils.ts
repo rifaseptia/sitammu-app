@@ -89,13 +89,16 @@ export function formatRelativeTime(date: Date | string): string {
 }
 
 /**
- * Get tanggal hari ini dalam format YYYY-MM-DD (local timezone)
+ * Get tanggal hari ini dalam format YYYY-MM-DD (WIB timezone)
+ * Fixed for Vercel server which uses UTC
  */
 export function getTodayDateString(): string {
+  // Use Asia/Jakarta timezone (WIB = UTC+7)
   const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
+  const wibDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }))
+  const year = wibDate.getFullYear()
+  const month = String(wibDate.getMonth() + 1).padStart(2, '0')
+  const day = String(wibDate.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
 
@@ -177,10 +180,12 @@ export function capitalize(str: string): string {
 }
 
 /**
- * Generate greeting berdasarkan waktu
+ * Generate greeting berdasarkan waktu (WIB)
  */
 export function getGreeting(): string {
-  const hour = new Date().getHours()
+  const now = new Date()
+  const wibDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }))
+  const hour = wibDate.getHours()
   if (hour < 12) return 'Selamat Pagi'
   if (hour < 15) return 'Selamat Siang'
   if (hour < 18) return 'Selamat Sore'
