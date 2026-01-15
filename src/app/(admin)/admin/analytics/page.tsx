@@ -7,13 +7,11 @@ import {
     Users,
     Banknote,
     MapPin,
-    Award,
-    Calendar,
-    BarChart3,
-    Target,
-    Zap,
-    ArrowUpRight,
-    ArrowDownRight,
+    CreditCard,
+    Wallet,
+    Baby,
+    UserCircle,
+    Globe,
     Loader2
 } from 'lucide-react'
 
@@ -35,7 +33,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import { DonutChart, VerticalBarChart, CHART_COLORS } from '@/components/ui/charts'
 
 interface MonthlyStats {
     month: string
@@ -79,95 +76,6 @@ interface Destination {
     id: string
     code: string
     name: string
-}
-
-// KPI Card Component
-function KPICard({
-    title,
-    value,
-    subtitle,
-    change,
-    icon: Icon,
-    trend,
-    color = 'indigo'
-}: {
-    title: string
-    value: string
-    subtitle?: string
-    change?: number
-    icon: React.ElementType
-    trend?: 'up' | 'down' | 'neutral'
-    color?: 'indigo' | 'emerald' | 'amber' | 'rose'
-}) {
-    const colorClasses = {
-        indigo: 'bg-indigo-50 text-indigo-600',
-        emerald: 'bg-emerald-50 text-emerald-600',
-        amber: 'bg-amber-50 text-amber-600',
-        rose: 'bg-rose-50 text-rose-600',
-    }
-
-    return (
-        <Card className="relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 -mr-8 -mt-8 opacity-10">
-                <Icon className="w-full h-full" />
-            </div>
-            <CardContent className="pt-6">
-                <div className="flex items-start justify-between">
-                    <div>
-                        <p className="text-sm font-medium text-gray-500">{title}</p>
-                        <p className="text-3xl font-bold mt-1">{value}</p>
-                        {subtitle && (
-                            <p className="text-xs text-gray-400 mt-1">{subtitle}</p>
-                        )}
-                    </div>
-                    <div className={cn('p-3 rounded-xl', colorClasses[color])}>
-                        <Icon className="w-6 h-6" />
-                    </div>
-                </div>
-                {change !== undefined && (
-                    <div className="flex items-center mt-4 pt-4 border-t">
-                        {trend === 'up' ? (
-                            <ArrowUpRight className="w-4 h-4 text-emerald-500 mr-1" />
-                        ) : trend === 'down' ? (
-                            <ArrowDownRight className="w-4 h-4 text-rose-500 mr-1" />
-                        ) : null}
-                        <span className={cn(
-                            'text-sm font-medium',
-                            trend === 'up' ? 'text-emerald-600' : trend === 'down' ? 'text-rose-600' : 'text-gray-500'
-                        )}>
-                            {change > 0 ? '+' : ''}{change}%
-                        </span>
-                        <span className="text-sm text-gray-400 ml-2">vs bulan lalu</span>
-                    </div>
-                )}
-            </CardContent>
-        </Card>
-    )
-}
-
-// Insight Card
-function InsightCard({
-    title,
-    description,
-    icon: Icon,
-    color = 'indigo'
-}: {
-    title: string
-    description: string
-    icon: React.ElementType
-    color?: string
-}) {
-    return (
-        <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border">
-            <div className={`p-2 rounded-lg bg-${color}-100`}>
-                <Icon className={`w-5 h-5 text-${color}-600`} />
-            </div>
-            <div>
-                <p className="font-medium text-gray-900">{title}</p>
-                <p className="text-sm text-gray-500">{description}</p>
-            </div>
-        </div>
-    )
 }
 
 export default function AnalyticsPage() {
@@ -226,25 +134,9 @@ export default function AnalyticsPage() {
         return monthNames[idx] || month
     }
 
-    // Calculate insights
     const totalVisitors = demographics
         ? demographics.total_anak + demographics.total_dewasa + demographics.total_wna
         : 0
-
-    const totalRevenue = monthlyStats.reduce((sum, s) => sum + s.total_revenue, 0)
-    const totalReports = monthlyStats.reduce((sum, s) => sum + s.report_count, 0)
-
-    const avgRevenuePerVisitor = totalVisitors > 0
-        ? Math.round(totalRevenue / totalVisitors)
-        : 0
-
-    const bestDestination = rankings[0]
-    const worstDestination = rankings[rankings.length - 1]
-
-    // Best month calculation
-    const bestMonth = monthlyStats.reduce((best, current) =>
-        current.total_revenue > (best?.total_revenue || 0) ? current : best
-        , monthlyStats[0])
 
     if (isLoading) {
         return (
@@ -255,13 +147,16 @@ export default function AnalyticsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-8">
+        <div className="space-y-6">
             {/* Page Header */}
             <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">📊 Dashboard Analytics</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
                     <p className="text-gray-500">
-                        Insight dan performa destinasi wisata
+                        Laporan dan statistik manajemen
+                        {selectedDestination && selectedDestination !== 'all' && destinations.find(d => d.id === selectedDestination) && (
+                            <span className="font-medium text-gray-700"> - {destinations.find(d => d.id === selectedDestination)?.name}</span>
+                        )}
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -289,312 +184,259 @@ export default function AnalyticsPage() {
                 </div>
             </div>
 
-            {/* KPI Cards - Key Performance Indicators */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <KPICard
-                    title="Total Pendapatan"
-                    value={formatRupiah(totalRevenue, { compact: true })}
-                    subtitle={`${formatNumber(totalReports)} laporan`}
-                    change={comparison?.change.revenue}
-                    trend={comparison?.change.revenue ? (comparison.change.revenue >= 0 ? 'up' : 'down') : 'neutral'}
-                    icon={Banknote}
-                    color="emerald"
-                />
-                <KPICard
-                    title="Total Pengunjung"
-                    value={formatNumber(totalVisitors)}
-                    subtitle="Semua kategori"
-                    change={comparison?.change.visitors}
-                    trend={comparison?.change.visitors ? (comparison.change.visitors >= 0 ? 'up' : 'down') : 'neutral'}
-                    icon={Users}
-                    color="indigo"
-                />
-                <KPICard
-                    title="Rata-rata per Pengunjung"
-                    value={formatRupiah(avgRevenuePerVisitor)}
-                    subtitle="Revenue / visitor"
-                    icon={Target}
-                    color="amber"
-                />
-                <KPICard
-                    title="Destinasi Aktif"
-                    value={String(rankings.length)}
-                    subtitle={`${formatNumber(totalReports)} laporan terkirim`}
-                    icon={MapPin}
-                    color="rose"
-                />
-            </div>
-
-            {/* Quick Insights */}
-            {bestDestination && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-3">
-                                <div className="p-3 bg-amber-200 rounded-xl">
-                                    <Award className="w-6 h-6 text-amber-700" />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-amber-700">🏆 Destinasi Terbaik</p>
-                                    <p className="text-xl font-bold text-amber-900">{bestDestination.destination_name}</p>
-                                    <p className="text-sm text-amber-600">
-                                        {formatRupiah(bestDestination.total_revenue, { compact: true })} • {formatNumber(bestDestination.total_visitors)} pengunjung
-                                    </p>
-                                </div>
+            {/* Month-over-Month Comparison - Only show for current year */}
+            {comparison && selectedYear === currentYear && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-gray-500">
+                                Pengunjung Bulan Ini
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-center justify-between">
+                                <span className="text-3xl font-bold">{formatNumber(comparison.current.visitors)}</span>
+                                <Badge className={cn(
+                                    'flex items-center gap-1',
+                                    comparison.change.visitors >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                )}>
+                                    {comparison.change.visitors >= 0 ? (
+                                        <TrendingUp className="w-3 h-3" />
+                                    ) : (
+                                        <TrendingDown className="w-3 h-3" />
+                                    )}
+                                    {comparison.change.visitors}%
+                                </Badge>
                             </div>
+                            <p className="text-sm text-gray-500 mt-1">
+                                vs bulan lalu: {formatNumber(comparison.previous.visitors)}
+                            </p>
                         </CardContent>
                     </Card>
 
-                    {bestMonth && (
-                        <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200">
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-indigo-200 rounded-xl">
-                                        <Calendar className="w-6 h-6 text-indigo-700" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-indigo-700">📅 Bulan Terbaik</p>
-                                        <p className="text-xl font-bold text-indigo-900">{getMonthName(bestMonth.month)} {selectedYear}</p>
-                                        <p className="text-sm text-indigo-600">
-                                            {formatRupiah(bestMonth.total_revenue, { compact: true })} pendapatan
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {payment && (
-                        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-emerald-200 rounded-xl">
-                                        <Zap className="w-6 h-6 text-emerald-700" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-emerald-700">💳 Metode Favorit</p>
-                                        <p className="text-xl font-bold text-emerald-900">
-                                            {payment.cash_percentage > payment.qris_percentage ? 'Cash' : 'QRIS'}
-                                        </p>
-                                        <p className="text-sm text-emerald-600">
-                                            {Math.max(payment.cash_percentage, payment.qris_percentage)}% dari total transaksi
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-gray-500">
+                                Pendapatan Bulan Ini
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-center justify-between">
+                                <span className="text-3xl font-bold">{formatRupiah(comparison.current.revenue, { compact: true })}</span>
+                                <Badge className={cn(
+                                    'flex items-center gap-1',
+                                    comparison.change.revenue >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                )}>
+                                    {comparison.change.revenue >= 0 ? (
+                                        <TrendingUp className="w-3 h-3" />
+                                    ) : (
+                                        <TrendingDown className="w-3 h-3" />
+                                    )}
+                                    {comparison.change.revenue}%
+                                </Badge>
+                            </div>
+                            <p className="text-sm text-gray-500 mt-1">
+                                vs bulan lalu: {formatRupiah(comparison.previous.revenue, { compact: true })}
+                            </p>
+                        </CardContent>
+                    </Card>
                 </div>
             )}
 
-            {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Monthly Trend - Takes 2 columns */}
-                <Card className="lg:col-span-2">
+            {/* Monthly Trend */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Trend Bulanan {selectedYear}</CardTitle>
+                    <CardDescription>Pengunjung dan pendapatan per bulan</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b">
+                                    <th className="text-left py-2 px-2">Bulan</th>
+                                    <th className="text-right py-2 px-2">Pengunjung</th>
+                                    <th className="text-right py-2 px-2">Pendapatan</th>
+                                    <th className="text-right py-2 px-2">Laporan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {monthlyStats.map((stat) => (
+                                    <tr key={stat.month} className="border-b hover:bg-gray-50">
+                                        <td className="py-2 px-2 font-medium">{getMonthName(stat.month)}</td>
+                                        <td className="py-2 px-2 text-right">{formatNumber(stat.total_visitors)}</td>
+                                        <td className="py-2 px-2 text-right">{formatRupiah(stat.total_revenue, { compact: true })}</td>
+                                        <td className="py-2 px-2 text-right text-gray-500">{stat.report_count}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Rankings & Demographics */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Top Destinations */}
+                <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <BarChart3 className="w-5 h-5 text-indigo-500" />
-                            Trend Pendapatan Bulanan
+                            <MapPin className="w-5 h-5" />
+                            Destinasi Terpopuler
                         </CardTitle>
-                        <CardDescription>Performa pendapatan per bulan {selectedYear}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        {monthlyStats.length > 0 ? (
-                            <VerticalBarChart
-                                data={monthlyStats.map((stat, idx) => ({
-                                    label: getMonthName(stat.month),
-                                    value: stat.total_revenue,
-                                    color: stat === bestMonth ? CHART_COLORS.success : CHART_COLORS.primary,
-                                }))}
-                                height={140}
-                                barWidth={36}
-                                formatValue={(v) => formatRupiah(v, { compact: true })}
-                            />
+                        {rankings.length === 0 ? (
+                            <p className="text-center text-gray-500 py-4">Belum ada data</p>
                         ) : (
-                            <p className="text-center text-gray-500 py-8">Belum ada data</p>
+                            <div className="space-y-3">
+                                {rankings.slice(0, 5).map((dest, idx) => (
+                                    <div key={dest.destination_id} className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <span className={cn(
+                                                'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
+                                                idx === 0 ? 'bg-yellow-100 text-yellow-700' :
+                                                    idx === 1 ? 'bg-gray-100 text-gray-600' :
+                                                        idx === 2 ? 'bg-orange-100 text-orange-700' :
+                                                            'bg-gray-50 text-gray-500'
+                                            )}>
+                                                {idx + 1}
+                                            </span>
+                                            <div>
+                                                <p className="font-medium">{dest.destination_name}</p>
+                                                <p className="text-xs text-gray-500">{formatNumber(dest.total_visitors)} pengunjung</p>
+                                            </div>
+                                        </div>
+                                        <span className="font-semibold text-green-600">
+                                            {formatRupiah(dest.total_revenue, { compact: true })}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
                         )}
                     </CardContent>
                 </Card>
 
-                {/* Demographics Donut */}
+                {/* Demographics */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Users className="w-5 h-5 text-indigo-500" />
+                            <Users className="w-5 h-5" />
                             Demografi Pengunjung
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {demographics ? (
-                            <div className="flex justify-center">
-                                <DonutChart
-                                    data={[
-                                        { label: 'Dewasa', value: demographics.total_dewasa, color: CHART_COLORS.primary },
-                                        { label: 'Anak', value: demographics.total_anak, color: CHART_COLORS.info },
-                                        { label: 'WNA', value: demographics.total_wna, color: CHART_COLORS.success },
-                                    ]}
-                                    size={160}
-                                    centerValue={formatNumber(totalVisitors)}
-                                    centerLabel="Total"
-                                />
-                            </div>
+                        {!demographics ? (
+                            <p className="text-center text-gray-500 py-4">Belum ada data</p>
                         ) : (
-                            <p className="text-center text-gray-500 py-8">Belum ada data</p>
-                        )}
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Payment & Gender in one row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Payment Distribution */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Banknote className="w-5 h-5 text-emerald-500" />
-                            Distribusi Pembayaran
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {payment ? (
-                            <div className="flex justify-center">
-                                <DonutChart
-                                    data={[
-                                        { label: 'Cash', value: payment.total_cash, color: CHART_COLORS.success },
-                                        { label: 'QRIS', value: payment.total_qris, color: CHART_COLORS.primary },
-                                    ]}
-                                    size={140}
-                                    centerValue={formatRupiah(payment.total_cash + payment.total_qris, { compact: true })}
-                                    centerLabel="Total"
-                                />
-                            </div>
-                        ) : (
-                            <p className="text-center text-gray-500 py-8">Belum ada data</p>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Gender Distribution */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Users className="w-5 h-5 text-pink-500" />
-                            Rasio Gender
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {demographics ? (
-                            <div className="flex justify-center gap-8">
-                                {demographics.total_dewasa > 0 && (
-                                    <div className="text-center">
-                                        <p className="text-sm text-gray-500 mb-2">Dewasa</p>
-                                        <DonutChart
-                                            data={[
-                                                { label: 'L', value: demographics.dewasa_male, color: CHART_COLORS.info },
-                                                { label: 'P', value: demographics.dewasa_female, color: CHART_COLORS.pink },
-                                            ]}
-                                            size={100}
-                                            strokeWidth={14}
-                                            showLegend={false}
-                                            centerValue={`${Math.round((demographics.dewasa_male / demographics.total_dewasa) * 100)}%`}
-                                            centerLabel="L"
-                                        />
+                            <div className="space-y-4">
+                                {/* Category breakdown */}
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                                        <Baby className="w-5 h-5 mx-auto text-blue-600 mb-1" />
+                                        <p className="font-bold text-lg">{formatNumber(demographics.total_anak)}</p>
+                                        <p className="text-xs text-gray-500">Anak</p>
                                     </div>
-                                )}
-                                {demographics.total_anak > 0 && (
-                                    <div className="text-center">
-                                        <p className="text-sm text-gray-500 mb-2">Anak</p>
-                                        <DonutChart
-                                            data={[
-                                                { label: 'L', value: demographics.anak_male, color: CHART_COLORS.info },
-                                                { label: 'P', value: demographics.anak_female, color: CHART_COLORS.pink },
-                                            ]}
-                                            size={100}
-                                            strokeWidth={14}
-                                            showLegend={false}
-                                            centerValue={`${Math.round((demographics.anak_male / demographics.total_anak) * 100)}%`}
-                                            centerLabel="L"
-                                        />
+                                    <div className="text-center p-3 bg-purple-50 rounded-lg">
+                                        <UserCircle className="w-5 h-5 mx-auto text-purple-600 mb-1" />
+                                        <p className="font-bold text-lg">{formatNumber(demographics.total_dewasa)}</p>
+                                        <p className="text-xs text-gray-500">Dewasa</p>
                                     </div>
-                                )}
-                                <div className="flex flex-col justify-center gap-2">
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS.info }} />
-                                        <span>Laki-laki</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS.pink }} />
-                                        <span>Perempuan</span>
+                                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                                        <Globe className="w-5 h-5 mx-auto text-green-600 mb-1" />
+                                        <p className="font-bold text-lg">{formatNumber(demographics.total_wna)}</p>
+                                        <p className="text-xs text-gray-500">WNA</p>
                                     </div>
                                 </div>
+
+                                {/* Gender ratio - Anak */}
+                                {demographics.total_anak > 0 && (
+                                    <div>
+                                        <p className="text-sm font-medium mb-2 text-blue-700">Gender Anak</p>
+                                        <div className="flex h-4 rounded-full overflow-hidden bg-gray-100">
+                                            <div
+                                                className="bg-blue-400"
+                                                style={{
+                                                    width: `${demographics.total_anak > 0 ? (demographics.anak_male / demographics.total_anak) * 100 : 50}%`
+                                                }}
+                                            />
+                                            <div
+                                                className="bg-pink-400"
+                                                style={{
+                                                    width: `${demographics.total_anak > 0 ? (demographics.anak_female / demographics.total_anak) * 100 : 50}%`
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                            <span>L: {formatNumber(demographics.anak_male)}</span>
+                                            <span>P: {formatNumber(demographics.anak_female)}</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Gender ratio - Dewasa */}
+                                {demographics.total_dewasa > 0 && (
+                                    <div>
+                                        <p className="text-sm font-medium mb-2 text-purple-700">Gender Dewasa</p>
+                                        <div className="flex h-4 rounded-full overflow-hidden bg-gray-100">
+                                            <div
+                                                className="bg-blue-500"
+                                                style={{
+                                                    width: `${demographics.total_dewasa > 0 ? (demographics.dewasa_male / demographics.total_dewasa) * 100 : 50}%`
+                                                }}
+                                            />
+                                            <div
+                                                className="bg-pink-500"
+                                                style={{
+                                                    width: `${demographics.total_dewasa > 0 ? (demographics.dewasa_female / demographics.total_dewasa) * 100 : 50}%`
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                            <span>L: {formatNumber(demographics.dewasa_male)}</span>
+                                            <span>P: {formatNumber(demographics.dewasa_female)}</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        ) : (
-                            <p className="text-center text-gray-500 py-8">Belum ada data</p>
                         )}
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Destination Performance Table */}
+            {/* Payment Analysis */}
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <MapPin className="w-5 h-5 text-rose-500" />
-                        Performa Destinasi
+                        <Banknote className="w-5 h-5" />
+                        Metode Pembayaran
                     </CardTitle>
-                    <CardDescription>Peringkat berdasarkan pendapatan</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {rankings.length === 0 ? (
-                        <p className="text-center text-gray-500 py-8">Belum ada data</p>
+                    {!payment ? (
+                        <p className="text-center text-gray-500 py-4">Belum ada data</p>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="border-b text-left">
-                                        <th className="pb-3 font-medium text-gray-500">#</th>
-                                        <th className="pb-3 font-medium text-gray-500">Destinasi</th>
-                                        <th className="pb-3 font-medium text-gray-500 text-right">Pengunjung</th>
-                                        <th className="pb-3 font-medium text-gray-500 text-right">Pendapatan</th>
-                                        <th className="pb-3 font-medium text-gray-500 text-right">Contrib.</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {rankings.map((dest, idx) => {
-                                        const contribution = totalRevenue > 0
-                                            ? ((dest.total_revenue / totalRevenue) * 100).toFixed(1)
-                                            : '0'
-                                        return (
-                                            <tr key={dest.destination_id} className="border-b last:border-0 hover:bg-gray-50">
-                                                <td className="py-3">
-                                                    <span className={cn(
-                                                        'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
-                                                        idx === 0 ? 'bg-yellow-100 text-yellow-700' :
-                                                            idx === 1 ? 'bg-gray-100 text-gray-600' :
-                                                                idx === 2 ? 'bg-orange-100 text-orange-700' :
-                                                                    'bg-gray-50 text-gray-400'
-                                                    )}>
-                                                        {idx + 1}
-                                                    </span>
-                                                </td>
-                                                <td className="py-3">
-                                                    <p className="font-medium">{dest.destination_name}</p>
-                                                    <p className="text-xs text-gray-400">{dest.destination_code}</p>
-                                                </td>
-                                                <td className="py-3 text-right">{formatNumber(dest.total_visitors)}</td>
-                                                <td className="py-3 text-right font-semibold text-emerald-600">
-                                                    {formatRupiah(dest.total_revenue, { compact: true })}
-                                                </td>
-                                                <td className="py-3 text-right">
-                                                    <Badge variant="outline" className="font-normal">
-                                                        {contribution}%
-                                                    </Badge>
-                                                </td>
-                                            </tr>
-                                        )
-                                    })}
-                                </tbody>
-                            </table>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-green-100 rounded-full">
+                                    <Wallet className="w-6 h-6 text-green-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Cash</p>
+                                    <p className="text-2xl font-bold">{formatRupiah(payment.total_cash, { compact: true })}</p>
+                                    <p className="text-sm text-gray-400">{payment.cash_percentage}% dari total</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-blue-100 rounded-full">
+                                    <CreditCard className="w-6 h-6 text-blue-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">QRIS</p>
+                                    <p className="text-2xl font-bold">{formatRupiah(payment.total_qris, { compact: true })}</p>
+                                    <p className="text-sm text-gray-400">{payment.qris_percentage}% dari total</p>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </CardContent>
