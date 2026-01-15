@@ -4,7 +4,7 @@ import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { MapPin, User, Loader2, ShieldCheck, UserCircle2, Sparkles } from 'lucide-react'
+import { Loader2, ShieldCheck, UserCircle2, Sparkles } from 'lucide-react'
 
 import { APP } from '@/lib/constants'
 import { loginSchema, type LoginFormData } from '@/lib/validations'
@@ -44,7 +44,6 @@ export default function LoginPage() {
         setValue,
         watch,
         handleSubmit,
-        formState: { errors },
     } = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema),
         defaultValues: {
@@ -140,47 +139,43 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-gradient-to-b from-pink-50 via-white to-white">
-            {/* Header Section */}
-            <div className="pt-12 pb-8 px-6 text-center">
-                {/* Logo/Icon */}
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-pink-500 to-pink-600 shadow-xl shadow-pink-200 mb-6">
-                    <Sparkles className="w-10 h-10 text-white" />
-                </div>
+        <div className="min-h-screen flex flex-col bg-gray-50">
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col items-center justify-center px-6 py-10">
+                <div className="w-full max-w-sm space-y-8">
 
-                {/* App Name */}
-                <h1 className="text-3xl font-black tracking-tight text-gray-900 mb-2">
-                    SITAMMU
-                </h1>
-                <p className="text-sm text-gray-500 font-medium">
-                    {APP.tagline}
-                </p>
-            </div>
+                    {/* Logo & Title */}
+                    <div className="text-center space-y-4">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-pink-600 mx-auto">
+                            <Sparkles className="w-8 h-8 text-white" />
+                        </div>
+                        <h1 className="text-2xl font-black tracking-tight text-gray-900">
+                            SITAMMU
+                        </h1>
+                    </div>
 
-            {/* Main Card */}
-            <div className="flex-1 px-4 pb-8">
-                <div className="max-w-sm mx-auto">
                     {/* Mode Toggle */}
-                    <div className="flex p-1 bg-gray-100 rounded-2xl mb-6">
+                    <div className="flex border border-gray-200 rounded-xl overflow-hidden bg-white">
                         <button
                             onClick={() => { setIsAdminMode(false); setError(null); }}
                             className={cn(
-                                "flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all",
+                                "flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold transition-colors",
                                 !isAdminMode
-                                    ? "bg-white text-pink-600 shadow-sm"
-                                    : "text-gray-400 hover:text-gray-600"
+                                    ? "bg-pink-600 text-white"
+                                    : "bg-white text-gray-500 hover:text-gray-700"
                             )}
                         >
                             <UserCircle2 className="w-5 h-5" />
                             Petugas
                         </button>
+                        <div className="w-px bg-gray-200" />
                         <button
                             onClick={() => { setIsAdminMode(true); setError(null); }}
                             className={cn(
-                                "flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all",
+                                "flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold transition-colors",
                                 isAdminMode
-                                    ? "bg-white text-pink-600 shadow-sm"
-                                    : "text-gray-400 hover:text-gray-600"
+                                    ? "bg-pink-600 text-white"
+                                    : "bg-white text-gray-500 hover:text-gray-700"
                             )}
                         >
                             <ShieldCheck className="w-5 h-5" />
@@ -189,25 +184,20 @@ export default function LoginPage() {
                     </div>
 
                     {/* Form */}
-                    <div className="bg-white rounded-3xl shadow-xl shadow-gray-100 border border-gray-100 p-6 space-y-5">
+                    <div className="space-y-5">
                         {!isAdminMode ? (
                             <>
-                                {/* Destination Select */}
+                                {/* Destination */}
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                    <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                                         Destinasi
                                     </Label>
                                     <Select
                                         value={selectedDestination}
                                         onValueChange={(v) => setValue('destination_id', v)}
                                     >
-                                        <SelectTrigger className="w-full h-14 rounded-2xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-300 transition-all">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center">
-                                                    <MapPin className="w-5 h-5 text-pink-600" />
-                                                </div>
-                                                <SelectValue placeholder="Pilih lokasi..." className="font-medium" />
-                                            </div>
+                                        <SelectTrigger className="w-full h-12 rounded-xl border-gray-200 bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-400">
+                                            <SelectValue placeholder="Pilih destinasi..." />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {destinations.map((d) => (
@@ -217,9 +207,9 @@ export default function LoginPage() {
                                     </Select>
                                 </div>
 
-                                {/* User Select */}
+                                {/* User */}
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                    <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                                         Petugas
                                     </Label>
                                     <Select
@@ -227,13 +217,8 @@ export default function LoginPage() {
                                         onValueChange={(v) => setValue('user_id', v)}
                                         disabled={!selectedDestination}
                                     >
-                                        <SelectTrigger className="w-full h-14 rounded-2xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-300 transition-all disabled:opacity-50">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center">
-                                                    <User className="w-5 h-5 text-pink-600" />
-                                                </div>
-                                                <SelectValue placeholder={isLoadingUsers ? "Memuat..." : "Pilih nama..."} className="font-medium" />
-                                            </div>
+                                        <SelectTrigger className="w-full h-12 rounded-xl border-gray-200 bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-400 disabled:opacity-50 disabled:bg-gray-50">
+                                            <SelectValue placeholder={isLoadingUsers ? "Memuat..." : "Pilih petugas..."} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {users.map((u) => (
@@ -243,10 +228,10 @@ export default function LoginPage() {
                                     </Select>
                                 </div>
 
-                                {/* PIN Input */}
-                                <div className="space-y-3 pt-2">
-                                    <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider text-center block">
-                                        Masukkan PIN
+                                {/* PIN */}
+                                <div className="space-y-2">
+                                    <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider text-center block">
+                                        PIN
                                     </Label>
                                     <PinInput
                                         value={pin}
@@ -259,17 +244,12 @@ export default function LoginPage() {
                             <>
                                 {/* Admin Select */}
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        Akun Admin
+                                    <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                        Admin
                                     </Label>
                                     <Select value={selectedAdmin} onValueChange={setSelectedAdmin}>
-                                        <SelectTrigger className="w-full h-14 rounded-2xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-300 transition-all">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center">
-                                                    <ShieldCheck className="w-5 h-5 text-pink-600" />
-                                                </div>
-                                                <SelectValue placeholder="Pilih admin..." className="font-medium" />
-                                            </div>
+                                        <SelectTrigger className="w-full h-12 rounded-xl border-gray-200 bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-400">
+                                            <SelectValue placeholder="Pilih admin..." />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {adminUsers.map((a) => (
@@ -280,9 +260,9 @@ export default function LoginPage() {
                                 </div>
 
                                 {/* Admin PIN */}
-                                <div className="space-y-3 pt-2">
-                                    <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider text-center block">
-                                        PIN Admin
+                                <div className="space-y-2">
+                                    <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider text-center block">
+                                        PIN
                                     </Label>
                                     <PinInput
                                         value={adminPin}
@@ -293,18 +273,18 @@ export default function LoginPage() {
                             </>
                         )}
 
-                        {/* Error Message */}
+                        {/* Error */}
                         {error && (
-                            <div className="bg-red-50 border border-red-100 rounded-2xl p-4">
-                                <p className="text-sm text-red-600 text-center font-bold">
+                            <div className="border border-red-200 bg-red-50 rounded-xl p-3">
+                                <p className="text-sm text-red-600 text-center font-medium">
                                     {error}
                                 </p>
                             </div>
                         )}
 
-                        {/* Submit Button */}
+                        {/* Submit */}
                         <Button
-                            className="w-full h-14 rounded-2xl bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white font-bold text-base shadow-lg shadow-pink-200 transition-all active:scale-[0.98]"
+                            className="w-full h-12 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-bold transition-colors"
                             onClick={isAdminMode ? handleAdminLogin : handleSubmit(onSubmit)}
                             disabled={isSubmitting}
                         >
@@ -315,13 +295,15 @@ export default function LoginPage() {
                             )}
                         </Button>
                     </div>
-
-                    {/* Footer */}
-                    <p className="text-center text-xs text-gray-400 mt-8">
-                        © {new Date().getFullYear()} SITAMMU • v{APP.version}
-                    </p>
                 </div>
             </div>
+
+            {/* Footer */}
+            <footer className="py-6 text-center space-y-1">
+                <p className="text-sm font-bold text-gray-900">SITAMMU</p>
+                <p className="text-xs text-gray-500">{APP.tagline}</p>
+                <p className="text-xs text-gray-400">v{APP.version}</p>
+            </footer>
         </div>
     )
 }
