@@ -188,7 +188,6 @@ export function generateWhatsAppMessage(
         lines.push('')
     }
 
-
     // Footer
     lines.push('━━━━━━━━━━━━━━━━━━━━')
     lines.push('_Dikirim via SITAMMU APP_')
