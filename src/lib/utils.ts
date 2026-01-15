@@ -89,16 +89,16 @@ export function formatRelativeTime(date: Date | string): string {
 }
 
 /**
- * Get tanggal hari ini dalam format YYYY-MM-DD (WIB timezone)
+ * Get tanggal hari ini dalam format YYYY-MM-DD (WITA timezone UTC+8)
  * Fixed for Vercel server which uses UTC
  */
 export function getTodayDateString(): string {
-  // Use Asia/Jakarta timezone (WIB = UTC+7)
+  // Use Asia/Makassar timezone (WITA = UTC+8) for Indonesian Eastern Time
   const now = new Date()
-  const wibDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }))
-  const year = wibDate.getFullYear()
-  const month = String(wibDate.getMonth() + 1).padStart(2, '0')
-  const day = String(wibDate.getDate()).padStart(2, '0')
+  const witaDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Makassar' }))
+  const year = witaDate.getFullYear()
+  const month = String(witaDate.getMonth() + 1).padStart(2, '0')
+  const day = String(witaDate.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
 
@@ -180,12 +180,12 @@ export function capitalize(str: string): string {
 }
 
 /**
- * Generate greeting berdasarkan waktu (WIB)
+ * Generate greeting berdasarkan waktu (WITA)
  */
 export function getGreeting(): string {
   const now = new Date()
-  const wibDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }))
-  const hour = wibDate.getHours()
+  const witaDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Makassar' }))
+  const hour = witaDate.getHours()
   if (hour < 12) return 'Selamat Pagi'
   if (hour < 15) return 'Selamat Siang'
   if (hour < 18) return 'Selamat Sore'
