@@ -275,43 +275,45 @@ export default function AnalyticsPage() {
                 </CardContent>
             </Card>
 
-            {/* Rankings & Demographics */}
+            {/* Payment & Demographics */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Top Destinations */}
+                {/* Payment Method */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <MapPin className="w-5 h-5" />
-                            Destinasi Terpopuler
+                            <Banknote className="w-5 h-5" />
+                            Metode Pembayaran
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {rankings.length === 0 ? (
+                        {!payment ? (
                             <p className="text-center text-gray-500 py-4">Belum ada data</p>
                         ) : (
-                            <div className="space-y-3">
-                                {rankings.slice(0, 5).map((dest, idx) => (
-                                    <div key={dest.destination_id} className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <span className={cn(
-                                                'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
-                                                idx === 0 ? 'bg-yellow-100 text-yellow-700' :
-                                                    idx === 1 ? 'bg-gray-100 text-gray-600' :
-                                                        idx === 2 ? 'bg-orange-100 text-orange-700' :
-                                                            'bg-gray-50 text-gray-500'
-                                            )}>
-                                                {idx + 1}
-                                            </span>
-                                            <div>
-                                                <p className="font-medium">{dest.destination_name}</p>
-                                                <p className="text-xs text-gray-500">{formatNumber(dest.total_visitors)} pengunjung</p>
-                                            </div>
-                                        </div>
-                                        <span className="font-semibold text-green-600">
-                                            {formatRupiah(dest.total_revenue, { compact: true })}
-                                        </span>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-green-100 rounded-full">
+                                        <Wallet className="w-6 h-6 text-green-600" />
                                     </div>
-                                ))}
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-center">
+                                            <p className="text-sm text-gray-500">Cash</p>
+                                            <p className="text-sm text-gray-400">{payment.cash_percentage}%</p>
+                                        </div>
+                                        <p className="text-xl font-bold">{formatRupiah(payment.total_cash, { compact: true })}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-blue-100 rounded-full">
+                                        <CreditCard className="w-6 h-6 text-blue-600" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-center">
+                                            <p className="text-sm text-gray-500">QRIS</p>
+                                            <p className="text-sm text-gray-400">{payment.qris_percentage}%</p>
+                                        </div>
+                                        <p className="text-xl font-bold">{formatRupiah(payment.total_qris, { compact: true })}</p>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </CardContent>
@@ -404,39 +406,41 @@ export default function AnalyticsPage() {
                 </Card>
             </div>
 
-            {/* Payment Analysis */}
+            {/* Top Destinations - Bottom */}
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <Banknote className="w-5 h-5" />
-                        Metode Pembayaran
+                        <MapPin className="w-5 h-5" />
+                        Destinasi Terpopuler
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {!payment ? (
+                    {rankings.length === 0 ? (
                         <p className="text-center text-gray-500 py-4">Belum ada data</p>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-green-100 rounded-full">
-                                    <Wallet className="w-6 h-6 text-green-600" />
+                        <div className="space-y-3">
+                            {rankings.slice(0, 5).map((dest, idx) => (
+                                <div key={dest.destination_id} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <span className={cn(
+                                            'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
+                                            idx === 0 ? 'bg-yellow-100 text-yellow-700' :
+                                                idx === 1 ? 'bg-gray-100 text-gray-600' :
+                                                    idx === 2 ? 'bg-orange-100 text-orange-700' :
+                                                        'bg-gray-50 text-gray-500'
+                                        )}>
+                                            {idx + 1}
+                                        </span>
+                                        <div>
+                                            <p className="font-medium">{dest.destination_name}</p>
+                                            <p className="text-xs text-gray-500">{formatNumber(dest.total_visitors)} pengunjung</p>
+                                        </div>
+                                    </div>
+                                    <span className="font-semibold text-green-600">
+                                        {formatRupiah(dest.total_revenue, { compact: true })}
+                                    </span>
                                 </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">Cash</p>
-                                    <p className="text-2xl font-bold">{formatRupiah(payment.total_cash, { compact: true })}</p>
-                                    <p className="text-sm text-gray-400">{payment.cash_percentage}% dari total</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-blue-100 rounded-full">
-                                    <CreditCard className="w-6 h-6 text-blue-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">QRIS</p>
-                                    <p className="text-2xl font-bold">{formatRupiah(payment.total_qris, { compact: true })}</p>
-                                    <p className="text-sm text-gray-400">{payment.qris_percentage}% dari total</p>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     )}
                 </CardContent>
