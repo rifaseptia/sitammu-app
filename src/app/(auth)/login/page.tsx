@@ -4,7 +4,7 @@ import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { MapPin, User, Lock, Loader2, ShieldCheck, Contact2 } from 'lucide-react'
+import { MapPin, User, Loader2, ShieldCheck, UserCircle2, Sparkles } from 'lucide-react'
 
 import { APP } from '@/lib/constants'
 import { loginSchema, type LoginFormData } from '@/lib/validations'
@@ -13,9 +13,7 @@ import { useAuthStore } from '@/lib/stores/auth-store'
 import { cn } from '@/lib/utils'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { AppFooter } from '@/components/app-footer'
 import {
     Select,
     SelectContent,
@@ -111,11 +109,8 @@ export default function LoginPage() {
         setError(null)
         const result = await loginAction(data)
         if (result.success && result.data) {
-            // Clear old session data first to prevent stale destination_id
             logout()
-            // Small delay to ensure localStorage is cleared
             await new Promise(resolve => setTimeout(resolve, 50))
-            // Set new user data
             login(result.data)
             router.push('/dashboard')
         } else {
@@ -133,11 +128,8 @@ export default function LoginPage() {
             pin: adminPin,
         })
         if (result.success && result.data) {
-            // Clear old session data first to prevent stale destination_id
             logout()
-            // Small delay to ensure localStorage is cleared
             await new Promise(resolve => setTimeout(resolve, 50))
-            // Set new user data
             login(result.data)
             router.push('/admin')
         } else {
@@ -148,64 +140,73 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-50">
-            <div className="w-full max-w-[400px] space-y-6">
-                {/* Branding */}
-                <div className="text-center space-y-2">
-                    <h1 className="text-3xl font-extrabold tracking-tight text-black">
-                        SITAMMU <span className="text-pink-600 font-black">LOGIN</span>
-                    </h1>
-                    <p className="text-sm text-gray-500 font-medium">{APP.tagline}</p>
+        <div className="min-h-screen flex flex-col bg-gradient-to-b from-pink-50 via-white to-white">
+            {/* Header Section */}
+            <div className="pt-12 pb-8 px-6 text-center">
+                {/* Logo/Icon */}
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-pink-500 to-pink-600 shadow-xl shadow-pink-200 mb-6">
+                    <Sparkles className="w-10 h-10 text-white" />
                 </div>
 
-                <Card className="border-gray-200 shadow-sm">
-                    <CardHeader className="space-y-1">
-                        <CardTitle className="text-xl font-bold text-center text-black">Selamat Datang</CardTitle>
-                        <CardDescription className="text-center font-medium">
-                            Silakan masuk menggunakan akun Anda
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-5">
-                        {/* Mode Toggle */}
-                        <div className="flex p-1 bg-gray-100 rounded-lg">
-                            <button
-                                onClick={() => { setIsAdminMode(false); setError(null); }}
-                                className={cn(
-                                    "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-bold transition-all",
-                                    !isAdminMode
-                                        ? "bg-white text-pink-600 shadow-sm"
-                                        : "text-gray-500 hover:text-gray-700"
-                                )}
-                            >
-                                <Contact2 className="w-4 h-4" />
-                                Petugas
-                            </button>
-                            <button
-                                onClick={() => { setIsAdminMode(true); setError(null); }}
-                                className={cn(
-                                    "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-bold transition-all",
-                                    isAdminMode
-                                        ? "bg-white text-pink-600 shadow-sm"
-                                        : "text-gray-500 hover:text-gray-700"
-                                )}
-                            >
-                                <ShieldCheck className="w-4 h-4" />
-                                Admin
-                            </button>
-                        </div>
+                {/* App Name */}
+                <h1 className="text-3xl font-black tracking-tight text-gray-900 mb-2">
+                    SITAMMU
+                </h1>
+                <p className="text-sm text-gray-500 font-medium">
+                    {APP.tagline}
+                </p>
+            </div>
 
+            {/* Main Card */}
+            <div className="flex-1 px-4 pb-8">
+                <div className="max-w-sm mx-auto">
+                    {/* Mode Toggle */}
+                    <div className="flex p-1 bg-gray-100 rounded-2xl mb-6">
+                        <button
+                            onClick={() => { setIsAdminMode(false); setError(null); }}
+                            className={cn(
+                                "flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all",
+                                !isAdminMode
+                                    ? "bg-white text-pink-600 shadow-sm"
+                                    : "text-gray-400 hover:text-gray-600"
+                            )}
+                        >
+                            <UserCircle2 className="w-5 h-5" />
+                            Petugas
+                        </button>
+                        <button
+                            onClick={() => { setIsAdminMode(true); setError(null); }}
+                            className={cn(
+                                "flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all",
+                                isAdminMode
+                                    ? "bg-white text-pink-600 shadow-sm"
+                                    : "text-gray-400 hover:text-gray-600"
+                            )}
+                        >
+                            <ShieldCheck className="w-5 h-5" />
+                            Admin
+                        </button>
+                    </div>
+
+                    {/* Form */}
+                    <div className="bg-white rounded-3xl shadow-xl shadow-gray-100 border border-gray-100 p-6 space-y-5">
                         {!isAdminMode ? (
-                            <div className="space-y-4">
+                            <>
+                                {/* Destination Select */}
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase tracking-wider text-gray-400">Pilih Destinasi</Label>
+                                    <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                        Destinasi
+                                    </Label>
                                     <Select
                                         value={selectedDestination}
                                         onValueChange={(v) => setValue('destination_id', v)}
                                     >
-                                        <SelectTrigger className="w-full h-12 border-gray-200 focus:ring-pink-500/20 focus:border-pink-500">
-                                            <div className="flex items-center gap-2 font-medium">
-                                                <MapPin className="w-4 h-4 text-pink-600" />
-                                                <SelectValue placeholder="Pilih lokasi..." />
+                                        <SelectTrigger className="w-full h-14 rounded-2xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-300 transition-all">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center">
+                                                    <MapPin className="w-5 h-5 text-pink-600" />
+                                                </div>
+                                                <SelectValue placeholder="Pilih lokasi..." className="font-medium" />
                                             </div>
                                         </SelectTrigger>
                                         <SelectContent>
@@ -216,17 +217,22 @@ export default function LoginPage() {
                                     </Select>
                                 </div>
 
+                                {/* User Select */}
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase tracking-wider text-gray-400">Pilih Petugas</Label>
+                                    <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                        Petugas
+                                    </Label>
                                     <Select
                                         value={selectedUser}
                                         onValueChange={(v) => setValue('user_id', v)}
                                         disabled={!selectedDestination}
                                     >
-                                        <SelectTrigger className="w-full h-12 border-gray-200 focus:ring-pink-500/20 focus:border-pink-500">
-                                            <div className="flex items-center gap-2 font-medium">
-                                                <User className="w-4 h-4 text-pink-600" />
-                                                <SelectValue placeholder={isLoadingUsers ? "Memuat..." : "Pilih nama..."} />
+                                        <SelectTrigger className="w-full h-14 rounded-2xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-300 transition-all disabled:opacity-50">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center">
+                                                    <User className="w-5 h-5 text-pink-600" />
+                                                </div>
+                                                <SelectValue placeholder={isLoadingUsers ? "Memuat..." : "Pilih nama..."} className="font-medium" />
                                             </div>
                                         </SelectTrigger>
                                         <SelectContent>
@@ -237,24 +243,32 @@ export default function LoginPage() {
                                     </Select>
                                 </div>
 
-                                <div className="space-y-3 pt-1">
-                                    <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 flex justify-center">Verifikasi PIN</Label>
+                                {/* PIN Input */}
+                                <div className="space-y-3 pt-2">
+                                    <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider text-center block">
+                                        Masukkan PIN
+                                    </Label>
                                     <PinInput
                                         value={pin}
                                         onChange={(v) => setValue('pin', v)}
                                         disabled={!selectedUser || isSubmitting}
                                     />
                                 </div>
-                            </div>
+                            </>
                         ) : (
-                            <div className="space-y-4">
+                            <>
+                                {/* Admin Select */}
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase tracking-wider text-gray-400">Pilih Akun Admin</Label>
+                                    <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                        Akun Admin
+                                    </Label>
                                     <Select value={selectedAdmin} onValueChange={setSelectedAdmin}>
-                                        <SelectTrigger className="w-full h-12 border-gray-200 focus:ring-pink-500/20 focus:border-pink-500">
-                                            <div className="flex items-center gap-2 font-medium">
-                                                <ShieldCheck className="w-4 h-4 text-pink-600" />
-                                                <SelectValue placeholder="Pilih admin..." />
+                                        <SelectTrigger className="w-full h-14 rounded-2xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-300 transition-all">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center">
+                                                    <ShieldCheck className="w-5 h-5 text-pink-600" />
+                                                </div>
+                                                <SelectValue placeholder="Pilih admin..." className="font-medium" />
                                             </div>
                                         </SelectTrigger>
                                         <SelectContent>
@@ -265,34 +279,48 @@ export default function LoginPage() {
                                     </Select>
                                 </div>
 
-                                <div className="space-y-3 pt-1">
-                                    <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 flex justify-center">PIN Admin</Label>
+                                {/* Admin PIN */}
+                                <div className="space-y-3 pt-2">
+                                    <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider text-center block">
+                                        PIN Admin
+                                    </Label>
                                     <PinInput
                                         value={adminPin}
                                         onChange={setAdminPin}
                                         disabled={!selectedAdmin || isSubmitting}
                                     />
                                 </div>
+                            </>
+                        )}
+
+                        {/* Error Message */}
+                        {error && (
+                            <div className="bg-red-50 border border-red-100 rounded-2xl p-4">
+                                <p className="text-sm text-red-600 text-center font-bold">
+                                    {error}
+                                </p>
                             </div>
                         )}
 
-                        {error && (
-                            <p className="text-sm text-red-600 text-center font-bold bg-red-50 py-2.5 rounded-md border border-red-100">
-                                {error}
-                            </p>
-                        )}
-
+                        {/* Submit Button */}
                         <Button
-                            className="w-full h-12 bg-pink-600 hover:bg-pink-700 text-white font-black uppercase tracking-wider shadow-lg shadow-pink-100"
+                            className="w-full h-14 rounded-2xl bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white font-bold text-base shadow-lg shadow-pink-200 transition-all active:scale-[0.98]"
                             onClick={isAdminMode ? handleAdminLogin : handleSubmit(onSubmit)}
                             disabled={isSubmitting}
                         >
-                            {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Masuk Sekarang"}
+                            {isSubmitting ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                "Masuk"
+                            )}
                         </Button>
-                    </CardContent>
-                </Card>
+                    </div>
 
-                <AppFooter variant="minimal" className="font-bold uppercase tracking-[0.2em]" />
+                    {/* Footer */}
+                    <p className="text-center text-xs text-gray-400 mt-8">
+                        © {new Date().getFullYear()} SITAMMU • v{APP.version}
+                    </p>
+                </div>
             </div>
         </div>
     )

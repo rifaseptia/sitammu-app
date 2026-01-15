@@ -2,14 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, ClipboardEdit, History, LogOut } from 'lucide-react'
+import { LayoutGrid, PenSquare, CalendarClock, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/lib/stores/auth-store'
 
 const navItems = [
-    { href: '/dashboard', icon: Home, label: 'Beranda' },
-    { href: '/input', icon: ClipboardEdit, label: 'Input' },
-    { href: '/riwayat', icon: History, label: 'Riwayat' },
+    { href: '/dashboard', icon: LayoutGrid, label: 'Beranda' },
+    { href: '/input', icon: PenSquare, label: 'Input' },
+    { href: '/riwayat', icon: CalendarClock, label: 'Riwayat' },
 ]
 
 export function BottomNav() {
@@ -22,7 +22,7 @@ export function BottomNav() {
     }
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 shadow-lg safe-area-bottom">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-gray-100 safe-area-bottom">
             <div className="flex items-center justify-around h-20 max-w-lg mx-auto px-2">
                 {navItems.map((item) => {
                     const isActive = pathname === item.href
@@ -31,25 +31,23 @@ export function BottomNav() {
                             key={item.href}
                             href={item.href}
                             className={cn(
-                                'flex flex-col items-center justify-center flex-1 h-full py-2 rounded-xl mx-1',
-                                'transition-all duration-200',
-                                isActive
-                                    ? 'text-pink-600 bg-pink-50'
-                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                                'flex flex-col items-center justify-center flex-1 h-full py-2 transition-all duration-200'
                             )}
                         >
                             <div className={cn(
-                                'transition-transform duration-200',
-                                isActive && '-translate-y-0.5'
+                                'w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-200',
+                                isActive
+                                    ? 'bg-gradient-to-br from-pink-500 to-pink-600 shadow-lg shadow-pink-200'
+                                    : 'bg-transparent'
                             )}>
                                 <item.icon className={cn(
-                                    'w-7 h-7',
-                                    isActive && 'stroke-[2.5px]'
+                                    'w-6 h-6 transition-all',
+                                    isActive ? 'text-white' : 'text-gray-400'
                                 )} />
                             </div>
                             <span className={cn(
-                                'text-sm mt-1',
-                                isActive ? 'font-bold' : 'font-medium'
+                                'text-xs mt-1.5 transition-all',
+                                isActive ? 'font-bold text-pink-600' : 'font-medium text-gray-400'
                             )}>
                                 {item.label}
                             </span>
@@ -60,10 +58,14 @@ export function BottomNav() {
                 {/* Logout button */}
                 <button
                     onClick={handleLogout}
-                    className="flex flex-col items-center justify-center flex-1 h-full py-2 rounded-xl mx-1 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200"
+                    className="flex flex-col items-center justify-center flex-1 h-full py-2 transition-all duration-200 group"
                 >
-                    <LogOut className="w-7 h-7" />
-                    <span className="text-sm font-medium mt-1">Keluar</span>
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-200 group-hover:bg-red-50 group-active:bg-red-100">
+                        <LogOut className="w-6 h-6 text-gray-400 group-hover:text-red-500 transition-colors" />
+                    </div>
+                    <span className="text-xs font-medium mt-1.5 text-gray-400 group-hover:text-red-500 transition-colors">
+                        Keluar
+                    </span>
                 </button>
             </div>
         </nav>
