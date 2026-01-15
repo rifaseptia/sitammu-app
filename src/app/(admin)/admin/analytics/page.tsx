@@ -294,49 +294,9 @@ export default function AnalyticsPage() {
                 </CardContent>
             </Card>
 
-            {/* Rankings & Demographics */}
+            {/* Demographics & Gender Side by Side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Top Destinations */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <MapPin className="w-5 h-5" />
-                            Destinasi Terpopuler
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {rankings.length === 0 ? (
-                            <p className="text-center text-gray-500 py-4">Belum ada data</p>
-                        ) : (
-                            <div className="space-y-3">
-                                {rankings.slice(0, 5).map((dest, idx) => (
-                                    <div key={dest.destination_id} className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <span className={cn(
-                                                'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
-                                                idx === 0 ? 'bg-yellow-100 text-yellow-700' :
-                                                    idx === 1 ? 'bg-gray-100 text-gray-600' :
-                                                        idx === 2 ? 'bg-orange-100 text-orange-700' :
-                                                            'bg-gray-50 text-gray-500'
-                                            )}>
-                                                {idx + 1}
-                                            </span>
-                                            <div>
-                                                <p className="font-medium">{dest.destination_name}</p>
-                                                <p className="text-xs text-gray-500">{formatNumber(dest.total_visitors)} pengunjung</p>
-                                            </div>
-                                        </div>
-                                        <span className="font-semibold text-green-600">
-                                            {formatRupiah(dest.total_revenue, { compact: true })}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Demographics */}
+                {/* Demographics - Left */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -348,75 +308,85 @@ export default function AnalyticsPage() {
                         {!demographics ? (
                             <p className="text-center text-gray-500 py-4">Belum ada data</p>
                         ) : (
-                            <div className="space-y-4">
-                                {/* Donut Chart - Category distribution */}
-                                <DonutChart
-                                    data={[
-                                        { label: 'Anak', value: demographics.total_anak, color: CHART_COLORS.info },
-                                        { label: 'Dewasa', value: demographics.total_dewasa, color: CHART_COLORS.primary },
-                                        { label: 'WNA', value: demographics.total_wna, color: CHART_COLORS.success },
-                                    ]}
-                                    size={140}
-                                    centerValue={formatNumber(totalVisitors)}
-                                    centerLabel="Total"
-                                />
+                            <DonutChart
+                                data={[
+                                    { label: 'Anak', value: demographics.total_anak, color: CHART_COLORS.info },
+                                    { label: 'Dewasa', value: demographics.total_dewasa, color: CHART_COLORS.primary },
+                                    { label: 'WNA', value: demographics.total_wna, color: CHART_COLORS.success },
+                                ]}
+                                size={140}
+                                centerValue={formatNumber(totalVisitors)}
+                                centerLabel="Total"
+                            />
+                        )}
+                    </CardContent>
+                </Card>
 
-                                {/* Gender ratio - Anak */}
-                                {demographics.total_anak > 0 && (
-                                    <div>
-                                        <p className="text-sm font-medium mb-2 text-blue-700">Gender Anak</p>
-                                        <div className="flex h-4 rounded-full overflow-hidden bg-gray-100">
-                                            <div
-                                                className="bg-blue-400"
-                                                style={{
-                                                    width: `${demographics.total_anak > 0 ? (demographics.anak_male / demographics.total_anak) * 100 : 50}%`
-                                                }}
-                                            />
-                                            <div
-                                                className="bg-pink-400"
-                                                style={{
-                                                    width: `${demographics.total_anak > 0 ? (demographics.anak_female / demographics.total_anak) * 100 : 50}%`
-                                                }}
-                                            />
-                                        </div>
-                                        <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                            <span>L: {formatNumber(demographics.anak_male)}</span>
-                                            <span>P: {formatNumber(demographics.anak_female)}</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Gender ratio - Dewasa */}
+                {/* Gender - Right */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Users className="w-5 h-5" />
+                            Gender Pengunjung
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {!demographics ? (
+                            <p className="text-center text-gray-500 py-4">Belum ada data</p>
+                        ) : (
+                            <div className="flex flex-col md:flex-row gap-6 items-center justify-center">
+                                {/* Gender Dewasa */}
                                 {demographics.total_dewasa > 0 && (
-                                    <div>
-                                        <p className="text-sm font-medium mb-2 text-purple-700">Gender Dewasa</p>
-                                        <div className="flex h-4 rounded-full overflow-hidden bg-gray-100">
-                                            <div
-                                                className="bg-blue-500"
-                                                style={{
-                                                    width: `${demographics.total_dewasa > 0 ? (demographics.dewasa_male / demographics.total_dewasa) * 100 : 50}%`
-                                                }}
-                                            />
-                                            <div
-                                                className="bg-pink-500"
-                                                style={{
-                                                    width: `${demographics.total_dewasa > 0 ? (demographics.dewasa_female / demographics.total_dewasa) * 100 : 50}%`
-                                                }}
-                                            />
-                                        </div>
-                                        <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                            <span>L: {formatNumber(demographics.dewasa_male)}</span>
-                                            <span>P: {formatNumber(demographics.dewasa_female)}</span>
-                                        </div>
+                                    <div className="text-center">
+                                        <p className="text-sm font-medium mb-2 text-gray-600">Dewasa</p>
+                                        <DonutChart
+                                            data={[
+                                                { label: 'Laki-laki', value: demographics.dewasa_male, color: CHART_COLORS.info },
+                                                { label: 'Perempuan', value: demographics.dewasa_female, color: CHART_COLORS.pink },
+                                            ]}
+                                            size={100}
+                                            strokeWidth={16}
+                                            showLegend={false}
+                                            centerValue={formatNumber(demographics.total_dewasa)}
+                                            centerLabel=""
+                                        />
                                     </div>
                                 )}
+                                {/* Gender Anak */}
+                                {demographics.total_anak > 0 && (
+                                    <div className="text-center">
+                                        <p className="text-sm font-medium mb-2 text-gray-600">Anak</p>
+                                        <DonutChart
+                                            data={[
+                                                { label: 'Laki-laki', value: demographics.anak_male, color: CHART_COLORS.info },
+                                                { label: 'Perempuan', value: demographics.anak_female, color: CHART_COLORS.pink },
+                                            ]}
+                                            size={100}
+                                            strokeWidth={16}
+                                            showLegend={false}
+                                            centerValue={formatNumber(demographics.total_anak)}
+                                            centerLabel=""
+                                        />
+                                    </div>
+                                )}
+                                {/* Legend */}
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS.info }} />
+                                        <span>Laki-laki</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS.pink }} />
+                                        <span>Perempuan</span>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Payment Analysis */}
+            {/* Payment Analysis - Pie Chart Only */}
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -428,41 +398,56 @@ export default function AnalyticsPage() {
                     {!payment ? (
                         <p className="text-center text-gray-500 py-4">Belum ada data</p>
                     ) : (
-                        <div className="flex flex-col md:flex-row items-center gap-6">
-                            {/* Donut Chart */}
+                        <div className="flex justify-center">
                             <DonutChart
                                 data={[
                                     { label: 'Cash', value: payment.total_cash, color: CHART_COLORS.success },
                                     { label: 'QRIS', value: payment.total_qris, color: CHART_COLORS.primary },
                                 ]}
-                                size={140}
+                                size={160}
                                 centerValue={formatRupiah(payment.total_cash + payment.total_qris, { compact: true })}
                                 centerLabel="Total"
                             />
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
 
-                            {/* Summary Cards */}
-                            <div className="grid grid-cols-2 gap-4 flex-1">
-                                <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-xl">
-                                    <div className="p-2 bg-emerald-100 rounded-lg">
-                                        <Wallet className="w-5 h-5 text-emerald-600" />
+            {/* Destinasi Terpopuler - Bottom Section */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <MapPin className="w-5 h-5" />
+                        Destinasi Terpopuler
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {rankings.length === 0 ? (
+                        <p className="text-center text-gray-500 py-4">Belum ada data</p>
+                    ) : (
+                        <div className="space-y-3">
+                            {rankings.slice(0, 5).map((dest, idx) => (
+                                <div key={dest.destination_id} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <span className={cn(
+                                            'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
+                                            idx === 0 ? 'bg-yellow-100 text-yellow-700' :
+                                                idx === 1 ? 'bg-gray-100 text-gray-600' :
+                                                    idx === 2 ? 'bg-orange-100 text-orange-700' :
+                                                        'bg-gray-50 text-gray-500'
+                                        )}>
+                                            {idx + 1}
+                                        </span>
+                                        <div>
+                                            <p className="font-medium">{dest.destination_name}</p>
+                                            <p className="text-xs text-gray-500">{formatNumber(dest.total_visitors)} pengunjung</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Cash</p>
-                                        <p className="text-lg font-bold">{formatRupiah(payment.total_cash, { compact: true })}</p>
-                                        <p className="text-xs text-emerald-600 font-medium">{payment.cash_percentage}%</p>
-                                    </div>
+                                    <span className="font-semibold text-green-600">
+                                        {formatRupiah(dest.total_revenue, { compact: true })}
+                                    </span>
                                 </div>
-                                <div className="flex items-center gap-3 p-4 bg-indigo-50 rounded-xl">
-                                    <div className="p-2 bg-indigo-100 rounded-lg">
-                                        <CreditCard className="w-5 h-5 text-indigo-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">QRIS</p>
-                                        <p className="text-lg font-bold">{formatRupiah(payment.total_qris, { compact: true })}</p>
-                                        <p className="text-xs text-indigo-600 font-medium">{payment.qris_percentage}%</p>
-                                    </div>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     )}
                 </CardContent>
