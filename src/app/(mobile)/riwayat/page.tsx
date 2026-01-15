@@ -2,13 +2,12 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
-import { Clock, ChevronRight, Users, Banknote, CheckCircle2, FileEdit } from 'lucide-react'
+import { Clock, ChevronRight, Users, Banknote, CheckCircle2, FileEdit, MapPin, Loader2 } from 'lucide-react'
 
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { getRecentReports } from '@/actions/reports'
 import { formatDateShort, formatRupiah, cn } from '@/lib/utils'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
 import type { DailyReport } from '@/types'
@@ -39,7 +38,7 @@ export default function RiwayatPage() {
         loadReports()
     }, [loadReports])
 
-    // Auto-refresh when tab becomes visible (sync across devices)
+    // Auto-refresh when tab becomes visible
     React.useEffect(() => {
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible' && user?.destination_id) {
@@ -53,77 +52,81 @@ export default function RiwayatPage() {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="w-8 h-8 border-4 border-pink-600 border-t-transparent rounded-full animate-spin" />
+                <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
             </div>
         )
     }
 
     return (
-        <div className="px-4 py-6 space-y-4">
+        <div className="px-5 py-6 space-y-6">
             {/* Header */}
-            <header>
-                <h1 className="text-xl font-bold text-gray-900">Riwayat Laporan</h1>
-                <p className="text-sm text-gray-600">7 hari terakhir</p>
+            <header className="space-y-1">
+                <h1 className="text-2xl font-black text-gray-900">Riwayat Laporan</h1>
+                <div className="flex items-center gap-2 text-gray-700">
+                    <MapPin className="w-5 h-5 text-pink-600" />
+                    <span className="text-lg font-bold">{user?.destination?.name}</span>
+                </div>
+                <p className="text-base text-gray-500">7 hari terakhir</p>
             </header>
 
             {reports.length === 0 ? (
-                <Card>
-                    <CardContent className="pt-6 text-center">
-                        <Clock className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <h2 className="text-lg font-semibold text-gray-700 mb-2">
-                            Belum Ada Riwayat
-                        </h2>
-                        <p className="text-gray-500">
-                            Riwayat laporan akan muncul di sini
-                        </p>
-                    </CardContent>
-                </Card>
+                <div className="border-2 border-gray-200 rounded-2xl p-8 text-center bg-white">
+                    <Clock className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <h2 className="text-xl font-bold text-gray-700 mb-2">
+                        Belum Ada Riwayat
+                    </h2>
+                    <p className="text-gray-500">
+                        Riwayat laporan akan muncul di sini
+                    </p>
+                </div>
             ) : (
-                <div className="space-y-3">
+                <div className="space-y-4">
                     {reports.map((report) => (
-                        <Card
+                        <button
                             key={report.id}
-                            className="hover:shadow-md transition-shadow cursor-pointer"
+                            className="w-full text-left border-2 border-gray-200 rounded-2xl bg-white p-5 transition-all active:scale-[0.98]"
                             onClick={() => {
-                                // Navigate to report view with date param
                                 router.push(`/laporan?date=${report.report_date}`)
                             }}
                         >
-                            <CardContent className="py-4">
-                                <div className="flex items-center justify-between">
-                                    <div className="space-y-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-900">
-                                                {formatDateShort(report.report_date)}
-                                            </span>
-                                            <Badge className={cn(
-                                                'text-xs',
-                                                report.status === 'submitted'
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : 'bg-yellow-100 text-yellow-700'
-                                            )}>
-                                                {report.status === 'submitted' ? (
-                                                    <><CheckCircle2 className="w-3 h-3 mr-1" />Submitted</>
-                                                ) : (
-                                                    <><FileEdit className="w-3 h-3 mr-1" />Draft</>
-                                                )}
-                                            </Badge>
-                                        </div>
-                                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                                            <span className="flex items-center gap-1">
-                                                <Users className="w-4 h-4" />
-                                                {report.total_visitors.toLocaleString('id-ID')} orang
-                                            </span>
-                                            <span className="flex items-center gap-1">
-                                                <Banknote className="w-4 h-4" />
-                                                {formatRupiah(report.total_revenue, { compact: true })}
-                                            </span>
-                                        </div>
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-2">
+                                    {/* Date & Status */}
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-lg font-bold text-gray-900">
+                                            {formatDateShort(report.report_date)}
+                                        </span>
+                                        <Badge className={cn(
+                                            'font-bold border-0',
+                                            report.status === 'submitted'
+                                                ? 'bg-green-100 text-green-700'
+                                                : 'bg-yellow-100 text-yellow-700'
+                                        )}>
+                                            {report.status === 'submitted' ? (
+                                                <><CheckCircle2 className="w-3.5 h-3.5 mr-1" />Submitted</>
+                                            ) : (
+                                                <><FileEdit className="w-3.5 h-3.5 mr-1" />Draft</>
+                                            )}
+                                        </Badge>
                                     </div>
-                                    <ChevronRight className="w-5 h-5 text-gray-400" />
+
+                                    {/* Stats */}
+                                    <div className="flex items-center gap-5 text-base text-gray-600">
+                                        <span className="flex items-center gap-2">
+                                            <Users className="w-5 h-5 text-pink-600" />
+                                            <span className="font-bold">{report.total_visitors.toLocaleString('id-ID')}</span>
+                                            <span className="text-gray-400">orang</span>
+                                        </span>
+                                        <span className="flex items-center gap-2">
+                                            <Banknote className="w-5 h-5 text-green-600" />
+                                            <span className="font-bold">{formatRupiah(report.total_revenue, { compact: true })}</span>
+                                        </span>
+                                    </div>
                                 </div>
-                            </CardContent>
-                        </Card>
+
+                                <ChevronRight className="w-6 h-6 text-gray-300" />
+                            </div>
+                        </button>
                     ))}
                 </div>
             )}

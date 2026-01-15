@@ -89,14 +89,14 @@ export function TicketBlockInput({
     }
 
     const categories = [
-        { key: 'anak' as const, label: 'Anak', bgColor: 'bg-blue-100', headerColor: 'bg-blue-500', textColor: 'text-blue-700' },
-        { key: 'dewasa' as const, label: 'Dewasa', bgColor: 'bg-purple-100', headerColor: 'bg-purple-500', textColor: 'text-purple-700' },
-        { key: 'wna' as const, label: 'WNA', bgColor: 'bg-green-100', headerColor: 'bg-green-500', textColor: 'text-green-700' },
+        { key: 'anak' as const, label: 'Anak' },
+        { key: 'dewasa' as const, label: 'Dewasa' },
+        { key: 'wna' as const, label: 'WNA' },
     ]
 
     return (
-        <div className="space-y-3">
-            {categories.map(({ key, label, bgColor, headerColor, textColor }) => {
+        <div className="space-y-4">
+            {categories.map(({ key, label }) => {
                 const blocks = value[key]
                 const totalCount = blocks.reduce(
                     (sum, b) => sum + calculateCount(b.start_no, b.end_no),
@@ -113,57 +113,57 @@ export function TicketBlockInput({
                 if (!alwaysShow && expected === 0 && !hasInput) return null
 
                 return (
-                    <div key={key} className={cn('rounded-xl overflow-hidden', bgColor)}>
-                        {/* Header - full width colored bar */}
-                        <div className={cn('px-4 py-3 flex items-center justify-between', headerColor)}>
-                            <span className="text-white font-bold text-lg">
+                    <div key={key} className="border-2 border-gray-200 rounded-2xl overflow-hidden bg-white">
+                        {/* Header */}
+                        <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100 bg-gray-50">
+                            <span className="text-gray-900 font-bold text-lg">
                                 Tiket {label}
                             </span>
                             <div className="flex items-center gap-2">
                                 <span className={cn(
-                                    'px-3 py-1 rounded-full text-sm font-bold',
-                                    hasBlocks && isMatch && 'bg-white text-green-600',
-                                    hasBlocks && !isMatch && 'bg-white text-orange-600',
-                                    !hasBlocks && 'bg-white/50 text-white'
+                                    'px-3 py-1 rounded-full text-sm font-bold border',
+                                    hasBlocks && isMatch && 'bg-green-50 text-green-600 border-green-200',
+                                    hasBlocks && !isMatch && 'bg-red-50 text-red-600 border-red-200',
+                                    !hasBlocks && 'bg-gray-100 text-gray-500 border-gray-200'
                                 )}>
                                     {totalCount} / {expected}
                                 </span>
                                 {hasBlocks && (
                                     isMatch ? (
-                                        <CheckCircle2 className="w-6 h-6 text-white" />
+                                        <CheckCircle2 className="w-5 h-5 text-green-600" />
                                     ) : (
-                                        <AlertCircle className="w-6 h-6 text-white" />
+                                        <AlertCircle className="w-5 h-5 text-red-500" />
                                     )
                                 )}
                             </div>
                         </div>
 
-                        {/* Content - no horizontal padding */}
-                        <div className="px-2 py-3 space-y-3">
-                            {/* Labels - only show for first row */}
-                            <div className="grid grid-cols-12 gap-1 px-1">
+                        {/* Content */}
+                        <div className="p-4 space-y-3">
+                            {/* Labels */}
+                            <div className="grid grid-cols-12 gap-2 px-1">
                                 <div className="col-span-3">
-                                    <Label className="text-xs text-gray-600">Blok</Label>
+                                    <Label className="text-sm font-bold text-gray-500">Blok</Label>
                                 </div>
                                 <div className="col-span-4">
-                                    <Label className="text-xs text-gray-600">Awal</Label>
+                                    <Label className="text-sm font-bold text-gray-500">Awal</Label>
                                 </div>
                                 <div className="col-span-4">
-                                    <Label className="text-xs text-gray-600">Akhir</Label>
+                                    <Label className="text-sm font-bold text-gray-500">Akhir</Label>
                                 </div>
                                 <div className="col-span-1"></div>
                             </div>
 
                             {/* Block Entries */}
                             {blocks.map((block) => (
-                                <div key={block.id} className="grid grid-cols-12 gap-1 items-center">
+                                <div key={block.id} className="grid grid-cols-12 gap-2 items-center">
                                     <div className="col-span-3">
                                         <Input
                                             value={block.block_no}
                                             onChange={(e) => updateBlock(key, block.id, 'block_no', e.target.value)}
                                             placeholder="197"
                                             inputMode="numeric"
-                                            className="h-12 text-center text-lg font-semibold border-0 bg-white"
+                                            className="h-12 text-center text-lg font-bold border-2 border-gray-200 rounded-xl placeholder:text-gray-300 placeholder:font-normal"
                                             disabled={disabled}
                                         />
                                     </div>
@@ -173,7 +173,7 @@ export function TicketBlockInput({
                                             onChange={(e) => updateBlock(key, block.id, 'start_no', e.target.value)}
                                             placeholder="00001"
                                             inputMode="numeric"
-                                            className="h-12 font-mono text-base text-center border-0 bg-white"
+                                            className="h-12 font-mono text-base text-center border-2 border-gray-200 rounded-xl placeholder:text-gray-300"
                                             disabled={disabled}
                                         />
                                     </div>
@@ -183,7 +183,7 @@ export function TicketBlockInput({
                                             onChange={(e) => updateBlock(key, block.id, 'end_no', e.target.value)}
                                             placeholder="00100"
                                             inputMode="numeric"
-                                            className="h-12 font-mono text-base text-center border-0 bg-white"
+                                            className="h-12 font-mono text-base text-center border-2 border-gray-200 rounded-xl placeholder:text-gray-300"
                                             disabled={disabled}
                                         />
                                     </div>
@@ -194,7 +194,7 @@ export function TicketBlockInput({
                                             size="icon"
                                             onClick={() => removeBlock(key, block.id)}
                                             disabled={disabled || blocks.length <= 1}
-                                            className="h-10 w-10 p-0 text-red-500 hover:text-red-700 hover:bg-red-100"
+                                            className="h-10 w-10 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50"
                                         >
                                             <Trash2 className="w-5 h-5" />
                                         </Button>
@@ -204,7 +204,7 @@ export function TicketBlockInput({
 
                             {/* Count display */}
                             {hasBlocks && (
-                                <div className={cn('text-center py-2 rounded-lg font-bold', textColor)}>
+                                <div className="text-center py-2 text-gray-600 font-bold">
                                     Total: {totalCount} tiket
                                 </div>
                             )}
@@ -212,19 +212,20 @@ export function TicketBlockInput({
                             {/* Add Block Button */}
                             <Button
                                 type="button"
-                                variant="ghost"
+                                variant="outline"
                                 onClick={() => addBlock(key)}
                                 disabled={disabled}
-                                className={cn('w-full h-12 text-base font-semibold', textColor, 'hover:bg-white/50')}
+                                className="w-full h-12 text-base font-bold rounded-xl border-2 border-dashed border-gray-300 text-gray-600 hover:border-pink-300 hover:text-pink-600"
                             >
                                 <Plus className="w-5 h-5 mr-2" />
-                                + Blok {label}
+                                Tambah Blok
                             </Button>
 
                             {/* Validation Message */}
                             {hasBlocks && !isMatch && (
-                                <p className="text-sm text-orange-700 text-center font-medium">
-                                    ⚠️ Total ({totalCount}) ≠ Jumlah {label} ({expected})
+                                <p className="text-sm text-red-600 text-center font-medium flex items-center justify-center gap-1">
+                                    <AlertCircle className="w-4 h-4" />
+                                    Total ({totalCount}) tidak sama dengan Jumlah {label} ({expected})
                                 </p>
                             )}
                         </div>

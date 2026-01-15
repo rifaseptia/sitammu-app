@@ -94,74 +94,85 @@ export function AttractionInput({ attraction, data, onChange, disabled }: Attrac
     }
 
     return (
-        <Card className="border-l-4 border-l-purple-500">
-            <CardHeader className="pb-2">
-                <CardTitle className="flex items-center justify-between text-base">
-                    <div className="flex items-center gap-2">
-                        {attraction.requires_ticket_block ? (
-                            <Ticket className="w-5 h-5 text-purple-600" />
-                        ) : (
-                            <Hash className="w-5 h-5 text-purple-600" />
-                        )}
-                        <span>{attraction.name}</span>
-                        <Badge variant="outline">{formatRupiah(attraction.price)}</Badge>
-                    </div>
-                    <span className="text-sm font-normal text-gray-500">
-                        {formatRupiah(revenue)}
-                    </span>
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
+        <div className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
+            {/* Header */}
+            <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100 bg-gray-50">
+                <div className="flex items-center gap-2">
+                    {attraction.requires_ticket_block ? (
+                        <Ticket className="w-5 h-5 text-pink-600" />
+                    ) : (
+                        <Hash className="w-5 h-5 text-pink-600" />
+                    )}
+                    <span className="font-bold text-gray-900">{attraction.name}</span>
+                    <Badge variant="outline" className="text-pink-600 border-pink-200">{formatRupiah(attraction.price)}</Badge>
+                </div>
+                <span className="text-base font-bold text-gray-700">
+                    {formatRupiah(revenue)}
+                </span>
+            </div>
+
+            {/* Content */}
+            <div className="p-4 space-y-3">
                 {attraction.requires_ticket_block ? (
                     // Ticket block input mode
                     <>
-                        <div className="space-y-2">
-                            {data.ticket_blocks.map((block, idx) => (
-                                <div key={block.id} className="grid grid-cols-12 gap-1 items-center">
+                        <div className="space-y-3">
+                            {/* Labels */}
+                            <div className="grid grid-cols-12 gap-2 px-1">
+                                <div className="col-span-3">
+                                    <Label className="text-sm font-bold text-gray-500">Blok</Label>
+                                </div>
+                                <div className="col-span-4">
+                                    <Label className="text-sm font-bold text-gray-500">Awal</Label>
+                                </div>
+                                <div className="col-span-4">
+                                    <Label className="text-sm font-bold text-gray-500">Akhir</Label>
+                                </div>
+                                <div className="col-span-1"></div>
+                            </div>
+
+                            {data.ticket_blocks.map((block) => (
+                                <div key={block.id} className="grid grid-cols-12 gap-2 items-center">
                                     <div className="col-span-3">
-                                        {idx === 0 && <Label className="text-xs text-gray-500">Blok</Label>}
                                         <Input
                                             value={block.block_no}
                                             onChange={(e) => updateTicketBlock(block.id, 'block_no', e.target.value)}
                                             placeholder="197"
                                             inputMode="numeric"
-                                            className="h-10 text-center font-semibold"
+                                            className="h-12 text-center text-lg font-bold border-2 border-gray-200 rounded-xl placeholder:text-gray-300 placeholder:font-normal"
                                             disabled={disabled}
                                         />
                                     </div>
                                     <div className="col-span-4">
-                                        {idx === 0 && <Label className="text-xs text-gray-500">Awal</Label>}
                                         <Input
                                             value={block.start_no}
                                             onChange={(e) => updateTicketBlock(block.id, 'start_no', e.target.value)}
                                             placeholder="00001"
                                             inputMode="numeric"
-                                            className="h-10 text-center font-mono"
+                                            className="h-12 font-mono text-base text-center border-2 border-gray-200 rounded-xl placeholder:text-gray-300"
                                             disabled={disabled}
                                         />
                                     </div>
                                     <div className="col-span-4">
-                                        {idx === 0 && <Label className="text-xs text-gray-500">Akhir</Label>}
                                         <Input
                                             value={block.end_no}
                                             onChange={(e) => updateTicketBlock(block.id, 'end_no', e.target.value)}
                                             placeholder="00100"
                                             inputMode="numeric"
-                                            className="h-10 text-center font-mono"
+                                            className="h-12 font-mono text-base text-center border-2 border-gray-200 rounded-xl placeholder:text-gray-300"
                                             disabled={disabled}
                                         />
                                     </div>
                                     <div className="col-span-1 flex justify-center">
-                                        {idx === 0 && <div className="h-4" />}
                                         <Button
                                             type="button"
                                             variant="ghost"
                                             size="icon"
-                                            className="h-8 w-8 text-red-500"
+                                            className="h-10 w-10 text-gray-400 hover:text-red-500 hover:bg-red-50"
                                             onClick={() => removeTicketBlock(block.id)}
                                             disabled={disabled || data.ticket_blocks.length <= 1}
                                         >
-                                            <Trash2 className="w-4 h-4" />
+                                            <Trash2 className="w-5 h-5" />
                                         </Button>
                                     </div>
                                 </div>
@@ -170,35 +181,36 @@ export function AttractionInput({ attraction, data, onChange, disabled }: Attrac
                         <Button
                             type="button"
                             variant="outline"
-                            size="sm"
                             onClick={addTicketBlock}
                             disabled={disabled}
-                            className="w-full"
+                            className="w-full h-12 text-base font-bold rounded-xl border-2 border-dashed border-gray-300 text-gray-600 hover:border-pink-300 hover:text-pink-600"
                         >
-                            <Plus className="w-4 h-4 mr-1" />
+                            <Plus className="w-5 h-5 mr-2" />
                             Tambah Blok
                         </Button>
-                        <div className="text-center text-sm text-gray-600">
-                            Total: <strong>{data.visitor_count}</strong> pengunjung
+                        <div className="text-center text-base text-gray-600 font-bold">
+                            Total: {data.visitor_count} pengunjung
                         </div>
                     </>
                 ) : (
-                    // Simple count input mode (e.g., toilet)
-                    <div className="flex items-center gap-4">
-                        <Label className="text-sm">Jumlah</Label>
-                        <Input
-                            type="number"
-                            inputMode="numeric"
-                            value={data.visitor_count || ''}
-                            onChange={(e) => handleCountChange(parseInt(e.target.value) || 0)}
-                            className="w-32 text-center text-lg font-semibold"
-                            disabled={disabled}
-                        />
-                        <span className="text-sm text-gray-500">pengunjung</span>
+                    // Simple count input mode
+                    <div className="flex items-center justify-between">
+                        <Label className="text-base font-bold">Jumlah</Label>
+                        <div className="flex items-center gap-3">
+                            <Input
+                                type="number"
+                                inputMode="numeric"
+                                value={data.visitor_count || ''}
+                                onChange={(e) => handleCountChange(parseInt(e.target.value) || 0)}
+                                className="w-24 h-12 text-center text-lg font-bold border-2 border-gray-200 rounded-xl"
+                                disabled={disabled}
+                            />
+                            <span className="text-base text-gray-500">pengunjung</span>
+                        </div>
                     </div>
                 )}
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     )
 }
 

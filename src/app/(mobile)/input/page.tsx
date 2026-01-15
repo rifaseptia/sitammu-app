@@ -12,7 +12,10 @@ import {
     MessageSquare,
     AlertCircle,
     CheckCircle2,
-    Loader2
+    Loader2,
+    Ticket,
+    Sparkles,
+    MapPin
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -32,11 +35,8 @@ import {
     cn
 } from '@/lib/utils'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Separator } from '@/components/ui/separator'
 import { NumberStepper } from '@/components/ui/number-stepper'
 import { CountrySelector } from '@/components/mobile/country-selector'
 import { TicketBlockInput, createEmptyTicketBlockData, ticketBlockDataToArray, arrayToTicketBlockData, type TicketBlockData } from '@/components/mobile/ticket-block-input'
@@ -77,7 +77,6 @@ export default function InputPage() {
     const [showWnaSection, setShowWnaSection] = React.useState(false)
 
     // Calculated values
-    // Calculate attraction revenue
     const attractionRevenue = attractions.reduce((sum, att) => {
         const data = attractionData[att.id]
         return sum + (data ? data.visitor_count * att.price : 0)
@@ -89,7 +88,7 @@ export default function InputPage() {
     const totalRevenue = anakRevenue + dewasaRevenue + wnaRevenue + attractionRevenue
     const totalVisitors = anak + dewasa + wna
 
-    // Validations (functions return boolean)
+    // Validations
     const isGenderValid = validateDewasaGender(dewasa, dewasaMale, dewasaFemale)
     const isAnakGenderValid = anak > 0 ? (anakMale + anakFemale === anak) : true
     const isCountryValid = wna > 0 ? validateWnaCountries(wna, wnaCountries) : true
@@ -98,19 +97,14 @@ export default function InputPage() {
 
     // Load existing report and attractions
     const loadReport = React.useCallback(async () => {
-        console.log('[Input] loadReport called, user:', user?.id, 'destination_id:', user?.destination_id)
-
         if (!user?.destination_id) {
-            console.log('[Input] No destination_id, skipping load')
             setIsLoading(false)
             return
         }
 
-        // Load attractions for this destination
         const attResult = await getAttractionsByDestination(user.destination_id)
         if (attResult.success && attResult.data) {
             setAttractions(attResult.data)
-            // Initialize empty attraction data for each attraction
             const initialData: Record<string, AttractionInputData> = {}
             attResult.data.forEach(att => {
                 initialData[att.id] = createEmptyAttractionData(att.id)
@@ -119,11 +113,9 @@ export default function InputPage() {
         }
 
         const result = await getTodayReport(user.destination_id)
-        console.log('[Input] getTodayReport result:', result)
 
         if (result.success && result.data) {
             const r = result.data
-            console.log('[Input] Found existing report:', r.id, 'status:', r.status)
             setExistingReport(r)
             setAnak(r.anak_count)
             setDewasa(r.dewasa_count)
@@ -137,36 +129,28 @@ export default function InputPage() {
             setQris(r.qris_amount)
             setNotes(r.notes || '')
 
-            // Load ticket blocks
             if (r.ticket_blocks && Array.isArray(r.ticket_blocks)) {
                 setTicketBlocks(arrayToTicketBlockData(r.ticket_blocks))
             }
 
             if (r.wna_count > 0) setShowWnaSection(true)
 
-            // Load attraction reports
             const attReportResult = await getAttractionReports(r.id)
             if (attReportResult.success && attReportResult.data) {
                 const loadedData: Record<string, AttractionInputData> = {}
                 attReportResult.data.forEach(ar => {
                     loadedData[ar.attraction_id] = dbToAttractionData(ar)
                 })
-                // Merge with initialized data (keep empty for attractions without reports)
                 setAttractionData(prev => ({ ...prev, ...loadedData }))
             }
-        } else {
-            console.log('[Input] No existing report found')
         }
         setIsLoading(false)
-    }, [user?.destination_id, user?.id])
+    }, [user?.destination_id])
 
-    // Initial load
     React.useEffect(() => {
         loadReport()
     }, [loadReport])
 
-    // Auto-refresh when tab becomes visible (sync across devices)
-    // But skip if save is in progress to avoid race condition
     React.useEffect(() => {
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible' && user?.destination_id && !isSaving && !isSubmitting) {
@@ -177,7 +161,7 @@ export default function InputPage() {
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
     }, [loadReport, user?.destination_id, isSaving, isSubmitting])
 
-    // Auto-sync handlers: when one gender is input, auto-fill the other
+    // Auto-sync handlers
     const handleDewasaMaleChange = (val: number) => {
         const capped = Math.min(val, dewasa)
         setDewasaMale(capped)
@@ -202,13 +186,11 @@ export default function InputPage() {
         setAnakMale(anak - capped)
     }
 
-    // Reset gender when total changes
     React.useEffect(() => {
         if (dewasa === 0) {
             setDewasaMale(0)
             setDewasaFemale(0)
         } else if (dewasaMale + dewasaFemale !== dewasa) {
-            // Adjust female to match new total
             setDewasaFemale(Math.max(0, dewasa - dewasaMale))
         }
     }, [dewasa])
@@ -218,12 +200,10 @@ export default function InputPage() {
             setAnakMale(0)
             setAnakFemale(0)
         } else if (anakMale + anakFemale !== anak) {
-            // Adjust female to match new total
             setAnakFemale(Math.max(0, anak - anakMale))
         }
     }, [anak])
 
-    // Auto-sync payment handlers: when one is changed, auto-fill the other
     const handleCashChange = (val: number) => {
         const capped = Math.min(val, totalRevenue)
         setCash(capped)
@@ -236,15 +216,17 @@ export default function InputPage() {
         setCash(totalRevenue - capped)
     }
 
-    // Auto-adjust payment when total revenue changes
     React.useEffect(() => {
-        if (totalRevenue > 0 && cash + qris !== totalRevenue) {
-            // Keep QRIS, adjust Cash
+        if (totalRevenue === 0) {
+            // Reset payment when no visitors
+            setCash(0)
+            setQris(0)
+        } else if (cash + qris !== totalRevenue) {
+            // Adjust cash to match new total, keeping qris as is
             setCash(Math.max(0, totalRevenue - qris))
         }
     }, [totalRevenue])
 
-    // Show WNA section when count > 0
     React.useEffect(() => {
         if (wna > 0) setShowWnaSection(true)
     }, [wna])
@@ -277,7 +259,6 @@ export default function InputPage() {
             if (result.data) {
                 setExistingReport(result.data)
 
-                // Save attraction reports
                 if (attractions.length > 0) {
                     const attData = attractions.map(att =>
                         attractionDataToDbFormat(
@@ -287,7 +268,7 @@ export default function InputPage() {
                     ).filter(d => d.visitor_count > 0)
 
                     if (attData.length > 0) {
-                        await saveAllAttractionReports(result.data.id, attData, user!.id)
+                        await saveAllAttractionReports(result.data.id, attData, user.id)
                     }
                 }
             }
@@ -300,7 +281,6 @@ export default function InputPage() {
 
     const handleSubmit = async () => {
         if (!user?.id || !existingReport?.id) {
-            // Save first if no existing report
             await handleSave()
             return
         }
@@ -311,11 +291,7 @@ export default function InputPage() {
         }
 
         setIsSubmitting(true)
-
-        // Save latest changes first
         await handleSave()
-
-        // Then submit
         const result = await submitReport(existingReport.id, user.id)
 
         if (result.success) {
@@ -339,88 +315,77 @@ export default function InputPage() {
 
     if (isSubmitted) {
         return (
-            <div className="px-4 py-6">
-                <Card className="bg-green-50 border-green-200">
-                    <CardContent className="pt-6 text-center">
-                        <CheckCircle2 className="w-16 h-16 text-green-600 mx-auto mb-4" />
-                        <h2 className="text-xl font-bold text-green-800 mb-2">
-                            Laporan Sudah Disubmit
-                        </h2>
-                        <p className="text-green-700 mb-4">
-                            Laporan tanggal {formatDate(today)} sudah disubmit dan tidak bisa diedit.
-                        </p>
-                        <Button onClick={() => router.push('/laporan')} className="w-full">
-                            Lihat Laporan
-                        </Button>
-                    </CardContent>
-                </Card>
+            <div className="px-5 py-6">
+                <div className="border-2 border-green-200 bg-green-50 rounded-2xl p-6 text-center">
+                    <CheckCircle2 className="w-16 h-16 text-green-600 mx-auto mb-4" />
+                    <h2 className="text-xl font-bold text-green-800 mb-2">
+                        Laporan Sudah Disubmit
+                    </h2>
+                    <p className="text-green-700 mb-6">
+                        Laporan tanggal {formatDate(today)} sudah disubmit dan tidak bisa diedit.
+                    </p>
+                    <Button onClick={() => router.push('/laporan')} className="w-full h-14 text-lg font-bold rounded-xl bg-green-600 hover:bg-green-700">
+                        Lihat Laporan
+                    </Button>
+                </div>
             </div>
         )
     }
 
     return (
-        <div className="px-4 py-6 space-y-5">
+        <div className="px-5 py-6 space-y-6">
             {/* Header */}
-            <header>
-                <h1 className="text-2xl font-bold text-gray-900">Input Rekap Harian</h1>
-                <p className="text-base text-gray-600">{formatDate(new Date())}</p>
+            <header className="space-y-1">
+                <h1 className="text-2xl font-black text-gray-900">Input Rekap Harian</h1>
+                <div className="flex items-center gap-2 text-gray-700">
+                    <MapPin className="w-5 h-5 text-pink-600" />
+                    <span className="text-lg font-bold">{user?.destination?.name}</span>
+                </div>
+                <p className="text-base text-gray-500">{formatDate(new Date())}</p>
             </header>
 
             {/* Summary Card */}
-            <Card className="bg-gradient-to-br from-pink-600 to-pink-700 text-white border-0">
-                <CardContent className="py-4">
-                    <div className="grid grid-cols-2 gap-4">
+            <section className="border-2 border-gray-200 rounded-2xl overflow-hidden bg-white">
+                <div className="bg-pink-600 px-5 py-4">
+                    <div className="grid grid-cols-2 gap-4 text-white">
                         <div>
-                            <p className="text-pink-100 text-sm">Total Pengunjung</p>
-                            <p className="text-2xl font-bold">{totalVisitors.toLocaleString('id-ID')}</p>
+                            <p className="text-pink-200 text-sm">Total Pengunjung</p>
+                            <p className="text-3xl font-black">{totalVisitors.toLocaleString('id-ID')}</p>
                         </div>
                         <div>
-                            <p className="text-pink-100 text-sm">Total Pendapatan</p>
-                            <p className="text-xl font-bold">{formatRupiah(totalRevenue, { compact: true })}</p>
+                            <p className="text-pink-200 text-sm">Total Pendapatan</p>
+                            <p className="text-2xl font-bold">{formatRupiah(totalRevenue, { compact: true })}</p>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </section>
 
             {/* Visitor Counts Section */}
-            <Card>
-                <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                        <Users className="w-5 h-5 text-pink-600" />
-                        Jumlah Pengunjung
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+            <section className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
+                <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100">
+                    <Users className="w-5 h-5 text-pink-600" />
+                    <h2 className="text-lg font-bold text-gray-900">Jumlah Pengunjung</h2>
+                </div>
+                <div className="p-5 space-y-5">
                     {/* Anak */}
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="font-semibold">Anak-anak</p>
-                            <p className="text-sm text-gray-500">{formatRupiah(TICKET_PRICES.anak)}/orang</p>
+                            <p className="font-bold text-gray-900 text-lg">Anak-anak</p>
+                            <p className="text-base text-gray-500">{formatRupiah(TICKET_PRICES.anak)}/orang</p>
                         </div>
                         <NumberStepper value={anak} onChange={setAnak} />
                     </div>
 
-                    {/* Anak Gender breakdown */}
                     {anak > 0 && (
-                        <div className="ml-4 space-y-3 p-3 bg-gray-50 rounded-lg">
-                            <p className="text-sm font-medium text-gray-700">Rincian Gender Anak:</p>
+                        <div className="ml-4 space-y-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <p className="text-sm font-bold text-gray-700">Rincian Gender Anak:</p>
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">Laki-laki (L)</span>
-                                <NumberStepper
-                                    value={anakMale}
-                                    onChange={handleAnakMaleChange}
-                                    max={anak}
-                                    size="sm"
-                                />
+                                <span className="text-base font-medium">Laki-laki (L)</span>
+                                <NumberStepper value={anakMale} onChange={handleAnakMaleChange} max={anak} size="sm" />
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">Perempuan (P)</span>
-                                <NumberStepper
-                                    value={anakFemale}
-                                    onChange={handleAnakFemaleChange}
-                                    max={anak}
-                                    size="sm"
-                                />
+                                <span className="text-base font-medium">Perempuan (P)</span>
+                                <NumberStepper value={anakFemale} onChange={handleAnakFemaleChange} max={anak} size="sm" />
                             </div>
                             {!isAnakGenderValid && (
                                 <p className="text-sm text-red-600 flex items-center gap-1">
@@ -437,43 +402,30 @@ export default function InputPage() {
                         </div>
                     )}
                     {anak > 0 && (
-                        <p className="text-sm text-gray-600 text-right">
-                            = {formatRupiah(anakRevenue)}
-                        </p>
+                        <p className="text-base text-gray-600 text-right font-medium">= {formatRupiah(anakRevenue)}</p>
                     )}
 
-                    <Separator />
+                    <div className="border-t border-gray-200" />
 
                     {/* Dewasa */}
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="font-semibold">Dewasa</p>
-                            <p className="text-sm text-gray-500">{formatRupiah(TICKET_PRICES.dewasa)}/orang</p>
+                            <p className="font-bold text-gray-900 text-lg">Dewasa</p>
+                            <p className="text-base text-gray-500">{formatRupiah(TICKET_PRICES.dewasa)}/orang</p>
                         </div>
                         <NumberStepper value={dewasa} onChange={setDewasa} />
                     </div>
 
-                    {/* Gender breakdown */}
                     {dewasa > 0 && (
-                        <div className="ml-4 space-y-3 p-3 bg-gray-50 rounded-lg">
-                            <p className="text-sm font-medium text-gray-700">Rincian Gender:</p>
+                        <div className="ml-4 space-y-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <p className="text-sm font-bold text-gray-700">Rincian Gender:</p>
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">Laki-laki (L)</span>
-                                <NumberStepper
-                                    value={dewasaMale}
-                                    onChange={handleDewasaMaleChange}
-                                    max={dewasa}
-                                    size="sm"
-                                />
+                                <span className="text-base font-medium">Laki-laki (L)</span>
+                                <NumberStepper value={dewasaMale} onChange={handleDewasaMaleChange} max={dewasa} size="sm" />
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">Perempuan (P)</span>
-                                <NumberStepper
-                                    value={dewasaFemale}
-                                    onChange={handleDewasaFemaleChange}
-                                    max={dewasa}
-                                    size="sm"
-                                />
+                                <span className="text-base font-medium">Perempuan (P)</span>
+                                <NumberStepper value={dewasaFemale} onChange={handleDewasaFemaleChange} max={dewasa} size="sm" />
                             </div>
                             {!isGenderValid && (
                                 <p className="text-sm text-red-600 flex items-center gap-1">
@@ -490,32 +442,29 @@ export default function InputPage() {
                         </div>
                     )}
                     {dewasa > 0 && (
-                        <p className="text-sm text-gray-600 text-right">
-                            = {formatRupiah(dewasaRevenue)}
-                        </p>
+                        <p className="text-base text-gray-600 text-right font-medium">= {formatRupiah(dewasaRevenue)}</p>
                     )}
 
-                    <Separator />
+                    <div className="border-t border-gray-200" />
 
                     {/* WNA */}
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="font-semibold">WNA</p>
-                            <p className="text-sm text-gray-500">{formatRupiah(TICKET_PRICES.wna)}/orang</p>
+                            <p className="font-bold text-gray-900 text-lg">WNA</p>
+                            <p className="text-base text-gray-500">{formatRupiah(TICKET_PRICES.wna)}/orang</p>
                         </div>
                         <NumberStepper value={wna} onChange={setWna} />
                     </div>
 
-                    {/* WNA Country breakdown */}
                     {showWnaSection && wna > 0 && (
                         <div className="space-y-3">
                             <button
                                 type="button"
                                 onClick={() => setShowWnaSection(!showWnaSection)}
-                                className="flex items-center gap-1 text-sm text-pink-600 font-medium"
+                                className="flex items-center gap-1 text-base text-pink-600 font-bold"
                             >
                                 Rincian Negara
-                                {showWnaSection ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                {showWnaSection ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                             </button>
                             <CountrySelector
                                 value={wnaCountries}
@@ -525,24 +474,21 @@ export default function InputPage() {
                         </div>
                     )}
                     {wna > 0 && (
-                        <p className="text-sm text-gray-600 text-right">
-                            = {formatRupiah(wnaRevenue)}
-                        </p>
+                        <p className="text-base text-gray-600 text-right font-medium">= {formatRupiah(wnaRevenue)}</p>
                     )}
-                </CardContent>
-            </Card>
+                </div>
+            </section>
 
             {/* Ticket Block Section */}
-            <Card>
-                <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                        📋 Blok Tiket
-                    </CardTitle>
-                    <p className="text-sm text-gray-500">
-                        Input nomor blok tiket untuk audit trail
-                    </p>
-                </CardHeader>
-                <CardContent>
+            <section className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
+                <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100">
+                    <Ticket className="w-5 h-5 text-pink-600" />
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-900">Blok Tiket</h2>
+                        <p className="text-sm text-gray-500">Input nomor blok tiket untuk audit trail</p>
+                    </div>
+                </div>
+                <div className="p-5">
                     <TicketBlockInput
                         value={ticketBlocks}
                         onChange={setTicketBlocks}
@@ -552,15 +498,16 @@ export default function InputPage() {
                             wna: wna,
                         }}
                     />
-                </CardContent>
-            </Card>
+                </div>
+            </section>
 
             {/* Attractions Section */}
             {attractions.length > 0 && (
-                <div className="space-y-3">
-                    <h2 className="text-base font-bold text-gray-800 flex items-center gap-2">
-                        ⭐ Atraksi
-                    </h2>
+                <section className="space-y-4">
+                    <div className="flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-pink-600" />
+                        <h2 className="text-lg font-bold text-gray-900">Atraksi</h2>
+                    </div>
                     {attractions.map(att => (
                         <AttractionInput
                             key={att.id}
@@ -575,124 +522,99 @@ export default function InputPage() {
                             disabled={isSubmitted}
                         />
                     ))}
-                </div>
+                </section>
             )}
 
             {/* Payment Section */}
-            <Card>
-                <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                        <Banknote className="w-5 h-5 text-green-600" />
-                        Pembayaran
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="p-3 bg-gray-50 rounded-lg">
+            <section className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
+                <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100">
+                    <Banknote className="w-5 h-5 text-green-600" />
+                    <h2 className="text-lg font-bold text-gray-900">Pembayaran</h2>
+                </div>
+                <div className="p-5 space-y-5">
+                    <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
                         <p className="text-sm text-gray-600">Total yang harus diterima:</p>
-                        <p className="text-xl font-bold text-gray-900">{formatRupiah(totalRevenue)}</p>
+                        <p className="text-2xl font-black text-gray-900">{formatRupiah(totalRevenue)}</p>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <Label className="text-sm font-semibold">Cash</Label>
-                                <p className="text-xs text-gray-500">+/- Rp 5.000</p>
+                                <Label className="text-base font-bold">Cash</Label>
+                                <p className="text-sm text-gray-500">+/- Rp 5.000</p>
                             </div>
-                            <NumberStepper
-                                value={cash}
-                                onChange={handleCashChange}
-                                step={5000}
-                                max={totalRevenue}
-                            />
+                            <NumberStepper value={cash} onChange={handleCashChange} step={5000} max={totalRevenue} />
                         </div>
 
                         <div className="flex items-center justify-between">
                             <div>
-                                <Label className="text-sm font-semibold">QRIS</Label>
-                                <p className="text-xs text-gray-500">+/- Rp 5.000</p>
+                                <Label className="text-base font-bold">QRIS</Label>
+                                <p className="text-sm text-gray-500">+/- Rp 5.000</p>
                             </div>
-                            <NumberStepper
-                                value={qris}
-                                onChange={handleQrisChange}
-                                step={5000}
-                                max={totalRevenue}
-                            />
+                            <NumberStepper value={qris} onChange={handleQrisChange} step={5000} max={totalRevenue} />
                         </div>
                     </div>
 
-                    <Separator />
+                    <div className="border-t border-gray-200 pt-4">
+                        <div className="flex items-center justify-between">
+                            <span className="text-base font-bold">Total Diterima</span>
+                            <span className={cn('text-xl font-black', isPaymentValid ? 'text-green-600' : 'text-red-600')}>
+                                {formatRupiah(cash + qris)}
+                            </span>
+                        </div>
 
-                    <div className="flex items-center justify-between">
-                        <span className="font-medium">Total Diterima</span>
-                        <span className={cn(
-                            'font-bold',
-                            isPaymentValid ? 'text-green-600' : 'text-red-600'
-                        )}>
-                            {formatRupiah(cash + qris)}
-                        </span>
+                        {!isPaymentValid && totalRevenue > 0 && (
+                            <p className="text-sm text-red-600 flex items-center gap-1 mt-2">
+                                <AlertCircle className="w-4 h-4" />
+                                Cash + QRIS ({formatRupiah(cash + qris)}) ≠ Total ({formatRupiah(totalRevenue)})
+                            </p>
+                        )}
+                        {isPaymentValid && totalRevenue > 0 && (
+                            <p className="text-sm text-green-600 flex items-center gap-1 mt-2">
+                                <CheckCircle2 className="w-4 h-4" />
+                                Pembayaran sesuai ✓
+                            </p>
+                        )}
+
+                        {!isPaymentValid && totalRevenue > 0 && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => { setCash(totalRevenue); setQris(0) }}
+                                className="w-full mt-4 h-12 text-base font-bold rounded-xl"
+                            >
+                                Isi semua dengan Cash
+                            </Button>
+                        )}
                     </div>
-
-                    {!isPaymentValid && totalRevenue > 0 && (
-                        <p className="text-sm text-red-600 flex items-center gap-1">
-                            <AlertCircle className="w-4 h-4" />
-                            Cash + QRIS ({formatRupiah(cash + qris)}) ≠ Total ({formatRupiah(totalRevenue)})
-                        </p>
-                    )}
-                    {isPaymentValid && totalRevenue > 0 && (
-                        <p className="text-sm text-green-600 flex items-center gap-1">
-                            <CheckCircle2 className="w-4 h-4" />
-                            Pembayaran sesuai ✓
-                        </p>
-                    )}
-
-                    {/* Quick fill button */}
-                    {!isPaymentValid && totalRevenue > 0 && (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                                setCash(totalRevenue)
-                                setQris(0)
-                            }}
-                            className="w-full"
-                        >
-                            Isi semua dengan Cash
-                        </Button>
-                    )}
-                </CardContent>
-            </Card>
+                </div>
+            </section>
 
             {/* Notes Section */}
-            <Card>
-                <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                        <MessageSquare className="w-5 h-5 text-gray-600" />
-                        Catatan (Opsional)
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
+            <section className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
+                <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100">
+                    <MessageSquare className="w-5 h-5 text-gray-600" />
+                    <h2 className="text-lg font-bold text-gray-900">Catatan (Opsional)</h2>
+                </div>
+                <div className="p-5">
                     <textarea
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         placeholder="Contoh: Hari libur nasional, pengunjung ramai..."
-                        className="w-full h-24 p-3 border rounded-lg resize-none text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                        className="w-full h-28 p-4 border-2 border-gray-200 rounded-xl resize-none text-base focus:outline-none focus:border-pink-400"
                         maxLength={500}
                     />
-                    <p className="text-xs text-gray-500 text-right mt-1">
-                        {notes.length}/500
-                    </p>
-                </CardContent>
-            </Card>
+                    <p className="text-sm text-gray-500 text-right mt-2">{notes.length}/500</p>
+                </div>
+            </section>
 
             {/* Action Buttons */}
-            <div className="space-y-3 pt-2 pb-4">
+            <div className="space-y-4 pt-2 pb-6">
                 <Button
                     onClick={handleSave}
                     variant="outline"
-                    size="lg"
                     disabled={isSaving || isSubmitting}
-                    className="w-full"
+                    className="w-full h-14 text-lg font-bold rounded-xl border-2"
                 >
                     {isSaving ? (
                         <>
@@ -710,9 +632,8 @@ export default function InputPage() {
                 {isKoordinator && (
                     <Button
                         onClick={handleSubmit}
-                        size="lg"
                         disabled={!isFormValid || isSaving || isSubmitting || totalVisitors === 0}
-                        className="w-full bg-green-600 hover:bg-green-700"
+                        className="w-full h-14 text-lg font-bold rounded-xl bg-green-600 hover:bg-green-700"
                     >
                         {isSubmitting ? (
                             <>
@@ -729,8 +650,8 @@ export default function InputPage() {
                 )}
 
                 {!isKoordinator && (
-                    <p className="text-center text-sm text-gray-500">
-                        💡 Hanya Koordinator yang dapat submit laporan
+                    <p className="text-center text-base text-gray-500">
+                        Hanya Koordinator yang dapat submit laporan
                     </p>
                 )}
             </div>

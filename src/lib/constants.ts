@@ -9,8 +9,8 @@ export const APP = {
     name: 'SITAMMU',
     fullName: 'Sistem Informasi Tamu Destinasi Wisata',
     tagline: 'Kelola Tamu-mu, Kelola Data-mu',
-    version: '1.3.0',
-    lastUpdate: '14 Januari 2026',
+    version: '1.4.0',
+    lastUpdate: '16 Januari 2026',
 } as const
 
 /**
