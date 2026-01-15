@@ -164,17 +164,17 @@ export function generateWhatsAppMessage(
         lines.push(`• Total Atraksi/Toilet: ${formatRupiah((report as any).attraction_revenue)}`)
     }
 
+    // Total tiket masuk = anak + dewasa + wna revenue
+    const totalTiketMasuk = report.anak_revenue + report.dewasa_revenue + report.wna_revenue
+    lines.push(`• Total Tiket Masuk: ${formatRupiah(totalTiketMasuk)}`)
+    lines.push('')
+
     // Payment breakdown
     lines.push('*PEMBAYARAN*')
     lines.push(`• Cash: ${formatRupiah(report.cash_amount)}`)
     lines.push(`• QRIS: ${formatRupiah(report.qris_amount)}`)
+
     // lines.push(`*Pendapatan: ${formatRupiah(report.total_revenue)}*`)
-    lines.push('')
-
-
-    // Total tiket masuk = anak + dewasa + wna revenue
-    const totalTiketMasuk = report.anak_revenue + report.dewasa_revenue + report.wna_revenue
-    lines.push(`• Total Tiket Masuk: ${formatRupiah(totalTiketMasuk)}`)
     lines.push('')
     lines.push(`*Grand Total: ${formatRupiah(report.total_revenue)}*`)
     lines.push('')
