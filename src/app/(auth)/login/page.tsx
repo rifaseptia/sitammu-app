@@ -96,13 +96,13 @@ export default function LoginPage() {
         if (!isAdminMode && pin.length === 6 && selectedDestination && selectedUser) {
             handleSubmit(onSubmit)()
         }
-    }, [pin])
+    }, [pin, isAdminMode, selectedDestination, selectedUser, handleSubmit])
 
     React.useEffect(() => {
         if (isAdminMode && adminPin.length === 6 && selectedAdmin) {
             handleAdminLogin()
         }
-    }, [adminPin])
+    }, [adminPin, isAdminMode, selectedAdmin])
 
     const onSubmit = async (data: LoginFormData) => {
         setIsSubmitting(true)
