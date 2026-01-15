@@ -33,6 +33,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
+import { DonutChart, VerticalBarChart, HorizontalBarChart, CHART_COLORS } from '@/components/ui/charts'
 
 interface MonthlyStats {
     month: string
@@ -250,6 +251,24 @@ export default function AnalyticsPage() {
                     <CardDescription>Pengunjung dan pendapatan per bulan</CardDescription>
                 </CardHeader>
                 <CardContent>
+                    {/* Visual Chart */}
+                    {monthlyStats.length > 0 && (
+                        <div className="mb-6 pb-6 border-b">
+                            <p className="text-sm text-gray-500 mb-4">Pengunjung per Bulan</p>
+                            <VerticalBarChart
+                                data={monthlyStats.map((stat, idx) => ({
+                                    label: getMonthName(stat.month),
+                                    value: stat.total_visitors,
+                                    color: idx % 2 === 0 ? CHART_COLORS.primary : CHART_COLORS.secondary,
+                                }))}
+                                height={100}
+                                barWidth={28}
+                                formatValue={(v) => formatNumber(v)}
+                            />
+                        </div>
+                    )}
+
+                    {/* Table Data */}
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
@@ -330,24 +349,17 @@ export default function AnalyticsPage() {
                             <p className="text-center text-gray-500 py-4">Belum ada data</p>
                         ) : (
                             <div className="space-y-4">
-                                {/* Category breakdown */}
-                                <div className="grid grid-cols-3 gap-3">
-                                    <div className="text-center p-3 bg-blue-50 rounded-lg">
-                                        <Baby className="w-5 h-5 mx-auto text-blue-600 mb-1" />
-                                        <p className="font-bold text-lg">{formatNumber(demographics.total_anak)}</p>
-                                        <p className="text-xs text-gray-500">Anak</p>
-                                    </div>
-                                    <div className="text-center p-3 bg-purple-50 rounded-lg">
-                                        <UserCircle className="w-5 h-5 mx-auto text-purple-600 mb-1" />
-                                        <p className="font-bold text-lg">{formatNumber(demographics.total_dewasa)}</p>
-                                        <p className="text-xs text-gray-500">Dewasa</p>
-                                    </div>
-                                    <div className="text-center p-3 bg-green-50 rounded-lg">
-                                        <Globe className="w-5 h-5 mx-auto text-green-600 mb-1" />
-                                        <p className="font-bold text-lg">{formatNumber(demographics.total_wna)}</p>
-                                        <p className="text-xs text-gray-500">WNA</p>
-                                    </div>
-                                </div>
+                                {/* Donut Chart - Category distribution */}
+                                <DonutChart
+                                    data={[
+                                        { label: 'Anak', value: demographics.total_anak, color: CHART_COLORS.info },
+                                        { label: 'Dewasa', value: demographics.total_dewasa, color: CHART_COLORS.primary },
+                                        { label: 'WNA', value: demographics.total_wna, color: CHART_COLORS.success },
+                                    ]}
+                                    size={140}
+                                    centerValue={formatNumber(totalVisitors)}
+                                    centerLabel="Total"
+                                />
 
                                 {/* Gender ratio - Anak */}
                                 {demographics.total_anak > 0 && (
@@ -416,25 +428,39 @@ export default function AnalyticsPage() {
                     {!payment ? (
                         <p className="text-center text-gray-500 py-4">Belum ada data</p>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-green-100 rounded-full">
-                                    <Wallet className="w-6 h-6 text-green-600" />
+                        <div className="flex flex-col md:flex-row items-center gap-6">
+                            {/* Donut Chart */}
+                            <DonutChart
+                                data={[
+                                    { label: 'Cash', value: payment.total_cash, color: CHART_COLORS.success },
+                                    { label: 'QRIS', value: payment.total_qris, color: CHART_COLORS.primary },
+                                ]}
+                                size={140}
+                                centerValue={formatRupiah(payment.total_cash + payment.total_qris, { compact: true })}
+                                centerLabel="Total"
+                            />
+
+                            {/* Summary Cards */}
+                            <div className="grid grid-cols-2 gap-4 flex-1">
+                                <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-xl">
+                                    <div className="p-2 bg-emerald-100 rounded-lg">
+                                        <Wallet className="w-5 h-5 text-emerald-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Cash</p>
+                                        <p className="text-lg font-bold">{formatRupiah(payment.total_cash, { compact: true })}</p>
+                                        <p className="text-xs text-emerald-600 font-medium">{payment.cash_percentage}%</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">Cash</p>
-                                    <p className="text-2xl font-bold">{formatRupiah(payment.total_cash, { compact: true })}</p>
-                                    <p className="text-sm text-gray-400">{payment.cash_percentage}% dari total</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-blue-100 rounded-full">
-                                    <CreditCard className="w-6 h-6 text-blue-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">QRIS</p>
-                                    <p className="text-2xl font-bold">{formatRupiah(payment.total_qris, { compact: true })}</p>
-                                    <p className="text-sm text-gray-400">{payment.qris_percentage}% dari total</p>
+                                <div className="flex items-center gap-3 p-4 bg-indigo-50 rounded-xl">
+                                    <div className="p-2 bg-indigo-100 rounded-lg">
+                                        <CreditCard className="w-5 h-5 text-indigo-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">QRIS</p>
+                                        <p className="text-lg font-bold">{formatRupiah(payment.total_qris, { compact: true })}</p>
+                                        <p className="text-xs text-indigo-600 font-medium">{payment.qris_percentage}%</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
