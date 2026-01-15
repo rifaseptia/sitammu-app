@@ -145,18 +145,6 @@ export function generateWhatsAppMessage(
     lines.push(`• WNA: ${formatRupiah(report.wna_revenue)}`)
     lines.push('')
 
-    // Payment breakdown
-    lines.push('*PEMBAYARAN*')
-    lines.push(`• Cash: ${formatRupiah(report.cash_amount)}`)
-    lines.push(`• QRIS: ${formatRupiah(report.qris_amount)}`)
-    // lines.push(`*Pendapatan: ${formatRupiah(report.total_revenue)}*`)
-    lines.push('')
-
-
-    // Total tiket masuk = anak + dewasa + wna revenue
-    const totalTiketMasuk = report.anak_revenue + report.dewasa_revenue + report.wna_revenue
-    lines.push(`• Total Tiket Masuk: ${formatRupiah(totalTiketMasuk)}`)
-
     // Calculate attraction and toilet totals from attractionReports if provided
     if (attractionReports && attractionReports.length > 0) {
         const toiletReports = attractionReports.filter(a => a.is_toilet || a.attraction_name.toLowerCase().includes('toilet'))
@@ -176,8 +164,18 @@ export function generateWhatsAppMessage(
         lines.push(`• Total Atraksi/Toilet: ${formatRupiah((report as any).attraction_revenue)}`)
     }
 
+    // Payment breakdown
+    lines.push('*PEMBAYARAN*')
+    lines.push(`• Cash: ${formatRupiah(report.cash_amount)}`)
+    lines.push(`• QRIS: ${formatRupiah(report.qris_amount)}`)
+    // lines.push(`*Pendapatan: ${formatRupiah(report.total_revenue)}*`)
     lines.push('')
 
+
+    // Total tiket masuk = anak + dewasa + wna revenue
+    const totalTiketMasuk = report.anak_revenue + report.dewasa_revenue + report.wna_revenue
+    lines.push(`• Total Tiket Masuk: ${formatRupiah(totalTiketMasuk)}`)
+    lines.push('')
     lines.push(`*Grand Total: ${formatRupiah(report.total_revenue)}*`)
     lines.push('')
 
