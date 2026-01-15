@@ -184,24 +184,24 @@ export default function LoginPage() {
                     </div>
 
                     {/* Form */}
-                    <div className="space-y-5">
+                    <div className="space-y-6">
                         {!isAdminMode ? (
                             <>
                                 {/* Destination */}
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    <Label className="text-sm font-bold text-gray-600 uppercase tracking-wide">
                                         Destinasi
                                     </Label>
                                     <Select
                                         value={selectedDestination}
                                         onValueChange={(v) => setValue('destination_id', v)}
                                     >
-                                        <SelectTrigger className="w-full h-12 rounded-xl border-gray-200 bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-400">
+                                        <SelectTrigger className="w-full h-14 text-base rounded-xl border-gray-200 bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-400">
                                             <SelectValue placeholder="Pilih destinasi..." />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {destinations.map((d) => (
-                                                <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                                                <SelectItem key={d.id} value={d.id} className="text-base py-3">{d.name}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -209,7 +209,7 @@ export default function LoginPage() {
 
                                 {/* User */}
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    <Label className="text-sm font-bold text-gray-600 uppercase tracking-wide">
                                         Petugas
                                     </Label>
                                     <Select
@@ -217,12 +217,12 @@ export default function LoginPage() {
                                         onValueChange={(v) => setValue('user_id', v)}
                                         disabled={!selectedDestination}
                                     >
-                                        <SelectTrigger className="w-full h-12 rounded-xl border-gray-200 bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-400 disabled:opacity-50 disabled:bg-gray-50">
+                                        <SelectTrigger className="w-full h-14 text-base rounded-xl border-gray-200 bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-400 disabled:opacity-50 disabled:bg-gray-50">
                                             <SelectValue placeholder={isLoadingUsers ? "Memuat..." : "Pilih petugas..."} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {users.map((u) => (
-                                                <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
+                                                <SelectItem key={u.id} value={u.id} className="text-base py-3">{u.name}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -244,16 +244,16 @@ export default function LoginPage() {
                             <>
                                 {/* Admin Select */}
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    <Label className="text-sm font-bold text-gray-600 uppercase tracking-wide">
                                         Admin
                                     </Label>
                                     <Select value={selectedAdmin} onValueChange={setSelectedAdmin}>
-                                        <SelectTrigger className="w-full h-12 rounded-xl border-gray-200 bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-400">
+                                        <SelectTrigger className="w-full h-14 text-base rounded-xl border-gray-200 bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-400">
                                             <SelectValue placeholder="Pilih admin..." />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {adminUsers.map((a) => (
-                                                <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                                                <SelectItem key={a.id} value={a.id} className="text-base py-3">{a.name}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
