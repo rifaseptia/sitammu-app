@@ -155,30 +155,30 @@ export default function LoginPage() {
                     </div>
 
                     {/* Mode Toggle */}
-                    <div className="flex border border-gray-200 rounded-xl overflow-hidden bg-white">
+                    <div className="flex border border-gray-200 rounded-2xl overflow-hidden bg-white">
                         <button
                             onClick={() => { setIsAdminMode(false); setError(null); }}
                             className={cn(
-                                "flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold transition-colors",
+                                "flex-1 flex items-center justify-center gap-3 py-5 text-lg font-bold transition-colors",
                                 !isAdminMode
                                     ? "bg-pink-600 text-white"
                                     : "bg-white text-gray-500 hover:text-gray-700"
                             )}
                         >
-                            <UserCircle2 className="w-5 h-5" />
+                            <UserCircle2 className="w-6 h-6" />
                             Petugas
                         </button>
                         <div className="w-px bg-gray-200" />
                         <button
                             onClick={() => { setIsAdminMode(true); setError(null); }}
                             className={cn(
-                                "flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold transition-colors",
+                                "flex-1 flex items-center justify-center gap-3 py-5 text-lg font-bold transition-colors",
                                 isAdminMode
                                     ? "bg-pink-600 text-white"
                                     : "bg-white text-gray-500 hover:text-gray-700"
                             )}
                         >
-                            <ShieldCheck className="w-5 h-5" />
+                            <ShieldCheck className="w-6 h-6" />
                             Admin
                         </button>
                     </div>
@@ -196,12 +196,12 @@ export default function LoginPage() {
                                         value={selectedDestination}
                                         onValueChange={(v) => setValue('destination_id', v)}
                                     >
-                                        <SelectTrigger className="w-full h-14 text-base rounded-xl border-gray-200 bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-400">
+                                        <SelectTrigger className="w-full h-16 text-lg rounded-xl border-gray-200 bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-400">
                                             <SelectValue placeholder="Pilih destinasi..." />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {destinations.map((d) => (
-                                                <SelectItem key={d.id} value={d.id} className="text-base py-3">{d.name}</SelectItem>
+                                                <SelectItem key={d.id} value={d.id} className="text-lg py-4">{d.name}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -217,12 +217,12 @@ export default function LoginPage() {
                                         onValueChange={(v) => setValue('user_id', v)}
                                         disabled={!selectedDestination}
                                     >
-                                        <SelectTrigger className="w-full h-14 text-base rounded-xl border-gray-200 bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-400 disabled:opacity-50 disabled:bg-gray-50">
+                                        <SelectTrigger className="w-full h-16 text-lg rounded-xl border-gray-200 bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-400 disabled:opacity-50 disabled:bg-gray-50">
                                             <SelectValue placeholder={isLoadingUsers ? "Memuat..." : "Pilih petugas..."} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {users.map((u) => (
-                                                <SelectItem key={u.id} value={u.id} className="text-base py-3">{u.name}</SelectItem>
+                                                <SelectItem key={u.id} value={u.id} className="text-lg py-4">{u.name}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -248,12 +248,12 @@ export default function LoginPage() {
                                         Admin
                                     </Label>
                                     <Select value={selectedAdmin} onValueChange={setSelectedAdmin}>
-                                        <SelectTrigger className="w-full h-14 text-base rounded-xl border-gray-200 bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-400">
+                                        <SelectTrigger className="w-full h-16 text-lg rounded-xl border-gray-200 bg-white focus:ring-2 focus:ring-pink-100 focus:border-pink-400">
                                             <SelectValue placeholder="Pilih admin..." />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {adminUsers.map((a) => (
-                                                <SelectItem key={a.id} value={a.id} className="text-base py-3">{a.name}</SelectItem>
+                                                <SelectItem key={a.id} value={a.id} className="text-lg py-4">{a.name}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
