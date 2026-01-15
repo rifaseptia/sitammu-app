@@ -22,6 +22,7 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import { PinInput } from '@/components/ui/pin-input'
+import { AppFooter } from '@/components/app-footer'
 
 import type { Destination, User as UserType } from '@/types'
 
@@ -299,11 +300,7 @@ export default function LoginPage() {
             </div>
 
             {/* Footer */}
-            <footer className="py-6 text-center space-y-1">
-                <p className="text-sm font-bold text-gray-900">SITAMMU</p>
-                <p className="text-xs text-gray-500">{APP.tagline}</p>
-                <p className="text-xs text-gray-400">v{APP.version}</p>
-            </footer>
+            <AppFooter />
         </div>
     )
 }
