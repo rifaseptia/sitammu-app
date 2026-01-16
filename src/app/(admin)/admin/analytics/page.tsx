@@ -309,9 +309,9 @@ export default function AnalyticsPage() {
                                             borderRadius: '12px',
                                             boxShadow: 'none'
                                         }}
-                                        formatter={(value: number, name: string) => [
-                                            name === 'Pengunjung' ? formatNumber(value) : `Rp ${value.toFixed(1)} jt`,
-                                            name
+                                        formatter={(value) => [
+                                            typeof value === 'number' ? formatNumber(value) : String(value),
+                                            'Pengunjung'
                                         ]}
                                     />
                                     <Bar
@@ -376,7 +376,7 @@ export default function AnalyticsPage() {
                                             outerRadius={120}
                                             paddingAngle={3}
                                             dataKey="value"
-                                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                            label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                                             labelLine={false}
                                         >
                                             {pieData.map((entry, index) => (
@@ -395,7 +395,7 @@ export default function AnalyticsPage() {
                                                 borderRadius: '12px',
                                                 boxShadow: 'none'
                                             }}
-                                            formatter={(value: number) => [formatNumber(value), 'Pengunjung']}
+                                            formatter={(value) => [formatNumber(Number(value ?? 0)), 'Pengunjung']}
                                         />
                                     </PieChart>
                                 </ResponsiveContainer>
