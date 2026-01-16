@@ -13,11 +13,10 @@ export async function saveReport(
     userId: string
 ): Promise<ApiResponse<DailyReport>> {
     try {
-        const supabase = await createClient()
         const adminClient = createAdminClient()
 
-        // [SECURITY] Fetch user profile to enforce destination lock
-        const { data: userProfile, error: userError } = await supabase
+        // [SECURITY] Fetch user profile to enforce destination lock (using admin client due to RLS)
+        const { data: userProfile, error: userError } = await adminClient
             .from('users')
             .select('role, destination_id')
             .eq('id', userId)
@@ -49,7 +48,7 @@ export async function saveReport(
         const wna_revenue = input.wna_count * TICKET_PRICES.wna
 
         // Check if report exists for this date
-        const { data: existing } = await supabase
+        const { data: existing } = await adminClient
             .from('daily_reports')
             .select('id, status')
             .eq('destination_id', destinationIdToUse)
@@ -155,11 +154,10 @@ export async function submitReport(
     userId: string
 ): Promise<ApiResponse<DailyReport>> {
     try {
-        const supabase = await createClient()
         const adminClient = createAdminClient()
 
-        // Verify user is koordinator
-        const { data: user } = await supabase
+        // Verify user is koordinator (using admin client due to RLS)
+        const { data: user } = await adminClient
             .from('users')
             .select('role')
             .eq('id', userId)
@@ -172,8 +170,8 @@ export async function submitReport(
             }
         }
 
-        // Get current report
-        const { data: report } = await supabase
+        // Get current report (using admin client due to RLS)
+        const { data: report } = await adminClient
             .from('daily_reports')
             .select('*')
             .eq('id', reportId)
