@@ -194,18 +194,18 @@ export default function PetugasPage() {
     const getRoleBadge = (role: string) => {
         switch (role) {
             case 'admin':
-                return <Badge className="bg-purple-100 text-purple-700">Admin</Badge>
+                return <Badge className="bg-pink-100 text-pink-700 border border-pink-200 font-bold text-xs">Admin</Badge>
             case 'koordinator':
-                return <Badge className="bg-blue-100 text-blue-700">Koordinator</Badge>
+                return <Badge className="bg-gray-100 text-gray-700 border border-gray-200 font-bold text-xs">Koordinator</Badge>
             default:
-                return <Badge variant="secondary">Petugas</Badge>
+                return <Badge className="bg-gray-100 text-gray-600 border border-gray-200 font-bold text-xs">Petugas</Badge>
         }
     }
 
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                <div className="w-8 h-8 border-4 border-pink-600 border-t-transparent rounded-full animate-spin" />
             </div>
         )
     }
@@ -215,36 +215,47 @@ export default function PetugasPage() {
             {/* Page Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Manajemen Petugas</h1>
-                    <p className="text-gray-500">Kelola daftar petugas dan akses</p>
+                    <h1 className="text-3xl font-black text-gray-900">Manajemen Petugas</h1>
+                    <p className="text-gray-500 mt-1">Kelola daftar petugas dan akses</p>
                 </div>
                 {!isAdding && (
-                    <Button onClick={() => setIsAdding(true)}>
-                        <Plus className="w-4 h-4 mr-2" />
+                    <button
+                        onClick={() => setIsAdding(true)}
+                        className="px-5 py-3 rounded-xl bg-pink-600 text-white font-bold hover:bg-pink-700 transition-colors flex items-center gap-2"
+                    >
+                        <Plus className="w-5 h-5" />
                         Tambah Petugas
-                    </Button>
+                    </button>
                 )}
             </div>
 
             {/* Add New Form */}
             {isAdding && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Tambah Petugas Baru</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                <section className="border-2 border-pink-200 rounded-2xl bg-pink-50/30 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-pink-100 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center">
+                            <Plus className="w-5 h-5 text-pink-600" />
+                        </div>
+                        <div>
+                            <h2 className="font-bold text-gray-900">Tambah Petugas Baru</h2>
+                            <p className="text-sm text-gray-500">Isi data untuk menambah petugas</p>
+                        </div>
+                    </div>
+                    <div className="p-6">
                         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                             <div className="space-y-2">
-                                <Label>Nama</Label>
+                                <Label className="text-sm text-gray-500">Nama</Label>
                                 <Input
+                                    className="h-11 rounded-xl border-2"
                                     placeholder="Nama lengkap"
                                     value={newForm.name}
                                     onChange={(e) => setNewForm(f => ({ ...f, name: e.target.value }))}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>PIN (6 digit)</Label>
+                                <Label className="text-sm text-gray-500">PIN (6 digit)</Label>
                                 <Input
+                                    className="h-11 rounded-xl border-2"
                                     placeholder="123456"
                                     value={newForm.pin}
                                     onChange={(e) => setNewForm(f => ({ ...f, pin: e.target.value }))}
@@ -252,7 +263,7 @@ export default function PetugasPage() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Role</Label>
+                                <Label className="text-sm text-gray-500">Role</Label>
                                 <Select
                                     value={newForm.role}
                                     onValueChange={(value) => setNewForm(f => ({
@@ -261,7 +272,7 @@ export default function PetugasPage() {
                                         destination_id: value === 'admin' ? '' : f.destination_id
                                     }))}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="h-11 rounded-xl border-2">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -272,13 +283,13 @@ export default function PetugasPage() {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label>Destinasi</Label>
+                                <Label className="text-sm text-gray-500">Destinasi</Label>
                                 <Select
                                     value={newForm.destination_id}
                                     onValueChange={(value) => setNewForm(f => ({ ...f, destination_id: value }))}
                                     disabled={newForm.role === 'admin'}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="h-11 rounded-xl border-2">
                                         <SelectValue placeholder="Pilih destinasi" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -291,199 +302,212 @@ export default function PetugasPage() {
                                 </Select>
                             </div>
                             <div className="flex items-end gap-2">
-                                <Button onClick={handleAddNew} disabled={isSaving} className="flex-1">
+                                <button
+                                    onClick={handleAddNew}
+                                    disabled={isSaving}
+                                    className="flex-1 h-11 rounded-xl bg-pink-600 text-white font-bold hover:bg-pink-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
                                     {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Simpan"}
-                                </Button>
-                                <Button variant="outline" onClick={() => {
-                                    setIsAdding(false)
-                                    setNewForm({ name: '', pin: '123456', role: 'petugas', destination_id: '' })
-                                }}>
-                                    <X className="w-4 h-4" />
-                                </Button>
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setIsAdding(false)
+                                        setNewForm({ name: '', pin: '123456', role: 'petugas', destination_id: '' })
+                                    }}
+                                    className="h-11 w-11 rounded-xl border-2 border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                </section>
             )}
 
             {/* Users List */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Users className="w-5 h-5" />
-                        Daftar Petugas ({users.length})
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="divide-y">
-                        {users.map((user) => (
-                            <div
-                                key={user.id}
-                                className={cn(
-                                    'flex items-center justify-between py-4',
-                                    !user.is_active && 'opacity-50'
-                                )}
-                            >
-                                {editingId === user.id ? (
-                                    <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
-                                        <Input
-                                            value={editForm.name}
-                                            onChange={(e) => setEditForm(f => ({ ...f, name: e.target.value }))}
-                                            placeholder="Nama"
-                                        />
-                                        <Select
-                                            value={editForm.role}
-                                            onValueChange={(value) => setEditForm(f => ({
-                                                ...f,
-                                                role: value as 'petugas' | 'koordinator' | 'admin',
-                                                destination_id: value === 'admin' ? '' : f.destination_id
-                                            }))}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="petugas">Petugas</SelectItem>
-                                                <SelectItem value="koordinator">Koordinator</SelectItem>
-                                                <SelectItem value="admin">Admin</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <Select
-                                            value={editForm.destination_id}
-                                            onValueChange={(value) => setEditForm(f => ({ ...f, destination_id: value }))}
-                                            disabled={editForm.role === 'admin'}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Pilih destinasi" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {destinations.map((dest) => (
-                                                    <SelectItem key={dest.id} value={dest.id}>
-                                                        {dest.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <div className="flex gap-2">
-                                            <Button
-                                                onClick={() => handleSaveEdit(user.id, user.is_active)}
-                                                disabled={isSaving}
-                                                size="sm"
-                                            >
-                                                Simpan
-                                            </Button>
-                                            <Button variant="outline" onClick={handleCancelEdit} size="sm">
-                                                <X className="w-4 h-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : resetPinId === user.id ? (
-                                    <div className="flex-1 flex items-center gap-4">
-                                        <div className="space-y-1">
-                                            <Label className="text-sm">PIN Baru (6 digit)</Label>
-                                            <Input
-                                                value={newPin}
-                                                onChange={(e) => setNewPin(e.target.value)}
-                                                maxLength={6}
-                                                className="w-32"
-                                            />
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Button onClick={() => handleResetPin(user.id)} size="sm">
-                                                Reset
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                onClick={() => {
-                                                    setResetPinId(null)
-                                                    setNewPin('123456')
-                                                }}
-                                                size="sm"
-                                            >
-                                                Batal
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div className="space-y-1">
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-medium">{user.name}</span>
-                                                {getRoleBadge(user.role)}
-                                                {!user.is_active && (
-                                                    <Badge variant="outline">Nonaktif</Badge>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-1 text-sm text-gray-500">
-                                                <MapPin className="w-3 h-3" />
-                                                <span>{user.destination?.name || (user.role === 'admin' ? 'Admin Pusat' : 'Belum ditugaskan')}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-1">
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                onClick={() => handleEdit(user)}
-                                            >
-                                                <Pencil className="w-4 h-4" />
-                                            </Button>
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                onClick={() => setResetPinId(user.id)}
-                                            >
-                                                <Key className="w-4 h-4" />
-                                            </Button>
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                onClick={() => handleToggleStatus(user.id, user.is_active)}
-                                            >
-                                                {user.is_active ? (
-                                                    <ToggleRight className="w-5 h-5 text-green-600" />
-                                                ) : (
-                                                    <ToggleLeft className="w-5 h-5" />
-                                                )}
-                                            </Button>
-                                            <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                    <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-700">
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Hapus Petugas?</AlertDialogTitle>
-                                                        <AlertDialogDescription>
-                                                            Aksi ini tidak dapat dibatalkan. Data petugas {user.name} akan dihapus permanen.
-                                                        </AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                        <AlertDialogAction
-                                                            onClick={() => handleDelete(user.id)}
-                                                            className="bg-red-600 hover:bg-red-700"
-                                                        >
-                                                            Hapus
-                                                        </AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        ))}
-
-                        {users.length === 0 && (
-                            <div className="text-center py-8 text-gray-500">
-                                Belum ada petugas. Tambahkan petugas baru di atas.
-                            </div>
-                        )}
+            <section className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center">
+                        <Users className="w-5 h-5 text-pink-600" />
                     </div>
-                </CardContent>
-            </Card>
+                    <div>
+                        <h2 className="font-bold text-gray-900">Daftar Petugas</h2>
+                        <p className="text-sm text-gray-500">{users.length} petugas terdaftar</p>
+                    </div>
+                </div>
+
+                <div className="divide-y divide-gray-100">
+                    {users.map((user) => (
+                        <div
+                            key={user.id}
+                            className={cn(
+                                'px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors',
+                                !user.is_active && 'opacity-50 bg-gray-50'
+                            )}
+                        >
+                            {editingId === user.id ? (
+                                <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <Input
+                                        className="h-11 rounded-xl border-2"
+                                        value={editForm.name}
+                                        onChange={(e) => setEditForm(f => ({ ...f, name: e.target.value }))}
+                                        placeholder="Nama"
+                                    />
+                                    <Select
+                                        value={editForm.role}
+                                        onValueChange={(value) => setEditForm(f => ({
+                                            ...f,
+                                            role: value as 'petugas' | 'koordinator' | 'admin',
+                                            destination_id: value === 'admin' ? '' : f.destination_id
+                                        }))}
+                                    >
+                                        <SelectTrigger className="h-11 rounded-xl border-2">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="petugas">Petugas</SelectItem>
+                                            <SelectItem value="koordinator">Koordinator</SelectItem>
+                                            <SelectItem value="admin">Admin</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <Select
+                                        value={editForm.destination_id}
+                                        onValueChange={(value) => setEditForm(f => ({ ...f, destination_id: value }))}
+                                        disabled={editForm.role === 'admin'}
+                                    >
+                                        <SelectTrigger className="h-11 rounded-xl border-2">
+                                            <SelectValue placeholder="Pilih destinasi" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {destinations.map((dest) => (
+                                                <SelectItem key={dest.id} value={dest.id}>
+                                                    {dest.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleSaveEdit(user.id, user.is_active)}
+                                            disabled={isSaving}
+                                            className="px-4 h-11 rounded-xl bg-pink-600 text-white font-bold hover:bg-pink-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                        >
+                                            {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+                                            Simpan
+                                        </button>
+                                        <button
+                                            onClick={handleCancelEdit}
+                                            className="h-11 w-11 rounded-xl border-2 border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : resetPinId === user.id ? (
+                                <div className="flex-1 flex items-center gap-4">
+                                    <div className="space-y-1">
+                                        <Label className="text-sm text-gray-500">PIN Baru (6 digit)</Label>
+                                        <Input
+                                            className="w-32 h-11 rounded-xl border-2"
+                                            value={newPin}
+                                            onChange={(e) => setNewPin(e.target.value)}
+                                            maxLength={6}
+                                        />
+                                    </div>
+                                    <div className="flex gap-2 items-end">
+                                        <button
+                                            onClick={() => handleResetPin(user.id)}
+                                            className="px-4 h-11 rounded-xl bg-pink-600 text-white font-bold hover:bg-pink-700 transition-colors"
+                                        >
+                                            Reset
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setResetPinId(null)
+                                                setNewPin('123456')
+                                            }}
+                                            className="px-4 h-11 rounded-xl border-2 border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors"
+                                        >
+                                            Batal
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-gray-900">{user.name}</span>
+                                            {getRoleBadge(user.role)}
+                                            {!user.is_active && (
+                                                <Badge className="bg-red-50 text-red-600 border border-red-200 text-xs">Nonaktif</Badge>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-1 text-sm text-gray-500">
+                                            <MapPin className="w-3 h-3" />
+                                            <span>{user.destination?.name || (user.role === 'admin' ? 'Admin Pusat' : 'Belum ditugaskan')}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-1">
+                                        <button
+                                            onClick={() => handleEdit(user)}
+                                            className="p-2 rounded-lg text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
+                                        >
+                                            <Pencil className="w-5 h-5" />
+                                        </button>
+                                        <button
+                                            onClick={() => setResetPinId(user.id)}
+                                            className="p-2 rounded-lg text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
+                                        >
+                                            <Key className="w-5 h-5" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleToggleStatus(user.id, user.is_active)}
+                                            className="p-2 rounded-lg transition-colors"
+                                        >
+                                            {user.is_active ? (
+                                                <ToggleRight className="w-6 h-6 text-green-600 hover:text-green-700" />
+                                            ) : (
+                                                <ToggleLeft className="w-6 h-6 text-gray-400 hover:text-gray-600" />
+                                            )}
+                                        </button>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <button className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                                                    <Trash2 className="w-5 h-5" />
+                                                </button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Hapus Petugas?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Aksi ini tidak dapat dibatalkan. Data petugas {user.name} akan dihapus permanen.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        onClick={() => handleDelete(user.id)}
+                                                        className="bg-red-600 hover:bg-red-700"
+                                                    >
+                                                        Hapus
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    ))}
+
+                    {users.length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                            Belum ada petugas. Tambahkan petugas baru di atas.
+                        </div>
+                    )}
+                </div>
+            </section>
         </div>
     )
 }

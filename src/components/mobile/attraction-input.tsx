@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Ticket, Hash, Plus, Trash2 } from 'lucide-react'
+import { Sparkles, Plus, Trash2 } from 'lucide-react'
 
 import { formatRupiah } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -98,11 +98,7 @@ export function AttractionInput({ attraction, data, onChange, disabled }: Attrac
             {/* Header */}
             <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100 bg-gray-50">
                 <div className="flex items-center gap-2">
-                    {attraction.requires_ticket_block ? (
-                        <Ticket className="w-5 h-5 text-pink-600" />
-                    ) : (
-                        <Hash className="w-5 h-5 text-pink-600" />
-                    )}
+                    <Sparkles className="w-5 h-5 text-pink-600" />
                     <span className="font-bold text-gray-900">{attraction.name}</span>
                     <Badge variant="outline" className="text-pink-600 border-pink-200">{formatRupiah(attraction.price)}</Badge>
                 </div>

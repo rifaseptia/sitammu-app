@@ -178,112 +178,117 @@ export default function AdminAtraksiPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                        <Star className="w-7 h-7 text-pink-600" />
+                    <h1 className="text-3xl font-black text-gray-900">
                         Kelola Atraksi
                     </h1>
-                    <p className="text-gray-600 mt-1">
+                    <p className="text-gray-500 mt-1">
                         Atur atraksi per destinasi
                     </p>
                 </div>
-                <Button onClick={openAddDialog}>
-                    <Plus className="w-5 h-5 mr-2" />
+                <button
+                    onClick={openAddDialog}
+                    className="px-5 py-3 rounded-xl bg-pink-600 text-white font-bold hover:bg-pink-700 transition-colors flex items-center gap-2"
+                >
+                    <Plus className="w-5 h-5" />
                     Tambah Atraksi
-                </Button>
+                </button>
             </div>
 
             {/* Per Destination */}
             {Object.values(grouped).map(({ destination, attractions: destAttractions }) => (
-                <Card key={destination.id}>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                            📍 {destination.name}
-                            <Badge variant="outline">{destAttractions.length} atraksi</Badge>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        {destAttractions.length === 0 ? (
-                            <p className="text-gray-500 text-center py-6">Belum ada atraksi</p>
-                        ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="bg-gray-50">
-                                        <TableHead>Nama</TableHead>
-                                        <TableHead>Harga</TableHead>
-                                        <TableHead>Tipe</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead className="w-[100px]">Aksi</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
+                <section key={destination.id} className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
+                    <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center">
+                            <Star className="w-5 h-5 text-pink-600" />
+                        </div>
+                        <div>
+                            <h2 className="font-bold text-gray-900">{destination.name}</h2>
+                            <p className="text-sm text-gray-500">{destAttractions.length} atraksi</p>
+                        </div>
+                    </div>
+
+                    {destAttractions.length === 0 ? (
+                        <p className="text-gray-400 text-center py-8">Belum ada atraksi</p>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="border-b border-gray-100 bg-gray-50/50">
+                                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-500">Nama</th>
+                                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-500">Harga</th>
+                                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-500">Tipe</th>
+                                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-500">Status</th>
+                                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-500 w-[100px]">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
                                     {destAttractions.map(att => (
-                                        <TableRow key={att.id}>
-                                            <TableCell className="font-medium">{att.name}</TableCell>
-                                            <TableCell>{formatRupiah(att.price)}</TableCell>
-                                            <TableCell>
+                                        <tr key={att.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4 font-bold text-gray-900">{att.name}</td>
+                                            <td className="px-6 py-4 text-gray-600">{formatRupiah(att.price)}</td>
+                                            <td className="px-6 py-4">
                                                 {att.requires_ticket_block ? (
-                                                    <Badge className="bg-blue-100 text-blue-700">
+                                                    <Badge className="bg-pink-100 text-pink-700 border border-pink-200 font-bold text-xs">
                                                         <Ticket className="w-3 h-3 mr-1" />
                                                         Blok Tiket
                                                     </Badge>
                                                 ) : (
-                                                    <Badge className="bg-gray-100 text-gray-700">
-                                                        <Hash className="w-3 h-3 mr-1" />
+                                                    <Badge className="bg-gray-100 text-gray-700 border border-gray-200 font-bold text-xs">
                                                         Jumlah
                                                     </Badge>
                                                 )}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge className={att.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <Badge className={att.is_active
+                                                    ? 'bg-green-100 text-green-700 border border-green-200 text-xs'
+                                                    : 'bg-red-100 text-red-600 border border-red-200 text-xs'
+                                                }>
                                                     {att.is_active ? 'Aktif' : 'Nonaktif'}
                                                 </Badge>
-                                            </TableCell>
-                                            <TableCell>
+                                            </td>
+                                            <td className="px-6 py-4">
                                                 <div className="flex gap-1">
-                                                    <Button
-                                                        size="icon"
-                                                        variant="ghost"
+                                                    <button
                                                         onClick={() => openEditDialog(att)}
+                                                        className="p-2 rounded-lg text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
                                                     >
                                                         <Pencil className="w-4 h-4" />
-                                                    </Button>
-                                                    <Button
-                                                        size="icon"
-                                                        variant="ghost"
-                                                        className="text-red-600 hover:text-red-700"
+                                                    </button>
+                                                    <button
                                                         onClick={() => handleDelete(att.id, att.name)}
+                                                        className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
-                                                    </Button>
+                                                    </button>
                                                 </div>
-                                            </TableCell>
-                                        </TableRow>
+                                            </td>
+                                        </tr>
                                     ))}
-                                </TableBody>
-                            </Table>
-                        )}
-                    </CardContent>
-                </Card>
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </section>
             ))}
 
             {/* Add/Edit Dialog */}
             <Dialog open={showDialog} onOpenChange={setShowDialog}>
-                <DialogContent>
+                <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>
+                        <DialogTitle className="text-xl font-black text-gray-900">
                             {editingId ? 'Edit Atraksi' : 'Tambah Atraksi'}
                         </DialogTitle>
                     </DialogHeader>
 
                     <div className="grid gap-4 py-4">
                         <div className="space-y-2">
-                            <Label>Destinasi</Label>
+                            <Label className="text-sm text-gray-500">Destinasi</Label>
                             <Select
                                 value={form.destination_id}
                                 onValueChange={(v) => setForm({ ...form, destination_id: v })}
                                 disabled={!!editingId}
                             >
-                                <SelectTrigger>
+                                <SelectTrigger className="h-11 rounded-xl border-2">
                                     <SelectValue placeholder="Pilih destinasi" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -295,8 +300,9 @@ export default function AdminAtraksiPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Nama Atraksi</Label>
+                            <Label className="text-sm text-gray-500">Nama Atraksi</Label>
                             <Input
+                                className="h-11 rounded-xl border-2"
                                 value={form.name}
                                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                                 placeholder="Contoh: Atraksi Utama, Toilet"
@@ -304,8 +310,9 @@ export default function AdminAtraksiPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Harga (Rp)</Label>
+                            <Label className="text-sm text-gray-500">Harga (Rp)</Label>
                             <Input
+                                className="h-11 rounded-xl border-2"
                                 type="number"
                                 value={form.price}
                                 onChange={(e) => setForm({ ...form, price: parseInt(e.target.value) || 0 })}
@@ -313,8 +320,8 @@ export default function AdminAtraksiPage() {
                             />
                         </div>
 
-                        <div className="flex items-center justify-between">
-                            <Label>Perlu Input Blok Tiket?</Label>
+                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                            <Label className="font-medium text-gray-700">Perlu Input Blok Tiket?</Label>
                             <Switch
                                 checked={form.requires_ticket_block}
                                 onCheckedChange={(v) => setForm({ ...form, requires_ticket_block: v })}
@@ -322,8 +329,8 @@ export default function AdminAtraksiPage() {
                         </div>
 
                         {editingId && (
-                            <div className="flex items-center justify-between">
-                                <Label>Aktif</Label>
+                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                <Label className="font-medium text-gray-700">Aktif</Label>
                                 <Switch
                                     checked={form.is_active}
                                     onCheckedChange={(v) => setForm({ ...form, is_active: v })}
@@ -332,13 +339,19 @@ export default function AdminAtraksiPage() {
                         )}
                     </div>
 
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowDialog(false)}>
+                    <DialogFooter className="gap-2">
+                        <button
+                            onClick={() => setShowDialog(false)}
+                            className="px-5 py-3 rounded-xl border-2 border-gray-200 font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
                             Batal
-                        </Button>
-                        <Button onClick={handleSave}>
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            className="px-5 py-3 rounded-xl bg-pink-600 text-white font-bold hover:bg-pink-700 transition-colors"
+                        >
                             {editingId ? 'Simpan' : 'Tambah'}
-                        </Button>
+                        </button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

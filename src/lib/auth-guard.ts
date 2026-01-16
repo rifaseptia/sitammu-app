@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 
 /**
  * Auth Guard - Server-side validation helpers
@@ -35,7 +35,7 @@ export async function validateUser(userId: string | undefined | null): Promise<A
     }
 
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { data: user, error } = await supabase
             .from('users')

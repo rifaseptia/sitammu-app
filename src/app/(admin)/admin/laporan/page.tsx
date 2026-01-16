@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Pencil, X, Eye, History, Loader2, Search, Filter, Users, Banknote, AlertTriangle, Plus, Trash2 } from 'lucide-react'
+import { Pencil, X, Eye, History, Loader2, Search, Filter, Users, Banknote, AlertTriangle, Plus, Trash2, FileText, MapPin, Calendar } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { getAllReports, getReportById, editReportWithLog, getReportEditHistory, createManualReport, deleteReport } from '@/actions/admin-reports'
@@ -145,7 +145,7 @@ export default function AdminLaporanPage() {
 
     React.useEffect(() => {
         loadData()
-    }, [filterDestination, filterStatus])
+    }, [filterDestination, filterStatus, user?.id])
 
     // Load attractions when destination changes in add form
     React.useEffect(() => {
@@ -513,145 +513,158 @@ export default function AdminLaporanPage() {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
             </div>
         )
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {/* Page Header */}
-            <div className="flex items-center justify-between">
+            <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Manajemen Laporan</h1>
-                    <p className="text-gray-500">Lihat dan edit laporan dari semua destinasi</p>
+                    <h1 className="text-3xl font-black text-gray-900">Manajemen Laporan</h1>
+                    <p className="text-gray-500 mt-1">Lihat dan edit laporan dari semua destinasi</p>
                 </div>
-                <Button onClick={() => setIsAddDialogOpen(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
+                <button
+                    onClick={() => setIsAddDialogOpen(true)}
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-pink-600 text-white font-bold hover:bg-pink-700 transition-colors"
+                >
+                    <Plus className="w-5 h-5" />
                     Tambah Laporan
-                </Button>
-            </div>
+                </button>
+            </header>
 
             {/* Filters */}
-            <Card>
-                <CardContent className="pt-6">
-                    <div className="flex flex-wrap gap-4">
-                        <div className="w-48">
-                            <Label className="text-xs text-gray-500">Destinasi</Label>
-                            <Select value={filterDestination || 'all'} onValueChange={(v) => setFilterDestination(v === 'all' ? '' : v)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Semua" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Semua Destinasi</SelectItem>
-                                    {destinations.map((dest) => (
-                                        <SelectItem key={dest.id} value={dest.id}>
-                                            {dest.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="w-40">
-                            <Label className="text-xs text-gray-500">Status</Label>
-                            <Select value={filterStatus || 'all'} onValueChange={(v) => setFilterStatus(v === 'all' ? '' : v)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Semua" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Semua Status</SelectItem>
-                                    <SelectItem value="submitted">Submitted</SelectItem>
-                                    <SelectItem value="draft">Draft</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+            <section className="border-2 border-gray-200 rounded-2xl bg-white p-6">
+                <div className="flex flex-wrap gap-4">
+                    <div className="w-52">
+                        <Label className="text-sm font-bold text-gray-500 mb-2 block">Destinasi</Label>
+                        <Select value={filterDestination || 'all'} onValueChange={(v) => setFilterDestination(v === 'all' ? '' : v)}>
+                            <SelectTrigger className="h-12 rounded-xl border-2 border-gray-200 font-medium">
+                                <SelectValue placeholder="Semua" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Semua Destinasi</SelectItem>
+                                {destinations.map((dest) => (
+                                    <SelectItem key={dest.id} value={dest.id}>
+                                        {dest.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
-                </CardContent>
-            </Card>
+                    <div className="w-44">
+                        <Label className="text-sm font-bold text-gray-500 mb-2 block">Status</Label>
+                        <Select value={filterStatus || 'all'} onValueChange={(v) => setFilterStatus(v === 'all' ? '' : v)}>
+                            <SelectTrigger className="h-12 rounded-xl border-2 border-gray-200 font-medium">
+                                <SelectValue placeholder="Semua" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Semua Status</SelectItem>
+                                <SelectItem value="submitted">Submitted</SelectItem>
+                                <SelectItem value="draft">Draft</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+            </section>
 
             {/* Reports Table */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Daftar Laporan ({reports.length})</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                    {reports.length === 0 ? (
-                        <p className="text-center py-8 text-gray-500 px-6">Tidak ada laporan</p>
-                    ) : (
-                        <>
-                            <div className="overflow-x-auto px-6 pt-4">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="border-b bg-gray-50">
-                                            <th className="text-left py-3 px-3 font-medium">Tanggal</th>
-                                            <th className="text-left py-3 px-3 font-medium">Destinasi</th>
-                                            <th className="text-center py-3 px-3 font-medium">Status</th>
-                                            <th className="text-right py-3 px-3 font-medium">Anak</th>
-                                            <th className="text-right py-3 px-3 font-medium">Dewasa</th>
-                                            <th className="text-right py-3 px-3 font-medium">WNA</th>
-                                            <th className="text-right py-3 px-3 font-medium">Total</th>
-                                            <th className="text-right py-3 px-3 font-medium">Pend. Atraksi</th>
-                                            <th className="text-right py-3 px-3 font-medium">Total Pendapatan</th>
-                                            <th className="text-center py-3 px-3 font-medium">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {paginatedReports.map((report) => (
-                                            <tr key={report.id} className="border-b hover:bg-gray-50">
-                                                <td className="py-3 px-3 font-medium">{formatDate(report.report_date)}</td>
-                                                <td className="py-3 px-3">{report.destination?.name}</td>
-                                                <td className="py-3 px-3 text-center">
-                                                    <Badge className={cn(
-                                                        'text-xs',
-                                                        report.status === 'submitted'
-                                                            ? 'bg-green-100 text-green-700'
-                                                            : 'bg-yellow-100 text-yellow-700'
-                                                    )}>
-                                                        {report.status === 'submitted' ? 'Submitted' : 'Draft'}
-                                                    </Badge>
-                                                </td>
-                                                <td className="py-3 px-3 text-right">{report.anak_count}</td>
-                                                <td className="py-3 px-3 text-right">{report.dewasa_count}</td>
-                                                <td className="py-3 px-3 text-right">{report.wna_count}</td>
-                                                <td className="py-3 px-3 text-right font-semibold">{report.total_visitors}</td>
-                                                <td className="py-3 px-3 text-right text-blue-600">{formatRupiah(report.attraction_revenue || 0)}</td>
-                                                <td className="py-3 px-3 text-right text-green-600 font-semibold">{formatRupiah(report.total_revenue)}</td>
-                                                <td className="py-3 px-3 text-center">
-                                                    <div className="flex items-center justify-center gap-1">
-                                                        <Button
-                                                            size="icon"
-                                                            variant="ghost"
-                                                            onClick={() => handleViewHistory(report.id)}
-                                                            title="Riwayat Edit"
-                                                        >
-                                                            <History className="w-4 h-4" />
-                                                        </Button>
-                                                        <Button
-                                                            size="icon"
-                                                            variant="ghost"
-                                                            onClick={() => handleEdit(report)}
-                                                            title="Edit"
-                                                        >
-                                                            <Pencil className="w-4 h-4" />
-                                                        </Button>
-                                                        <Button
-                                                            size="icon"
-                                                            variant="ghost"
-                                                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                            onClick={() => setDeleteReportId(report.id)}
-                                                            title="Hapus"
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </Button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+            <section className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
+                <div className="px-6 py-5 border-b-2 border-gray-100 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-pink-50 flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-pink-600" />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-900">Daftar Laporan</h2>
+                        <p className="text-sm text-gray-500">{reports.length} laporan ditemukan</p>
+                    </div>
+                </div>
 
-                            {/* Pagination Controls */}
+                {reports.length === 0 ? (
+                    <p className="text-center py-12 text-gray-400">Tidak ada laporan</p>
+                ) : (
+                    <>
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-gray-50 border-b border-gray-100">
+                                    <tr>
+                                        <th className="text-left px-6 py-4 text-sm font-bold text-gray-500">Tanggal</th>
+                                        <th className="text-left px-6 py-4 text-sm font-bold text-gray-500">Destinasi</th>
+                                        <th className="text-center px-6 py-4 text-sm font-bold text-gray-500">Status</th>
+                                        <th className="text-right px-6 py-4 text-sm font-bold text-gray-500">Pengunjung</th>
+                                        <th className="text-right px-6 py-4 text-sm font-bold text-gray-500">Pendapatan</th>
+                                        <th className="text-center px-6 py-4 text-sm font-bold text-gray-500">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {paginatedReports.map((report) => (
+                                        <tr key={report.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <span className="font-bold text-gray-900">{formatDate(report.report_date, 'dd MMM yyyy')}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center">
+                                                        <MapPin className="w-4 h-4 text-pink-600" />
+                                                    </div>
+                                                    <span className="font-medium text-gray-700">{report.destination?.name}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <Badge className={cn(
+                                                    'font-bold border-0',
+                                                    report.status === 'submitted'
+                                                        ? 'bg-green-100 text-green-700'
+                                                        : 'bg-yellow-100 text-yellow-700'
+                                                )}>
+                                                    {report.status === 'submitted' ? 'Submitted' : 'Draft'}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <p className="font-bold text-gray-900">{report.total_visitors}</p>
+                                                <p className="text-xs text-gray-400">A:{report.anak_count} D:{report.dewasa_count} W:{report.wna_count}</p>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <p className="font-bold text-green-600">{formatRupiah(report.total_revenue)}</p>
+                                                {report.attraction_revenue > 0 && (
+                                                    <p className="text-xs text-pink-500">+{formatRupiah(report.attraction_revenue)} atraksi</p>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center justify-center gap-1">
+                                                    <button
+                                                        onClick={() => handleViewHistory(report.id)}
+                                                        className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                                                        title="Riwayat Edit"
+                                                    >
+                                                        <History className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleEdit(report)}
+                                                        className="p-2 rounded-lg hover:bg-pink-50 text-gray-400 hover:text-pink-600"
+                                                        title="Edit"
+                                                    >
+                                                        <Pencil className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setDeleteReportId(report.id)}
+                                                        className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                                                        title="Hapus"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Pagination Controls */}
+                        <div className="border-t-2 border-gray-100">
                             <PaginationControls
                                 currentPage={currentPage}
                                 totalItems={reports.length}
@@ -659,10 +672,10 @@ export default function AdminLaporanPage() {
                                 onPageChange={setCurrentPage}
                                 onItemsPerPageChange={setItemsPerPage}
                             />
-                        </>
-                    )}
-                </CardContent>
-            </Card>
+                        </div>
+                    </>
+                )}
+            </section>
 
             {/* Edit Dialog */}
             <Dialog open={!!editingReport} onOpenChange={() => setEditingReport(null)}>
@@ -677,71 +690,79 @@ export default function AdminLaporanPage() {
                     <div className="grid gap-4 py-4">
                         {/* Gender Input (PRIMARY - user inputs here) */}
                         <div className="space-y-4">
-                            <h4 className="font-medium text-sm text-gray-700">1. Input Gender (L/P)</h4>
-                            <p className="text-xs text-gray-500">Jumlah pengunjung akan dihitung otomatis dari L + P</p>
+                            <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-lg bg-pink-100 flex items-center justify-center text-pink-600 text-sm font-bold">1</div>
+                                <h4 className="font-bold text-gray-900">Input Gender (L/P)</h4>
+                            </div>
+                            <p className="text-sm text-gray-500">Jumlah pengunjung akan dihitung otomatis dari L + P</p>
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="p-3 bg-blue-50 rounded-lg space-y-2">
-                                    <p className="text-sm font-medium text-blue-700">Anak (Rp 5.000)</p>
-                                    <div className="grid grid-cols-2 gap-2">
+                                <div className="p-4 border-2 border-gray-200 rounded-xl space-y-3">
+                                    <p className="text-sm font-bold text-gray-700">Anak <span className="text-gray-400 font-normal">(Rp 5.000)</span></p>
+                                    <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <Label className="text-xs">Laki-laki</Label>
+                                            <Label className="text-xs text-gray-500">Laki-laki</Label>
                                             <Input
                                                 type="number"
                                                 min="0"
+                                                className="h-11 rounded-xl border-2"
                                                 value={editForm.anak_male}
                                                 onChange={(e) => setEditForm(f => ({ ...f, anak_male: parseInt(e.target.value) || 0 }))}
                                             />
                                         </div>
                                         <div>
-                                            <Label className="text-xs">Perempuan</Label>
+                                            <Label className="text-xs text-gray-500">Perempuan</Label>
                                             <Input
                                                 type="number"
                                                 min="0"
+                                                className="h-11 rounded-xl border-2"
                                                 value={editForm.anak_female}
                                                 onChange={(e) => setEditForm(f => ({ ...f, anak_female: parseInt(e.target.value) || 0 }))}
                                             />
                                         </div>
                                     </div>
-                                    <div className="text-center text-sm font-semibold text-blue-800">
+                                    <div className="text-center text-sm font-bold text-gray-900 bg-gray-50 rounded-lg py-2">
                                         Total: {editForm.anak_count}
                                     </div>
                                 </div>
-                                <div className="p-3 bg-purple-50 rounded-lg space-y-2">
-                                    <p className="text-sm font-medium text-purple-700">Dewasa (Rp 15.000)</p>
-                                    <div className="grid grid-cols-2 gap-2">
+                                <div className="p-4 border-2 border-pink-200 rounded-xl space-y-3 bg-pink-50/30">
+                                    <p className="text-sm font-bold text-pink-700">Dewasa <span className="text-pink-400 font-normal">(Rp 15.000)</span></p>
+                                    <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <Label className="text-xs">Laki-laki</Label>
+                                            <Label className="text-xs text-gray-500">Laki-laki</Label>
                                             <Input
                                                 type="number"
                                                 min="0"
+                                                className="h-11 rounded-xl border-2"
                                                 value={editForm.dewasa_male}
                                                 onChange={(e) => setEditForm(f => ({ ...f, dewasa_male: parseInt(e.target.value) || 0 }))}
                                             />
                                         </div>
                                         <div>
-                                            <Label className="text-xs">Perempuan</Label>
+                                            <Label className="text-xs text-gray-500">Perempuan</Label>
                                             <Input
                                                 type="number"
                                                 min="0"
+                                                className="h-11 rounded-xl border-2"
                                                 value={editForm.dewasa_female}
                                                 onChange={(e) => setEditForm(f => ({ ...f, dewasa_female: parseInt(e.target.value) || 0 }))}
                                             />
                                         </div>
                                     </div>
-                                    <div className="text-center text-sm font-semibold text-purple-800">
+                                    <div className="text-center text-sm font-bold text-pink-700 bg-pink-100 rounded-lg py-2">
                                         Total: {editForm.dewasa_count}
                                     </div>
                                 </div>
                             </div>
 
                             {/* WNA (no gender breakdown) */}
-                            <div className="p-3 bg-orange-50 rounded-lg">
+                            <div className="p-4 border-2 border-gray-200 rounded-xl">
                                 <div className="flex items-center justify-between">
-                                    <p className="text-sm font-medium text-orange-700">WNA (Rp 50.000)</p>
-                                    <div className="w-24">
+                                    <p className="text-sm font-bold text-gray-700">WNA <span className="text-gray-400 font-normal">(Rp 50.000)</span></p>
+                                    <div className="w-28">
                                         <Input
                                             type="number"
                                             min="0"
+                                            className="h-11 rounded-xl border-2 text-center"
                                             value={editForm.wna_count}
                                             onChange={(e) => setEditForm(f => ({ ...f, wna_count: parseInt(e.target.value) || 0 }))}
                                         />
@@ -750,12 +771,15 @@ export default function AdminLaporanPage() {
                             </div>
                         </div>
 
-                        <Separator />
+                        <div className="h-px bg-gray-100" />
 
                         {/* Ticket Blocks */}
                         <div className="space-y-4">
-                            <h4 className="font-medium text-sm text-gray-700">2. Data Blok Tiket</h4>
-                            <p className="text-xs text-gray-500">
+                            <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-lg bg-pink-100 flex items-center justify-center text-pink-600 text-sm font-bold">2</div>
+                                <h4 className="font-bold text-gray-900">Data Blok Tiket</h4>
+                            </div>
+                            <p className="text-sm text-gray-500">
                                 Jumlah tiket harus sesuai dengan total pengunjung di atas.
                             </p>
                             <TicketBlockInput
@@ -775,7 +799,7 @@ export default function AdminLaporanPage() {
                             <>
                                 <Separator />
                                 <div className="space-y-3">
-                                    <h4 className="font-medium text-sm text-gray-700">⭐ Atraksi</h4>
+                                    <h4 className="font-bold text-gray-900">Atraksi</h4>
                                     {editAttractions.map(att => (
                                         <AttractionInput
                                             key={att.id}
@@ -793,64 +817,69 @@ export default function AdminLaporanPage() {
                             </>
                         )}
 
-                        <Separator />
+                        <div className="h-px bg-gray-100" />
 
                         {/* Payment */}
                         <div className="space-y-4">
-                            <h4 className="font-medium text-sm text-gray-700">3. Data Pembayaran</h4>
+                            <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-lg bg-pink-100 flex items-center justify-center text-pink-600 text-sm font-bold">3</div>
+                                <h4 className="font-bold text-gray-900">Data Pembayaran</h4>
+                            </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>QRIS</Label>
+                                    <Label className="text-sm text-gray-500">QRIS</Label>
                                     <Input
                                         type="number"
                                         min="0"
+                                        className="h-11 rounded-xl border-2"
                                         value={editForm.qris_amount}
                                         onChange={(e) => setEditForm(f => ({ ...f, qris_amount: parseInt(e.target.value) || 0 }))}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Cash</Label>
+                                    <Label className="text-sm text-gray-500">Cash</Label>
                                     <Input
                                         type="number"
                                         min="0"
+                                        className="h-11 rounded-xl border-2"
                                         value={editForm.cash_amount}
                                         onChange={(e) => setEditForm(f => ({ ...f, cash_amount: parseInt(e.target.value) || 0 }))}
                                     />
                                 </div>
                             </div>
                             <div className={cn(
-                                "p-2 rounded text-sm",
-                                isRevenueMismatch ? "bg-red-50 text-red-700" : "bg-gray-100"
+                                "p-4 rounded-xl border-2",
+                                isRevenueMismatch ? "border-yellow-300 bg-yellow-50" : "border-green-200 bg-green-50"
                             )}>
-                                <div className="flex justify-between font-bold">
-                                    <span>Total Pendapatan:</span>
-                                    <span>{formatRupiah(editForm.cash_amount + editForm.qris_amount)}</span>
+                                <div className="flex justify-between font-bold text-lg">
+                                    <span className="text-gray-700">Total Pendapatan:</span>
+                                    <span className={isRevenueMismatch ? "text-yellow-700" : "text-green-600"}>{formatRupiah(editForm.cash_amount + editForm.qris_amount)}</span>
                                 </div>
                                 {isRevenueMismatch && (
-                                    <p className="text-xs mt-1">
-                                        Perhatian: Tidak sesuai estimasi tiket ({formatRupiah(expectedRevenue)})
+                                    <p className="text-sm text-yellow-600 mt-2">
+                                        ⚠️ Tidak sesuai estimasi tiket ({formatRupiah(expectedRevenue)})
                                     </p>
                                 )}
                             </div>
                         </div>
 
-                        <Separator />
+                        <div className="h-px bg-gray-100" />
 
                         {/* Notes & Reason */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="notes">Catatan</Label>
+                                <Label className="text-sm text-gray-500">Catatan</Label>
                                 <Input
-                                    id="notes"
+                                    className="h-11 rounded-xl border-2"
                                     value={editForm.notes}
                                     onChange={(e) => setEditForm(f => ({ ...f, notes: e.target.value }))}
                                     placeholder="Catatan tambahan..."
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="reason" className="text-red-600">Alasan Perubahan *</Label>
+                                <Label className="text-sm text-pink-600 font-bold">Alasan Perubahan *</Label>
                                 <Input
-                                    id="reason"
+                                    className="h-11 rounded-xl border-2 border-pink-200"
                                     value={editReason}
                                     onChange={(e) => setEditReason(e.target.value)}
                                     placeholder="Wajib diisi"
@@ -859,14 +888,21 @@ export default function AdminLaporanPage() {
                         </div>
                     </div>
 
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setEditingReport(null)}>
+                    <DialogFooter className="gap-2">
+                        <button
+                            onClick={() => setEditingReport(null)}
+                            className="px-5 py-3 rounded-xl border-2 border-gray-200 font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
                             Batal
-                        </Button>
-                        <Button onClick={handleSaveEdit} disabled={isSaving || !editReason.trim()}>
-                            {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                        </button>
+                        <button
+                            onClick={handleSaveEdit}
+                            disabled={isSaving || !editReason.trim()}
+                            className="px-5 py-3 rounded-xl bg-pink-600 text-white font-bold hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                            {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                             Simpan
-                        </Button>
+                        </button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -930,13 +966,16 @@ export default function AdminLaporanPage() {
 
                     <div className="grid gap-4 py-4">
                         {/* Step 1: Destination */}
-                        <div className="space-y-2">
-                            <Label>1. Pilih Destinasi *</Label>
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-lg bg-pink-100 flex items-center justify-center text-pink-600 text-sm font-bold">1</div>
+                                <h4 className="font-bold text-gray-900">Pilih Destinasi</h4>
+                            </div>
                             <Select
                                 value={addForm.destination_id}
                                 onValueChange={(v) => setAddForm(f => ({ ...f, destination_id: v }))}
                             >
-                                <SelectTrigger>
+                                <SelectTrigger className="h-11 rounded-xl border-2">
                                     <SelectValue placeholder="Pilih destinasi..." />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -949,12 +988,15 @@ export default function AdminLaporanPage() {
                             </Select>
                         </div>
 
-                        {/* Step 2: Date (shown after destination selected) */}
                         {addForm.destination_id && (
-                            <div className="space-y-2">
-                                <Label>2. Pilih Tanggal Laporan *</Label>
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-6 h-6 rounded-lg bg-pink-100 flex items-center justify-center text-pink-600 text-sm font-bold">2</div>
+                                    <h4 className="font-bold text-gray-900">Pilih Tanggal Laporan</h4>
+                                </div>
                                 <Input
                                     type="date"
+                                    className="h-11 rounded-xl border-2"
                                     value={addForm.report_date}
                                     max={new Date().toISOString().split('T')[0]}
                                     onChange={(e) => setAddForm(f => ({ ...f, report_date: e.target.value }))}
@@ -965,75 +1007,83 @@ export default function AdminLaporanPage() {
                         {/* Step 3: Rest of form (shown after both destination and date selected) */}
                         {addForm.destination_id && addForm.report_date && (
                             <>
-                                <Separator />
+                                <div className="h-px bg-gray-100" />
 
                                 {/* Gender Input (PRIMARY - user inputs here) */}
                                 <div className="space-y-4">
-                                    <h4 className="font-medium text-sm text-gray-700">3. Input Gender (L/P)</h4>
-                                    <p className="text-xs text-gray-500">Jumlah pengunjung akan dihitung otomatis dari L + P</p>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-lg bg-pink-100 flex items-center justify-center text-pink-600 text-sm font-bold">3</div>
+                                        <h4 className="font-bold text-gray-900">Input Gender (L/P)</h4>
+                                    </div>
+                                    <p className="text-sm text-gray-500">Jumlah pengunjung akan dihitung otomatis dari L + P</p>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="p-3 bg-blue-50 rounded-lg space-y-2">
-                                            <p className="text-sm font-medium text-blue-700">Anak</p>
-                                            <div className="grid grid-cols-2 gap-2">
+                                        <div className="p-4 border-2 border-gray-200 rounded-xl space-y-3">
+                                            <p className="text-sm font-bold text-gray-700">Anak <span className="text-gray-400 font-normal">(Rp 5.000)</span></p>
+                                            <div className="grid grid-cols-2 gap-3">
                                                 <div>
-                                                    <Label className="text-xs">Laki-laki</Label>
+                                                    <Label className="text-xs text-gray-500">Laki-laki</Label>
                                                     <Input
                                                         type="number"
                                                         min="0"
+                                                        className="h-11 rounded-xl border-2"
                                                         value={addForm.anak_male}
                                                         onChange={(e) => setAddForm(f => ({ ...f, anak_male: parseInt(e.target.value) || 0 }))}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <Label className="text-xs">Perempuan</Label>
+                                                    <Label className="text-xs text-gray-500">Perempuan</Label>
                                                     <Input
                                                         type="number"
                                                         min="0"
+                                                        className="h-11 rounded-xl border-2"
                                                         value={addForm.anak_female}
                                                         onChange={(e) => setAddForm(f => ({ ...f, anak_female: parseInt(e.target.value) || 0 }))}
                                                     />
                                                 </div>
                                             </div>
-                                            <div className="text-center text-sm font-semibold text-blue-800">
+                                            <div className="text-center text-sm font-bold text-gray-900 bg-gray-50 rounded-lg py-2">
                                                 Total: {addForm.anak_count}
                                             </div>
                                         </div>
-                                        <div className="p-3 bg-purple-50 rounded-lg space-y-2">
-                                            <p className="text-sm font-medium text-purple-700">Dewasa</p>
-                                            <div className="grid grid-cols-2 gap-2">
+                                        <div className="p-4 border-2 border-pink-200 rounded-xl space-y-3 bg-pink-50/30">
+                                            <p className="text-sm font-bold text-pink-700">Dewasa <span className="text-pink-400 font-normal">(Rp 15.000)</span></p>
+                                            <div className="grid grid-cols-2 gap-3">
                                                 <div>
-                                                    <Label className="text-xs">Laki-laki</Label>
+                                                    <Label className="text-xs text-gray-500">Laki-laki</Label>
                                                     <Input
                                                         type="number"
                                                         min="0"
+                                                        className="h-11 rounded-xl border-2"
                                                         value={addForm.dewasa_male}
                                                         onChange={(e) => setAddForm(f => ({ ...f, dewasa_male: parseInt(e.target.value) || 0 }))}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <Label className="text-xs">Perempuan</Label>
+                                                    <Label className="text-xs text-gray-500">Perempuan</Label>
                                                     <Input
                                                         type="number"
                                                         min="0"
+                                                        className="h-11 rounded-xl border-2"
                                                         value={addForm.dewasa_female}
                                                         onChange={(e) => setAddForm(f => ({ ...f, dewasa_female: parseInt(e.target.value) || 0 }))}
                                                     />
                                                 </div>
                                             </div>
-                                            <div className="text-center text-sm font-semibold text-purple-800">
+                                            <div className="text-center text-sm font-bold text-pink-700 bg-pink-100 rounded-lg py-2">
                                                 Total: {addForm.dewasa_count}
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* WNA (no gender breakdown) */}
-                                    <div className="p-3 bg-orange-50 rounded-lg">
+                                    <div className="p-4 border-2 border-gray-200 rounded-xl">
                                         <div className="flex items-center justify-between">
-                                            <p className="text-sm font-medium text-orange-700">WNA</p>
-                                            <div className="w-24">
+                                            <p className="text-sm font-bold text-gray-700">WNA <span className="text-gray-400 font-normal">(Rp 50.000)</span></p>
+                                            <div className="w-28">
                                                 <Input
                                                     type="number"
                                                     min="0"
+                                                    className="h-11 rounded-xl border-2 text-center"
                                                     value={addForm.wna_count}
                                                     onChange={(e) => setAddForm(f => ({ ...f, wna_count: parseInt(e.target.value) || 0 }))}
                                                 />
@@ -1042,11 +1092,14 @@ export default function AdminLaporanPage() {
                                     </div>
                                 </div>
 
-                                <Separator />
+                                <div className="h-px bg-gray-100" />
 
                                 {/* Ticket Blocks */}
                                 <div className="space-y-4">
-                                    <h4 className="font-medium text-sm text-gray-700">Data Blok Tiket</h4>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-lg bg-pink-100 flex items-center justify-center text-pink-600 text-sm font-bold">4</div>
+                                        <h4 className="font-bold text-gray-900">Data Blok Tiket</h4>
+                                    </div>
                                     <TicketBlockInput
                                         value={addTicketBlocks}
                                         onChange={setAddTicketBlocks}
@@ -1061,9 +1114,9 @@ export default function AdminLaporanPage() {
                                 {/* Attractions Section */}
                                 {addAttractions.length > 0 && (
                                     <>
-                                        <Separator />
+                                        <div className="h-px bg-gray-100" />
                                         <div className="space-y-3">
-                                            <h4 className="font-medium text-sm text-gray-700">⭐ Atraksi</h4>
+                                            <h4 className="font-bold text-gray-900">Atraksi</h4>
                                             {addAttractions.map(att => (
                                                 <AttractionInput
                                                     key={att.id}
@@ -1081,42 +1134,51 @@ export default function AdminLaporanPage() {
                                     </>
                                 )}
 
-                                <Separator />
+                                <div className="h-px bg-gray-100" />
 
                                 {/* Payment */}
                                 <div className="space-y-4">
-                                    <h4 className="font-medium text-sm text-gray-700">Data Pembayaran</h4>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-lg bg-pink-100 flex items-center justify-center text-pink-600 text-sm font-bold">5</div>
+                                        <h4 className="font-bold text-gray-900">Data Pembayaran</h4>
+                                    </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label>QRIS</Label>
+                                            <Label className="text-sm text-gray-500">QRIS</Label>
                                             <Input
                                                 type="number"
                                                 min="0"
+                                                className="h-11 rounded-xl border-2"
                                                 value={addForm.qris_amount}
                                                 onChange={(e) => setAddForm(f => ({ ...f, qris_amount: parseInt(e.target.value) || 0 }))}
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>Cash</Label>
+                                            <Label className="text-sm text-gray-500">Cash</Label>
                                             <Input
                                                 type="number"
                                                 min="0"
+                                                className="h-11 rounded-xl border-2"
                                                 value={addForm.cash_amount}
                                                 onChange={(e) => setAddForm(f => ({ ...f, cash_amount: parseInt(e.target.value) || 0 }))}
                                             />
                                         </div>
                                     </div>
-                                    <div className="p-2 bg-gray-100 rounded text-sm">
-                                        Total Pendapatan: <strong>{formatRupiah(addTotalRevenue)}</strong>
+                                    <div className="p-4 rounded-xl border-2 border-green-200 bg-green-50">
+                                        <div className="flex justify-between font-bold text-lg">
+                                            <span className="text-gray-700">Total Pendapatan:</span>
+                                            <span className="text-green-600">{formatRupiah(addTotalRevenue)}</span>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <Separator />
+                                <div className="h-px bg-gray-100" />
 
                                 {/* Notes */}
                                 <div className="space-y-2">
-                                    <Label>Catatan (Opsional)</Label>
+                                    <Label className="text-sm text-gray-500">Catatan (Opsional)</Label>
                                     <Input
+                                        className="h-11 rounded-xl border-2"
                                         value={addForm.notes}
                                         onChange={(e) => setAddForm(f => ({ ...f, notes: e.target.value }))}
                                         placeholder="Alasan input manual, keterangan tambahan..."
@@ -1127,16 +1189,20 @@ export default function AdminLaporanPage() {
                     </div>
 
                     <DialogFooter className="gap-2">
-                        <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                        <button
+                            onClick={() => setIsAddDialogOpen(false)}
+                            className="px-5 py-3 rounded-xl border-2 border-gray-200 font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
                             Batal
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                             onClick={handleAddReport}
                             disabled={isAdding || !addForm.destination_id || !addForm.report_date}
+                            className="px-5 py-3 rounded-xl bg-pink-600 text-white font-bold hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
-                            {isAdding && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                            {isAdding && <Loader2 className="w-4 h-4 animate-spin" />}
                             Simpan Laporan
-                        </Button>
+                        </button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -1180,6 +1246,6 @@ export default function AdminLaporanPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     )
 }

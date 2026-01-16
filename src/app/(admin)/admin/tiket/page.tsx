@@ -90,10 +90,10 @@ export default function AdminTiketPage() {
 
     const getCategoryColor = (category: string) => {
         switch (category) {
-            case 'anak': return 'bg-blue-100 text-blue-700'
-            case 'dewasa': return 'bg-green-100 text-green-700'
-            case 'wna': return 'bg-purple-100 text-purple-700'
-            default: return 'bg-amber-100 text-amber-700' // Attractions
+            case 'anak': return 'bg-gray-100 text-gray-700 border border-gray-200'
+            case 'dewasa': return 'bg-pink-100 text-pink-700 border border-pink-200'
+            case 'wna': return 'bg-gray-100 text-gray-700 border border-gray-200'
+            default: return 'bg-pink-50 text-pink-600 border border-pink-200' // Attractions
         }
     }
 
@@ -108,103 +108,106 @@ export default function AdminTiketPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                        <Ticket className="w-7 h-7 text-pink-600" />
-                        Laporan Penggunaan Tiket
-                    </h1>
-                    <p className="text-gray-600 mt-1">
-                        Daftar blok tiket yang sudah digunakan
-                    </p>
-                </div>
-                <Badge variant="outline" className="text-lg px-4 py-2">
-                    {tickets.length} Blok
-                </Badge>
+            <div>
+                <h1 className="text-3xl font-black text-gray-900">
+                    Laporan Penggunaan Tiket
+                </h1>
+                <p className="text-gray-500 mt-1">
+                    Daftar blok tiket yang sudah digunakan
+                </p>
             </div>
 
             {/* Table */}
-            <Card>
-                <CardContent className="p-0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="bg-gray-50">
-                                <TableHead className="w-[80px]">Kategori</TableHead>
-                                <TableHead>
-                                    <Button
-                                        variant="ghost"
-                                        className="p-0 h-auto font-semibold hover:bg-transparent"
+            <section className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center">
+                        <Ticket className="w-5 h-5 text-pink-600" />
+                    </div>
+                    <div>
+                        <h2 className="font-bold text-gray-900">Daftar Blok Tiket</h2>
+                        <p className="text-sm text-gray-500">{tickets.length} blok ditemukan</p>
+                    </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="border-b border-gray-100 bg-gray-50/50">
+                                <th className="px-6 py-4 text-left text-sm font-bold text-gray-500">Kategori</th>
+                                <th className="px-6 py-4 text-left">
+                                    <button
+                                        className="flex items-center text-sm font-bold text-gray-500 hover:text-pink-600 transition-colors"
                                         onClick={() => handleSort('block_no')}
                                     >
                                         No. Blok
                                         <SortIcon field="block_no" />
-                                    </Button>
-                                </TableHead>
-                                <TableHead>No. Awal</TableHead>
-                                <TableHead>No. Akhir</TableHead>
-                                <TableHead className="text-right">Jumlah</TableHead>
-                                <TableHead>
-                                    <Button
-                                        variant="ghost"
-                                        className="p-0 h-auto font-semibold hover:bg-transparent"
+                                    </button>
+                                </th>
+                                <th className="px-6 py-4 text-left text-sm font-bold text-gray-500">No. Awal</th>
+                                <th className="px-6 py-4 text-left text-sm font-bold text-gray-500">No. Akhir</th>
+                                <th className="px-6 py-4 text-right text-sm font-bold text-gray-500">Jumlah</th>
+                                <th className="px-6 py-4 text-left">
+                                    <button
+                                        className="flex items-center text-sm font-bold text-gray-500 hover:text-pink-600 transition-colors"
                                         onClick={() => handleSort('report_date')}
                                     >
                                         Tanggal
                                         <SortIcon field="report_date" />
-                                    </Button>
-                                </TableHead>
-                                <TableHead>
-                                    <Button
-                                        variant="ghost"
-                                        className="p-0 h-auto font-semibold hover:bg-transparent"
+                                    </button>
+                                </th>
+                                <th className="px-6 py-4 text-left">
+                                    <button
+                                        className="flex items-center text-sm font-bold text-gray-500 hover:text-pink-600 transition-colors"
                                         onClick={() => handleSort('destination_name')}
                                     >
                                         Destinasi
                                         <SortIcon field="destination_name" />
-                                    </Button>
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
+                                    </button>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
                             {paginatedTickets.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="text-center py-12 text-gray-500">
+                                <tr>
+                                    <td colSpan={7} className="text-center py-12 text-gray-400">
                                         Belum ada data penggunaan tiket
-                                    </TableCell>
-                                </TableRow>
+                                    </td>
+                                </tr>
                             ) : (
                                 paginatedTickets.map((ticket) => (
-                                    <TableRow key={ticket.id}>
-                                        <TableCell>
-                                            <Badge className={getCategoryColor(ticket.category)}>
+                                    <tr key={ticket.id} className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <Badge className={`${getCategoryColor(ticket.category)} font-bold text-xs`}>
                                                 {ticket.category}
                                             </Badge>
-                                        </TableCell>
-                                        <TableCell className="font-mono font-semibold">
+                                        </td>
+                                        <td className="px-6 py-4 font-mono font-bold text-gray-900">
                                             {ticket.block_no || '-'}
-                                        </TableCell>
-                                        <TableCell className="font-mono">
+                                        </td>
+                                        <td className="px-6 py-4 font-mono text-gray-600">
                                             {ticket.start_no}
-                                        </TableCell>
-                                        <TableCell className="font-mono">
+                                        </td>
+                                        <td className="px-6 py-4 font-mono text-gray-600">
                                             {ticket.end_no}
-                                        </TableCell>
-                                        <TableCell className="text-right font-semibold">
+                                        </td>
+                                        <td className="px-6 py-4 text-right font-bold text-gray-900">
                                             {ticket.count.toLocaleString('id-ID')}
-                                        </TableCell>
-                                        <TableCell>
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-600">
                                             {formatDateShort(ticket.report_date)}
-                                        </TableCell>
-                                        <TableCell className="font-medium">
+                                        </td>
+                                        <td className="px-6 py-4 font-medium text-gray-700">
                                             {ticket.destination_name}
-                                        </TableCell>
-                                    </TableRow>
+                                        </td>
+                                    </tr>
                                 ))
                             )}
-                        </TableBody>
-                    </Table>
+                        </tbody>
+                    </table>
+                </div>
 
-                    {/* Pagination */}
+                {/* Pagination */}
+                <div className="border-t border-gray-100">
                     <PaginationControls
                         currentPage={currentPage}
                         totalItems={totalItems}
@@ -212,8 +215,8 @@ export default function AdminTiketPage() {
                         onPageChange={setCurrentPage}
                         onItemsPerPageChange={setItemsPerPage}
                     />
-                </CardContent>
-            </Card>
+                </div>
+            </section>
         </div>
     )
 }

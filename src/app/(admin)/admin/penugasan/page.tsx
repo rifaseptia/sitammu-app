@@ -112,9 +112,9 @@ export default function PenugasanPage() {
     const getRoleBadge = (role: string) => {
         switch (role) {
             case 'koordinator':
-                return <Badge className="bg-blue-100 text-blue-700">Koordinator</Badge>
+                return <Badge className="bg-gray-100 text-gray-700 border border-gray-200 font-bold text-xs">Koordinator</Badge>
             default:
-                return <Badge variant="secondary">Petugas</Badge>
+                return <Badge className="bg-gray-100 text-gray-600 border border-gray-200 font-bold text-xs">Petugas</Badge>
         }
     }
 
@@ -148,7 +148,7 @@ export default function PenugasanPage() {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                <div className="w-8 h-8 border-4 border-pink-600 border-t-transparent rounded-full animate-spin" />
             </div>
         )
     }
@@ -156,38 +156,36 @@ export default function PenugasanPage() {
     return (
         <div className="space-y-6">
             {/* Page Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Penugasan</h1>
-                    <p className="text-gray-500">Kelola penempatan petugas di setiap destinasi</p>
-                </div>
+            <div>
+                <h1 className="text-3xl font-black text-gray-900">Penugasan</h1>
+                <p className="text-gray-500 mt-1">Kelola penempatan petugas di setiap destinasi</p>
             </div>
 
             {/* Unassigned Users */}
             {unassignedUsers.length > 0 && (
-                <Card className="border-yellow-200 bg-yellow-50">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-yellow-700">
-                            <AlertCircle className="w-5 h-5" />
-                            Petugas Belum Ditugaskan ({unassignedUsers.length})
-                        </CardTitle>
-                        <CardDescription className="text-yellow-600">
-                            Segera tugaskan ke destinasi
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                <section className="border-2 border-yellow-300 rounded-2xl bg-yellow-50/50 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-yellow-200 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center">
+                            <AlertCircle className="w-5 h-5 text-yellow-600" />
+                        </div>
+                        <div>
+                            <h2 className="font-bold text-yellow-800">Petugas Belum Ditugaskan</h2>
+                            <p className="text-sm text-yellow-600">{unassignedUsers.length} petugas perlu ditugaskan</p>
+                        </div>
+                    </div>
+                    <div className="p-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {unassignedUsers.map((user) => (
-                                <div key={user.id} className="flex items-center justify-between bg-white p-3 rounded-lg border">
-                                    <div>
-                                        <p className="font-medium">{user.name}</p>
+                                <div key={user.id} className="flex items-center justify-between bg-white p-4 rounded-xl border-2 border-yellow-200">
+                                    <div className="space-y-1">
+                                        <p className="font-bold text-gray-900">{user.name}</p>
                                         {getRoleBadge(user.role)}
                                     </div>
                                     <Select
                                         value={changes[user.id] || ''}
                                         onValueChange={(value) => handleDestinationChange(user.id, value)}
                                     >
-                                        <SelectTrigger className="w-40">
+                                        <SelectTrigger className="w-40 h-11 rounded-xl border-2">
                                             <SelectValue placeholder="Pilih..." />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -201,8 +199,8 @@ export default function PenugasanPage() {
                                 </div>
                             ))}
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                </section>
             )}
 
             {/* Destination Grid */}
@@ -210,17 +208,17 @@ export default function PenugasanPage() {
                 {destinations.map((dest) => {
                     const destUsers = usersByDestination[dest.id] || []
                     return (
-                        <Card key={dest.id}>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-base">
-                                    <MapPin className="w-4 h-4" />
-                                    {dest.name}
-                                </CardTitle>
-                                <CardDescription>
-                                    {destUsers.length} petugas
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
+                        <section key={dest.id} className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
+                            <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-pink-100 flex items-center justify-center">
+                                    <MapPin className="w-4 h-4 text-pink-600" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-gray-900">{dest.name}</h3>
+                                    <p className="text-xs text-gray-500">{destUsers.length} petugas</p>
+                                </div>
+                            </div>
+                            <div className="p-4">
                                 {destUsers.length === 0 ? (
                                     <p className="text-sm text-gray-400 text-center py-4">
                                         Belum ada petugas
@@ -231,21 +229,21 @@ export default function PenugasanPage() {
                                             <div
                                                 key={user.id}
                                                 className={cn(
-                                                    'flex items-center justify-between p-2 rounded-lg',
+                                                    'flex items-center justify-between p-3 rounded-xl',
                                                     changes[user.id] !== undefined
-                                                        ? 'bg-blue-50 border border-blue-200'
-                                                        : 'bg-gray-50'
+                                                        ? 'bg-pink-50 border-2 border-pink-200'
+                                                        : 'bg-gray-50 border border-gray-100'
                                                 )}
                                             >
-                                                <div>
-                                                    <p className="font-medium text-sm">{user.name}</p>
+                                                <div className="space-y-1">
+                                                    <p className="font-bold text-sm text-gray-900">{user.name}</p>
                                                     {getRoleBadge(user.role)}
                                                 </div>
                                                 <Select
                                                     value={changes[user.id] ?? user.destination_id ?? ''}
                                                     onValueChange={(value) => handleDestinationChange(user.id, value)}
                                                 >
-                                                    <SelectTrigger className="w-32 h-8 text-xs">
+                                                    <SelectTrigger className="w-28 h-9 text-xs rounded-lg border-2">
                                                         <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -261,8 +259,8 @@ export default function PenugasanPage() {
                                         ))}
                                     </div>
                                 )}
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </section>
                     )
                 })}
             </div>
@@ -270,18 +268,18 @@ export default function PenugasanPage() {
             {/* Bottom Save Action */}
             {Object.keys(changes).length > 0 && (
                 <div className="flex justify-center mt-8">
-                    <Button
+                    <button
                         onClick={handleSaveAll}
                         disabled={isSaving}
-                        className="w-full max-w-md h-12 text-lg"
+                        className="w-full max-w-md h-14 text-lg font-bold rounded-xl bg-pink-600 text-white hover:bg-pink-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                         {isSaving ? (
-                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                            <Loader2 className="w-5 h-5 animate-spin" />
                         ) : (
-                            <Check className="w-5 h-5 mr-2" />
+                            <Check className="w-5 h-5" />
                         )}
                         Simpan Perubahan ({Object.keys(changes).length})
-                    </Button>
+                    </button>
                 </div>
             )}
         </div>

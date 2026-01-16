@@ -9,11 +9,21 @@ import {
     MapPin,
     CreditCard,
     Wallet,
-    Baby,
-    UserCircle,
-    Globe,
-    Loader2
+    Loader2,
+    BarChart3
 } from 'lucide-react'
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+    PieChart,
+    Pie,
+    Cell,
+    Legend
+} from 'recharts'
 
 import {
     getMonthlyStats,
@@ -24,7 +34,6 @@ import {
 } from '@/actions/analytics'
 import { formatRupiah, formatNumber, cn } from '@/lib/utils'
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
     Select,
@@ -78,6 +87,16 @@ interface Destination {
     name: string
 }
 
+// Chart colors
+const COLORS = {
+    pink: '#ec4899',
+    gray: '#6b7280',
+    grayLight: '#9ca3af',
+    green: '#22c55e'
+}
+
+const PIE_COLORS = ['#ec4899', '#6b7280', '#d1d5db']
+
 export default function AnalyticsPage() {
     const currentYear = new Date().getFullYear()
     const [selectedYear, setSelectedYear] = React.useState(currentYear)
@@ -91,7 +110,6 @@ export default function AnalyticsPage() {
     const [payment, setPayment] = React.useState<PaymentStats | null>(null)
     const [comparison, setComparison] = React.useState<Comparison | null>(null)
 
-    // Load destinations on mount
     React.useEffect(() => {
         async function loadDestinations() {
             const { getAllDestinations } = await import('@/actions/destinations')
@@ -138,30 +156,43 @@ export default function AnalyticsPage() {
         ? demographics.total_anak + demographics.total_dewasa + demographics.total_wna
         : 0
 
+    // Prepare chart data
+    const chartData = monthlyStats.map(stat => ({
+        name: getMonthName(stat.month),
+        Pengunjung: stat.total_visitors,
+        Pendapatan: stat.total_revenue / 1000000, // in millions
+    }))
+
+    const pieData = demographics ? [
+        { name: 'Dewasa', value: demographics.total_dewasa, color: COLORS.pink },
+        { name: 'Anak', value: demographics.total_anak, color: COLORS.gray },
+        { name: 'WNA', value: demographics.total_wna, color: COLORS.grayLight },
+    ] : []
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
             </div>
         )
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {/* Page Header */}
-            <div className="flex items-center justify-between flex-wrap gap-4">
+            <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
-                    <p className="text-gray-500">
+                    <h1 className="text-3xl font-black text-gray-900">Analytics</h1>
+                    <p className="text-gray-500 mt-1">
                         Laporan dan statistik manajemen
                         {selectedDestination && selectedDestination !== 'all' && destinations.find(d => d.id === selectedDestination) && (
-                            <span className="font-medium text-gray-700"> - {destinations.find(d => d.id === selectedDestination)?.name}</span>
+                            <span className="font-bold text-pink-600"> - {destinations.find(d => d.id === selectedDestination)?.name}</span>
                         )}
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                     <Select value={selectedDestination || 'all'} onValueChange={setSelectedDestination}>
-                        <SelectTrigger className="w-48">
+                        <SelectTrigger className="w-52 h-12 rounded-xl border-2 border-gray-200 font-medium">
                             <SelectValue placeholder="Semua Destinasi" />
                         </SelectTrigger>
                         <SelectContent>
@@ -172,7 +203,7 @@ export default function AnalyticsPage() {
                         </SelectContent>
                     </Select>
                     <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(parseInt(v))}>
-                        <SelectTrigger className="w-24">
+                        <SelectTrigger className="w-28 h-12 rounded-xl border-2 border-gray-200 font-medium">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -182,364 +213,333 @@ export default function AnalyticsPage() {
                         </SelectContent>
                     </Select>
                 </div>
-            </div>
+            </header>
 
-            {/* Month-over-Month Comparison - Only show for current year */}
+            {/* Month-over-Month Comparison */}
             {comparison && selectedYear === currentYear && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-500">
-                                Pengunjung Bulan Ini
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center justify-between">
-                                <span className="text-3xl font-bold">{formatNumber(comparison.current.visitors)}</span>
-                                <Badge className={cn(
-                                    'flex items-center gap-1',
-                                    comparison.change.visitors >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                )}>
-                                    {comparison.change.visitors >= 0 ? (
-                                        <TrendingUp className="w-3 h-3" />
-                                    ) : (
-                                        <TrendingDown className="w-3 h-3" />
-                                    )}
-                                    {comparison.change.visitors}%
-                                </Badge>
+                    <div className="border-2 border-gray-200 rounded-2xl bg-white p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <span className="text-sm font-bold text-gray-500">Pengunjung Bulan Ini</span>
+                            <div className="w-10 h-10 rounded-xl bg-pink-50 flex items-center justify-center">
+                                <Users className="w-5 h-5 text-pink-600" />
                             </div>
-                            <p className="text-sm text-gray-500 mt-1">
-                                vs bulan lalu: {formatNumber(comparison.previous.visitors)}
-                            </p>
-                        </CardContent>
-                    </Card>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <p className="text-3xl font-black text-gray-900">{formatNumber(comparison.current.visitors)}</p>
+                            <Badge className={cn(
+                                'font-bold border-0',
+                                comparison.change.visitors >= 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                            )}>
+                                {comparison.change.visitors >= 0 ? (
+                                    <TrendingUp className="w-3.5 h-3.5 mr-1" />
+                                ) : (
+                                    <TrendingDown className="w-3.5 h-3.5 mr-1" />
+                                )}
+                                {comparison.change.visitors >= 0 ? '+' : ''}{comparison.change.visitors}%
+                            </Badge>
+                        </div>
+                        <p className="text-sm text-gray-400 mt-2">
+                            vs bulan lalu: {formatNumber(comparison.previous.visitors)}
+                        </p>
+                    </div>
 
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-500">
-                                Pendapatan Bulan Ini
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center justify-between">
-                                <span className="text-3xl font-bold">{formatRupiah(comparison.current.revenue, { compact: true })}</span>
-                                <Badge className={cn(
-                                    'flex items-center gap-1',
-                                    comparison.change.revenue >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                )}>
-                                    {comparison.change.revenue >= 0 ? (
-                                        <TrendingUp className="w-3 h-3" />
-                                    ) : (
-                                        <TrendingDown className="w-3 h-3" />
-                                    )}
-                                    {comparison.change.revenue}%
-                                </Badge>
+                    <div className="border-2 border-gray-200 rounded-2xl bg-white p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <span className="text-sm font-bold text-gray-500">Pendapatan Bulan Ini</span>
+                            <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
+                                <Banknote className="w-5 h-5 text-green-600" />
                             </div>
-                            <p className="text-sm text-gray-500 mt-1">
-                                vs bulan lalu: {formatRupiah(comparison.previous.revenue, { compact: true })}
-                            </p>
-                        </CardContent>
-                    </Card>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <p className="text-3xl font-black text-gray-900">{formatRupiah(comparison.current.revenue, { compact: true })}</p>
+                            <Badge className={cn(
+                                'font-bold border-0',
+                                comparison.change.revenue >= 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                            )}>
+                                {comparison.change.revenue >= 0 ? (
+                                    <TrendingUp className="w-3.5 h-3.5 mr-1" />
+                                ) : (
+                                    <TrendingDown className="w-3.5 h-3.5 mr-1" />
+                                )}
+                                {comparison.change.revenue >= 0 ? '+' : ''}{comparison.change.revenue}%
+                            </Badge>
+                        </div>
+                        <p className="text-sm text-gray-400 mt-2">
+                            vs bulan lalu: {formatRupiah(comparison.previous.revenue, { compact: true })}
+                        </p>
+                    </div>
                 </div>
             )}
 
-            {/* Monthly Trend */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Trend Bulanan {selectedYear}</CardTitle>
-                    <CardDescription>Pengunjung dan pendapatan per bulan</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b">
-                                    <th className="text-left py-2 px-2">Bulan</th>
-                                    <th className="text-right py-2 px-2">Pengunjung</th>
-                                    <th className="text-right py-2 px-2">Pendapatan</th>
-                                    <th className="text-right py-2 px-2">Laporan</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {monthlyStats.map((stat) => (
-                                    <tr key={stat.month} className="border-b hover:bg-gray-50">
-                                        <td className="py-2 px-2 font-medium">{getMonthName(stat.month)}</td>
-                                        <td className="py-2 px-2 text-right">{formatNumber(stat.total_visitors)}</td>
-                                        <td className="py-2 px-2 text-right">{formatRupiah(stat.total_revenue, { compact: true })}</td>
-                                        <td className="py-2 px-2 text-right text-gray-500">{stat.report_count}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+            {/* Monthly Trend with Chart */}
+            <section className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
+                <div className="px-6 py-5 border-b-2 border-gray-100 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-pink-50 flex items-center justify-center">
+                        <BarChart3 className="w-5 h-5 text-pink-600" />
                     </div>
-                </CardContent>
-            </Card>
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-900">Trend Bulanan {selectedYear}</h2>
+                        <p className="text-sm text-gray-500">Pengunjung dan pendapatan per bulan</p>
+                    </div>
+                </div>
 
-            {/* Demographics - Full Width Section with Multi-Chart */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Users className="w-5 h-5" />
-                        Demografi Pengunjung
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {!demographics ? (
-                        <p className="text-center text-gray-500 py-4">Belum ada data</p>
+                {/* Bar Chart */}
+                {chartData.length > 0 && (
+                    <div className="px-6 pt-6">
+                        <div className="h-72">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                    <XAxis
+                                        dataKey="name"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: '#6b7280', fontSize: 12 }}
+                                    />
+                                    <YAxis
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: '#9ca3af', fontSize: 12 }}
+                                        tickFormatter={(value: number) => formatNumber(value)}
+                                    />
+                                    <Tooltip
+                                        contentStyle={{
+                                            backgroundColor: 'white',
+                                            border: '2px solid #e5e7eb',
+                                            borderRadius: '12px',
+                                            boxShadow: 'none'
+                                        }}
+                                        formatter={(value: number, name: string) => [
+                                            name === 'Pengunjung' ? formatNumber(value) : `Rp ${value.toFixed(1)} jt`,
+                                            name
+                                        ]}
+                                    />
+                                    <Bar
+                                        dataKey="Pengunjung"
+                                        fill={COLORS.pink}
+                                        radius={[6, 6, 0, 0]}
+                                        maxBarSize={40}
+                                    />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                )}
+
+                {/* Table */}
+                <div className="overflow-x-auto mt-4">
+                    <table className="w-full">
+                        <thead className="bg-gray-50 border-y border-gray-100">
+                            <tr>
+                                <th className="text-left px-6 py-4 text-sm font-bold text-gray-500">Bulan</th>
+                                <th className="text-right px-6 py-4 text-sm font-bold text-gray-500">Pengunjung</th>
+                                <th className="text-right px-6 py-4 text-sm font-bold text-gray-500">Pendapatan</th>
+                                <th className="text-right px-6 py-4 text-sm font-bold text-gray-500">Laporan</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {monthlyStats.map((stat) => (
+                                <tr key={stat.month} className="hover:bg-gray-50 transition-colors">
+                                    <td className="px-6 py-4 font-bold text-gray-900">{getMonthName(stat.month)}</td>
+                                    <td className="px-6 py-4 text-right font-medium">{formatNumber(stat.total_visitors)}</td>
+                                    <td className="px-6 py-4 text-right font-bold text-green-600">{formatRupiah(stat.total_revenue, { compact: true })}</td>
+                                    <td className="px-6 py-4 text-right text-gray-400">{stat.report_count}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            {/* Demographics with Pie Chart */}
+            <section className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
+                <div className="px-6 py-5 border-b-2 border-gray-100 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-pink-50 flex items-center justify-center">
+                        <Users className="w-5 h-5 text-pink-600" />
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900">Demografi Pengunjung</h2>
+                </div>
+                <div className="p-6">
+                    {!demographics || totalVisitors === 0 ? (
+                        <p className="text-center text-gray-400 py-8">Belum ada data</p>
                     ) : (
-                        <div className="space-y-6">
-                            {/* Row 1: Category Stats + Percentage Bars */}
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                {/* Category Cards */}
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500 mb-3">Kategori Pengunjung</p>
-                                    <div className="grid grid-cols-3 gap-3">
-                                        <div className="text-center p-4 bg-gray-50 rounded-lg border">
-                                            <Baby className="w-6 h-6 mx-auto text-gray-600 mb-2" />
-                                            <p className="font-bold text-2xl">{formatNumber(demographics.total_anak)}</p>
-                                            <p className="text-xs text-gray-500">Anak</p>
-                                            <p className="text-xs text-gray-400 mt-1">
-                                                {totalVisitors > 0 ? ((demographics.total_anak / totalVisitors) * 100).toFixed(1) : 0}%
-                                            </p>
-                                        </div>
-                                        <div className="text-center p-4 bg-gray-50 rounded-lg border">
-                                            <UserCircle className="w-6 h-6 mx-auto text-gray-600 mb-2" />
-                                            <p className="font-bold text-2xl">{formatNumber(demographics.total_dewasa)}</p>
-                                            <p className="text-xs text-gray-500">Dewasa</p>
-                                            <p className="text-xs text-gray-400 mt-1">
-                                                {totalVisitors > 0 ? ((demographics.total_dewasa / totalVisitors) * 100).toFixed(1) : 0}%
-                                            </p>
-                                        </div>
-                                        <div className="text-center p-4 bg-gray-50 rounded-lg border">
-                                            <Globe className="w-6 h-6 mx-auto text-gray-600 mb-2" />
-                                            <p className="font-bold text-2xl">{formatNumber(demographics.total_wna)}</p>
-                                            <p className="text-xs text-gray-500">WNA</p>
-                                            <p className="text-xs text-gray-400 mt-1">
-                                                {totalVisitors > 0 ? ((demographics.total_wna / totalVisitors) * 100).toFixed(1) : 0}%
-                                            </p>
-                                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                            {/* Pie Chart - Big & Beautiful */}
+                            <div className="h-80">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={pieData}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={60}
+                                            outerRadius={120}
+                                            paddingAngle={3}
+                                            dataKey="value"
+                                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                            labelLine={false}
+                                        >
+                                            {pieData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={PIE_COLORS[index]} />
+                                            ))}
+                                        </Pie>
+                                        <Legend
+                                            verticalAlign="bottom"
+                                            height={36}
+                                            formatter={(value) => <span className="text-gray-600 font-medium">{value}</span>}
+                                        />
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: 'white',
+                                                border: '2px solid #e5e7eb',
+                                                borderRadius: '12px',
+                                                boxShadow: 'none'
+                                            }}
+                                            formatter={(value: number) => [formatNumber(value), 'Pengunjung']}
+                                        />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+
+                            {/* Stats Cards */}
+                            <div className="space-y-4">
+                                <div className="border-2 border-pink-200 bg-pink-50 rounded-2xl p-5 flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-xl bg-pink-100 flex items-center justify-center">
+                                        <Users className="w-7 h-7 text-pink-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-3xl font-black text-pink-600">{formatNumber(demographics.total_dewasa)}</p>
+                                        <p className="font-bold text-pink-500">Dewasa</p>
+                                    </div>
+                                    <div className="ml-auto text-right">
+                                        <p className="text-2xl font-black text-pink-600">
+                                            {((demographics.total_dewasa / totalVisitors) * 100).toFixed(1)}%
+                                        </p>
                                     </div>
                                 </div>
 
-                                {/* Category Distribution Bar */}
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500 mb-3">Distribusi Kategori</p>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <div className="flex justify-between text-sm mb-1">
-                                                <span className="text-gray-600">Dewasa</span>
-                                                <span className="text-gray-500">{formatNumber(demographics.total_dewasa)}</span>
-                                            </div>
-                                            <div className="h-6 bg-gray-100 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-gray-600 rounded-full transition-all"
-                                                    style={{ width: `${totalVisitors > 0 ? (demographics.total_dewasa / totalVisitors) * 100 : 0}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div className="flex justify-between text-sm mb-1">
-                                                <span className="text-gray-600">Anak</span>
-                                                <span className="text-gray-500">{formatNumber(demographics.total_anak)}</span>
-                                            </div>
-                                            <div className="h-6 bg-gray-100 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-gray-500 rounded-full transition-all"
-                                                    style={{ width: `${totalVisitors > 0 ? (demographics.total_anak / totalVisitors) * 100 : 0}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div className="flex justify-between text-sm mb-1">
-                                                <span className="text-gray-600">WNA</span>
-                                                <span className="text-gray-500">{formatNumber(demographics.total_wna)}</span>
-                                            </div>
-                                            <div className="h-6 bg-gray-100 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-gray-400 rounded-full transition-all"
-                                                    style={{ width: `${totalVisitors > 0 ? (demographics.total_wna / totalVisitors) * 100 : 0}%` }}
-                                                />
-                                            </div>
-                                        </div>
+                                <div className="border-2 border-gray-200 rounded-2xl p-5 flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center">
+                                        <Users className="w-7 h-7 text-gray-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-3xl font-black text-gray-700">{formatNumber(demographics.total_anak)}</p>
+                                        <p className="font-bold text-gray-500">Anak</p>
+                                    </div>
+                                    <div className="ml-auto text-right">
+                                        <p className="text-2xl font-black text-gray-600">
+                                            {((demographics.total_anak / totalVisitors) * 100).toFixed(1)}%
+                                        </p>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Row 2: Gender Breakdown */}
-                            <div className="border-t pt-6">
-                                <p className="text-sm font-medium text-gray-500 mb-4">Rasio Gender</p>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Gender Dewasa */}
-                                    {demographics.total_dewasa > 0 && (
-                                        <div className="p-4 bg-gray-50 rounded-lg">
-                                            <div className="flex items-center justify-between mb-3">
-                                                <span className="font-medium text-gray-700">Dewasa</span>
-                                                <span className="text-sm text-gray-500">{formatNumber(demographics.total_dewasa)} total</span>
-                                            </div>
-                                            <div className="flex h-8 rounded-full overflow-hidden bg-gray-200">
-                                                <div
-                                                    className="bg-gray-700 flex items-center justify-center text-xs text-white font-medium"
-                                                    style={{ width: `${(demographics.dewasa_male / demographics.total_dewasa) * 100}%` }}
-                                                >
-                                                    {((demographics.dewasa_male / demographics.total_dewasa) * 100).toFixed(0)}%
-                                                </div>
-                                                <div
-                                                    className="bg-gray-400 flex items-center justify-center text-xs text-white font-medium"
-                                                    style={{ width: `${(demographics.dewasa_female / demographics.total_dewasa) * 100}%` }}
-                                                >
-                                                    {((demographics.dewasa_female / demographics.total_dewasa) * 100).toFixed(0)}%
-                                                </div>
-                                            </div>
-                                            <div className="flex justify-between text-xs text-gray-500 mt-2">
-                                                <span>♂ Laki-laki: {formatNumber(demographics.dewasa_male)}</span>
-                                                <span>♀ Perempuan: {formatNumber(demographics.dewasa_female)}</span>
-                                            </div>
-                                        </div>
-                                    )}
+                                <div className="border-2 border-gray-200 rounded-2xl p-5 flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center">
+                                        <MapPin className="w-7 h-7 text-gray-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-3xl font-black text-gray-600">{formatNumber(demographics.total_wna)}</p>
+                                        <p className="font-bold text-gray-400">WNA</p>
+                                    </div>
+                                    <div className="ml-auto text-right">
+                                        <p className="text-2xl font-black text-gray-500">
+                                            {((demographics.total_wna / totalVisitors) * 100).toFixed(1)}%
+                                        </p>
+                                    </div>
+                                </div>
 
-                                    {/* Gender Anak */}
-                                    {demographics.total_anak > 0 && (
-                                        <div className="p-4 bg-gray-50 rounded-lg">
-                                            <div className="flex items-center justify-between mb-3">
-                                                <span className="font-medium text-gray-700">Anak</span>
-                                                <span className="text-sm text-gray-500">{formatNumber(demographics.total_anak)} total</span>
-                                            </div>
-                                            <div className="flex h-8 rounded-full overflow-hidden bg-gray-200">
-                                                <div
-                                                    className="bg-gray-700 flex items-center justify-center text-xs text-white font-medium"
-                                                    style={{ width: `${(demographics.anak_male / demographics.total_anak) * 100}%` }}
-                                                >
-                                                    {((demographics.anak_male / demographics.total_anak) * 100).toFixed(0)}%
-                                                </div>
-                                                <div
-                                                    className="bg-gray-400 flex items-center justify-center text-xs text-white font-medium"
-                                                    style={{ width: `${(demographics.anak_female / demographics.total_anak) * 100}%` }}
-                                                >
-                                                    {((demographics.anak_female / demographics.total_anak) * 100).toFixed(0)}%
-                                                </div>
-                                            </div>
-                                            <div className="flex justify-between text-xs text-gray-500 mt-2">
-                                                <span>♂ Laki-laki: {formatNumber(demographics.anak_male)}</span>
-                                                <span>♀ Perempuan: {formatNumber(demographics.anak_female)}</span>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Row 3: Summary Stats */}
-                            <div className="border-t pt-4 flex items-center justify-center gap-8 text-center">
-                                <div>
-                                    <p className="text-3xl font-bold text-gray-900">{formatNumber(totalVisitors)}</p>
-                                    <p className="text-sm text-gray-500">Total Pengunjung</p>
-                                </div>
-                                <div className="h-12 w-px bg-gray-200" />
-                                <div>
-                                    <p className="text-3xl font-bold text-gray-900">
-                                        {totalVisitors > 0
-                                            ? (((demographics.dewasa_male + demographics.anak_male) / totalVisitors) * 100).toFixed(0)
-                                            : 0}%
-                                    </p>
-                                    <p className="text-sm text-gray-500">Laki-laki</p>
-                                </div>
-                                <div className="h-12 w-px bg-gray-200" />
-                                <div>
-                                    <p className="text-3xl font-bold text-gray-900">
-                                        {totalVisitors > 0
-                                            ? (((demographics.dewasa_female + demographics.anak_female) / totalVisitors) * 100).toFixed(0)
-                                            : 0}%
-                                    </p>
-                                    <p className="text-sm text-gray-500">Perempuan</p>
+                                {/* Total */}
+                                <div className="border-t-2 border-gray-100 pt-4 text-center">
+                                    <p className="text-4xl font-black text-gray-900">{formatNumber(totalVisitors)}</p>
+                                    <p className="font-bold text-gray-400">Total Pengunjung</p>
                                 </div>
                             </div>
                         </div>
                     )}
-                </CardContent>
-            </Card>
+                </div>
+            </section>
 
-            {/* Payment & Destinations - Side by Side */}
+            {/* Payment & Destinations Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Payment Method */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Banknote className="w-5 h-5" />
-                            Metode Pembayaran
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                <section className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
+                    <div className="px-6 py-5 border-b-2 border-gray-100 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
+                            <Banknote className="w-5 h-5 text-green-600" />
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-900">Metode Pembayaran</h2>
+                    </div>
+                    <div className="p-6">
                         {!payment ? (
-                            <p className="text-center text-gray-500 py-4">Belum ada data</p>
+                            <p className="text-center text-gray-400 py-8">Belum ada data</p>
                         ) : (
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-gray-100 rounded-full">
+                            <div className="space-y-5">
+                                <div className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl">
+                                    <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
                                         <Wallet className="w-6 h-6 text-gray-600" />
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex justify-between items-center">
-                                            <p className="font-medium text-gray-700">Cash</p>
-                                            <p className="text-sm text-gray-500">{payment.cash_percentage}%</p>
+                                            <p className="font-bold text-gray-900">Cash</p>
+                                            <Badge className="bg-gray-100 text-gray-600 border-0 font-bold">{payment.cash_percentage}%</Badge>
                                         </div>
-                                        <p className="text-xl font-bold">{formatRupiah(payment.total_cash, { compact: true })}</p>
+                                        <p className="text-xl font-black text-gray-700 mt-1">{formatRupiah(payment.total_cash, { compact: true })}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-gray-100 rounded-full">
-                                        <CreditCard className="w-6 h-6 text-gray-600" />
+                                <div className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl">
+                                    <div className="w-12 h-12 rounded-xl bg-pink-50 flex items-center justify-center">
+                                        <CreditCard className="w-6 h-6 text-pink-600" />
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex justify-between items-center">
-                                            <p className="font-medium text-gray-700">QRIS</p>
-                                            <p className="text-sm text-gray-500">{payment.qris_percentage}%</p>
+                                            <p className="font-bold text-gray-900">QRIS</p>
+                                            <Badge className="bg-pink-100 text-pink-600 border-0 font-bold">{payment.qris_percentage}%</Badge>
                                         </div>
-                                        <p className="text-xl font-bold">{formatRupiah(payment.total_qris, { compact: true })}</p>
+                                        <p className="text-xl font-black text-gray-700 mt-1">{formatRupiah(payment.total_qris, { compact: true })}</p>
                                     </div>
                                 </div>
                             </div>
                         )}
-                    </CardContent>
-                </Card>
+                    </div>
+                </section>
 
                 {/* Top Destinations */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <MapPin className="w-5 h-5" />
-                            Destinasi Terpopuler
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                <section className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
+                    <div className="px-6 py-5 border-b-2 border-gray-100 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-pink-50 flex items-center justify-center">
+                            <MapPin className="w-5 h-5 text-pink-600" />
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-900">Destinasi Terpopuler</h2>
+                    </div>
+                    <div className="p-6">
                         {rankings.length === 0 ? (
-                            <p className="text-center text-gray-500 py-4">Belum ada data</p>
+                            <p className="text-center text-gray-400 py-8">Belum ada data</p>
                         ) : (
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 {rankings.slice(0, 5).map((dest, idx) => (
-                                    <div key={dest.destination_id} className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <span className={cn(
-                                                'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
-                                                idx === 0 ? 'bg-gray-800 text-white' :
-                                                    idx === 1 ? 'bg-gray-600 text-white' :
-                                                        idx === 2 ? 'bg-gray-400 text-white' :
-                                                            'bg-gray-200 text-gray-600'
-                                            )}>
-                                                {idx + 1}
-                                            </span>
-                                            <div>
-                                                <p className="font-medium">{dest.destination_name}</p>
-                                                <p className="text-xs text-gray-500">{formatNumber(dest.total_visitors)} pengunjung</p>
-                                            </div>
+                                    <div key={dest.destination_id} className="flex items-center gap-4">
+                                        <span className={cn(
+                                            'w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black',
+                                            idx === 0 ? 'bg-pink-600 text-white' :
+                                                idx === 1 ? 'bg-pink-400 text-white' :
+                                                    idx === 2 ? 'bg-pink-200 text-pink-700' :
+                                                        'bg-gray-100 text-gray-500'
+                                        )}>
+                                            {idx + 1}
+                                        </span>
+                                        <div className="flex-1">
+                                            <p className="font-bold text-gray-900">{dest.destination_name}</p>
+                                            <p className="text-sm text-gray-400">{formatNumber(dest.total_visitors)} pengunjung</p>
                                         </div>
-                                        <span className="font-semibold text-gray-700">
+                                        <span className="font-bold text-green-600">
                                             {formatRupiah(dest.total_revenue, { compact: true })}
                                         </span>
                                     </div>
                                 ))}
                             </div>
                         )}
-                    </CardContent>
-                </Card>
+                    </div>
+                </section>
             </div>
         </div>
     )
