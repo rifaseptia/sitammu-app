@@ -9,7 +9,7 @@ import type { ApiResponse, Destination } from '@/types'
  */
 export async function getAllDestinations(): Promise<ApiResponse<Destination[]>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('destinations')

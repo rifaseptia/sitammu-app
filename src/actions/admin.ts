@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import type { ApiResponse, TodayReportStatus } from '@/types'
 
 /**
@@ -8,7 +8,7 @@ import type { ApiResponse, TodayReportStatus } from '@/types'
  */
 export async function getAllDestinationsStatus(): Promise<ApiResponse<TodayReportStatus[]>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('v_today_report_status')
@@ -42,7 +42,7 @@ export async function getAdminSummary(): Promise<ApiResponse<{
     draftCount: number
 }>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         // Get today's status for all destinations
         const { data: todayStatus, error: statusError } = await supabase
@@ -105,7 +105,7 @@ export async function getWeeklySummary(): Promise<ApiResponse<{
     total_revenue: number
 }[]>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('v_weekly_summary')

@@ -11,7 +11,7 @@ export async function getAttractionReports(
     reportId: string
 ): Promise<ApiResponse<AttractionReport[]>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('attraction_reports')

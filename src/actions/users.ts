@@ -14,7 +14,7 @@ interface UserWithDestination extends User {
  */
 export async function getAllUsers(): Promise<ApiResponse<UserWithDestination[]>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('users')

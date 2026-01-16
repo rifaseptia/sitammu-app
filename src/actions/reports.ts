@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import type { ApiResponse, TodayReportStatus, DailyReport } from '@/types'
 import { getTodayDateString } from '@/lib/utils'
 
@@ -11,7 +11,7 @@ export async function getTodayReportStatus(
     destinationId: string
 ): Promise<ApiResponse<TodayReportStatus>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
         const today = getTodayDateString()
 
         // Get destination info
@@ -59,7 +59,7 @@ export async function getTodayReport(
     destinationId: string
 ): Promise<ApiResponse<DailyReport | null>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
         const today = getTodayDateString()
 
         const { data, error } = await supabase
@@ -86,7 +86,7 @@ export async function getReportByDate(
     reportDate: string
 ): Promise<ApiResponse<DailyReport | null>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('daily_reports')
@@ -112,7 +112,7 @@ export async function getRecentReports(
     limit: number = 7
 ): Promise<ApiResponse<DailyReport[]>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('daily_reports')

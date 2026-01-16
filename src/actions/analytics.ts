@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import type { ApiResponse } from '@/types'
 
 interface MonthlyStats {
@@ -46,7 +46,7 @@ interface PaymentStats {
  */
 export async function getMonthlyStats(year?: number, destinationId?: string): Promise<ApiResponse<MonthlyStats[]>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
         const targetYear = year || new Date().getFullYear()
 
         let query = supabase
@@ -112,7 +112,7 @@ export async function getDestinationRankings(options?: {
     destinationId?: string
 }): Promise<ApiResponse<DestinationRanking[]>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         let query = supabase
             .from('daily_reports')
@@ -185,7 +185,7 @@ export async function getDemographicStats(options?: {
     destinationId?: string
 }): Promise<ApiResponse<DemographicStats>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         let query = supabase
             .from('daily_reports')
@@ -246,7 +246,7 @@ export async function getPaymentStats(options?: {
     destinationId?: string
 }): Promise<ApiResponse<PaymentStats>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         let query = supabase
             .from('daily_reports')
@@ -305,7 +305,7 @@ export async function getMonthlyComparison(destinationId?: string): Promise<ApiR
     change: { visitors: number; revenue: number } // percentage
 }>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
         const now = new Date()
         const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 

@@ -8,7 +8,7 @@ import type { ApiResponse, Attraction, AttractionWithDestination } from '@/types
  */
 export async function getAllAttractions(): Promise<ApiResponse<AttractionWithDestination[]>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('attractions')
@@ -35,7 +35,7 @@ export async function getAttractionsByDestination(
     destinationId: string
 ): Promise<ApiResponse<Attraction[]>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('attractions')
