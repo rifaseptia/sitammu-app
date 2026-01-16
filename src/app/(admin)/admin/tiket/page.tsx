@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Ticket, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { Ticket, ArrowUpDown, ArrowUp, ArrowDown, Baby, User, Globe, Star } from 'lucide-react'
 
 import { getTicketUsage, type TicketUsageItem } from '@/actions/admin-tickets'
 import { useAuthStore } from '@/lib/stores/auth-store'
@@ -88,12 +88,28 @@ export default function AdminTiketPage() {
             : <ArrowDown className="w-4 h-4 ml-1" />
     }
 
-    const getCategoryColor = (category: string) => {
-        switch (category) {
-            case 'anak': return 'bg-gray-100 text-gray-700 border border-gray-200'
-            case 'dewasa': return 'bg-pink-100 text-pink-700 border border-pink-200'
-            case 'wna': return 'bg-gray-100 text-gray-700 border border-gray-200'
-            default: return 'bg-pink-50 text-pink-600 border border-pink-200' // Attractions
+    const getCategoryStyles = (category: string) => {
+        switch (category.toLowerCase()) {
+            case 'anak':
+                return {
+                    color: 'bg-blue-100 text-blue-700 border-blue-200',
+                    icon: <Baby className="w-3 h-3 mr-1" />
+                }
+            case 'dewasa':
+                return {
+                    color: 'bg-pink-100 text-pink-700 border-pink-200',
+                    icon: <User className="w-3 h-3 mr-1" />
+                }
+            case 'wna':
+                return {
+                    color: 'bg-indigo-100 text-indigo-700 border-indigo-200',
+                    icon: <Globe className="w-3 h-3 mr-1" />
+                }
+            default:
+                return {
+                    color: 'bg-teal-100 text-teal-700 border-teal-200',
+                    icon: <Star className="w-3 h-3 mr-1" />
+                }
         }
     }
 
@@ -177,9 +193,15 @@ export default function AdminTiketPage() {
                                 paginatedTickets.map((ticket) => (
                                     <tr key={ticket.id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4">
-                                            <Badge className={`${getCategoryColor(ticket.category)} font-bold text-xs`}>
-                                                {ticket.category}
-                                            </Badge>
+                                            {(() => {
+                                                const styles = getCategoryStyles(ticket.category)
+                                                return (
+                                                    <Badge className={`${styles.color} font-bold text-[10px] uppercase tracking-wider py-0.5 px-2`}>
+                                                        {styles.icon}
+                                                        {ticket.category}
+                                                    </Badge>
+                                                )
+                                            })()}
                                         </td>
                                         <td className="px-6 py-4 font-mono font-bold text-gray-900">
                                             {ticket.block_no || '-'}

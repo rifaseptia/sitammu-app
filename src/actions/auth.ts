@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import bcrypt from 'bcryptjs'
 import type { User, Destination, UserWithDestination, ApiResponse } from '@/types'
 
@@ -14,7 +14,8 @@ export async function loginAction(
     payload: LoginPayload
 ): Promise<ApiResponse<UserWithDestination>> {
     try {
-        const supabase = await createClient()
+        // Use admin client because RLS blocks access before login
+        const supabase = createAdminClient()
 
         // Fetch user with destination
         const { data: user, error: userError } = await supabase
@@ -24,7 +25,6 @@ export async function loginAction(
         destination:destinations(*)
       `)
             .eq('id', payload.user_id)
-            .eq('destination_id', payload.destination_id)
             .eq('is_active', true)
             .single()
 
@@ -51,8 +51,9 @@ export async function loginAction(
             .update({ last_login_at: new Date().toISOString() })
             .eq('id', user.id)
 
-        // Log activity
-        await supabase.from('activity_logs').insert({
+        // Log activity securely using Admin Client
+        const adminClient = createAdminClient()
+        await adminClient.from('activity_logs').insert({
             user_id: user.id,
             destination_id: payload.destination_id,
             action: 'login',
@@ -78,7 +79,8 @@ export async function loginAction(
 
 export async function getDestinations(): Promise<ApiResponse<Destination[]>> {
     try {
-        const supabase = await createClient()
+        // Use admin client because this is called before login (no session exists)
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('destinations')
@@ -105,7 +107,8 @@ export async function getUsersByDestination(
     destinationId: string
 ): Promise<ApiResponse<Pick<User, 'id' | 'name' | 'role'>[]>> {
     try {
-        const supabase = await createClient()
+        // Use admin client because this is called before login (no session exists)
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('users')
@@ -134,7 +137,9 @@ export async function logoutAction(userId: string): Promise<ApiResponse<null>> {
     try {
         const supabase = await createClient()
 
-        await supabase.from('activity_logs').insert({
+        // Log activity securely
+        const adminClient = createAdminClient()
+        await adminClient.from('activity_logs').insert({
             user_id: userId,
             action: 'logout',
         })
@@ -157,7 +162,8 @@ export async function logoutAction(userId: string): Promise<ApiResponse<null>> {
  */
 export async function getAdminUsers(): Promise<ApiResponse<Pick<User, 'id' | 'name' | 'role'>[]>> {
     try {
-        const supabase = await createClient()
+        // Use admin client because this is called before login (no session exists)
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('users')
@@ -189,7 +195,8 @@ export async function adminLoginAction(
     payload: { user_id: string; pin: string }
 ): Promise<ApiResponse<UserWithDestination>> {
     try {
-        const supabase = await createClient()
+        // Use admin client because RLS blocks access before login
+        const supabase = createAdminClient()
 
         // Fetch admin user
         const { data: user, error: userError } = await supabase
@@ -224,7 +231,9 @@ export async function adminLoginAction(
             .eq('id', user.id)
 
         // Log activity
-        await supabase.from('activity_logs').insert({
+        // Log activity securely
+        const adminClient = createAdminClient()
+        await adminClient.from('activity_logs').insert({
             user_id: user.id,
             action: 'login',
             details: { method: 'pin', role: 'admin' },

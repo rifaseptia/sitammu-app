@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { ApiResponse, Destination } from '@/types'
 
@@ -39,7 +39,7 @@ export async function updateDestination(
     data: { name: string; location: string; is_active: boolean }
 ): Promise<ApiResponse<Destination>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { data: updated, error } = await supabase
             .from('destinations')
@@ -78,7 +78,7 @@ export async function createDestination(
     data: { code: string; name: string; location: string }
 ): Promise<ApiResponse<Destination>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { data: created, error } = await supabase
             .from('destinations')
@@ -118,7 +118,7 @@ export async function toggleDestinationStatus(
     isActive: boolean
 ): Promise<ApiResponse<null>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { error } = await supabase
             .from('destinations')

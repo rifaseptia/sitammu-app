@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import type { ApiResponse, Attraction, AttractionWithDestination } from '@/types'
 
 /**
@@ -64,7 +64,7 @@ export async function createAttraction(input: {
     sort_order?: number
 }): Promise<ApiResponse<Attraction>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('attractions')
@@ -101,7 +101,7 @@ export async function updateAttraction(
     }>
 ): Promise<ApiResponse<Attraction>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('attractions')
@@ -127,7 +127,7 @@ export async function updateAttraction(
  */
 export async function deleteAttraction(id: string): Promise<ApiResponse<null>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { error } = await supabase
             .from('attractions')

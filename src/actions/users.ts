@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import bcrypt from 'bcryptjs'
 import type { ApiResponse, User, Destination } from '@/types'
@@ -50,7 +50,7 @@ export async function createUser(data: {
     destination_id: string | null
 }): Promise<ApiResponse<User>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         // Hash PIN
         const pinHash = await bcrypt.hash(data.pin, 10)
@@ -98,7 +98,7 @@ export async function updateUser(
     }
 ): Promise<ApiResponse<User>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { data: updated, error } = await supabase
             .from('users')
@@ -138,7 +138,7 @@ export async function resetUserPin(
     newPin: string
 ): Promise<ApiResponse<null>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         // Hash new PIN
         const pinHash = await bcrypt.hash(newPin, 10)
@@ -171,7 +171,7 @@ export async function toggleUserStatus(
     isActive: boolean
 ): Promise<ApiResponse<null>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { error } = await supabase
             .from('users')
@@ -200,7 +200,7 @@ export async function toggleUserStatus(
  */
 export async function deleteUser(id: string): Promise<ApiResponse<null>> {
     try {
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         const { error } = await supabase
             .from('users')
