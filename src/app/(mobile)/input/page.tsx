@@ -75,6 +75,7 @@ export default function InputPage() {
     const [isSubmitting, setIsSubmitting] = React.useState(false)
     const [existingReport, setExistingReport] = React.useState<DailyReport | null>(null)
     const [showWnaSection, setShowWnaSection] = React.useState(false)
+    const [showSubmitTooltip, setShowSubmitTooltip] = React.useState(false)
 
     // Calculated values
     const attractionRevenue = attractions.reduce((sum, att) => {
@@ -94,6 +95,22 @@ export default function InputPage() {
     const isCountryValid = wna > 0 ? validateWnaCountries(wna, wnaCountries) : true
     const isPaymentValid = validatePayment(totalRevenue, cash, qris)
     const isFormValid = isGenderValid && isAnakGenderValid && isCountryValid && isPaymentValid
+
+    // Tooltip disabled reason (Koordinator only)
+    const disabledReason = React.useMemo(() => {
+        if (!isKoordinator) return null
+        if (totalVisitors === 0) {
+            return "Masukkan jumlah pengunjung terlebih dahulu"
+        }
+        if (!isFormValid) {
+            if (!isGenderValid) return "Jumlah L/P dewasa tidak sesuai dengan total dewasa"
+            if (!isAnakGenderValid) return "Jumlah L/P anak tidak sesuai dengan total anak"
+            if (!isCountryValid) return "Rincian negara WNA belum lengkap/sesuai"
+            if (!isPaymentValid) return "Total Cash + QRIS tidak sama dengan total pendapatan"
+            return "Form belum valid, silakan periksa kembali data Anda"
+        }
+        return null
+    }, [isKoordinator, totalVisitors, isFormValid, isGenderValid, isAnakGenderValid, isCountryValid, isPaymentValid])
 
     // Load existing report and attractions
     const loadReport = React.useCallback(async () => {
@@ -630,28 +647,55 @@ export default function InputPage() {
                 </Button>
 
                 {isKoordinator && (
-                    <Button
-                        onClick={handleSubmit}
-                        disabled={!isFormValid || isSaving || isSubmitting || totalVisitors === 0}
-                        className="w-full h-14 text-lg font-bold rounded-xl bg-green-600 hover:bg-green-700"
+                    <div
+                        className="relative w-full"
+                        onMouseEnter={() => disabledReason && setShowSubmitTooltip(true)}
+                        onMouseLeave={() => setShowSubmitTooltip(false)}
                     >
-                        {isSubmitting ? (
-                            <>
-                                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                                Mensubmit...
-                            </>
-                        ) : (
-                            <>
-                                <Send className="w-5 h-5 mr-2" />
-                                Submit Laporan
-                            </>
+                        {/* Floating Tooltip */}
+                        {showSubmitTooltip && disabledReason && (
+                            <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-max max-w-[280px] bg-slate-900 text-white text-sm font-semibold px-4 py-3 rounded-2xl shadow-xl border border-pink-500/20 z-50 text-center animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                {disabledReason}
+                                {/* Arrow */}
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-slate-900" />
+                            </div>
                         )}
-                    </Button>
+
+                        <Button
+                            onClick={() => {
+                                if (disabledReason) {
+                                    setShowSubmitTooltip(true)
+                                    setTimeout(() => setShowSubmitTooltip(false), 3000)
+                                    return
+                                }
+                                handleSubmit()
+                            }}
+                            disabled={isSaving || isSubmitting}
+                            className={cn(
+                                "w-full h-14 text-lg font-bold rounded-xl transition-all duration-200",
+                                disabledReason
+                                    ? "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed hover:bg-gray-100"
+                                    : "bg-green-600 text-white hover:bg-green-700 shadow-md"
+                            )}
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                    Mensubmit...
+                                </>
+                            ) : (
+                                <>
+                                    <Send className="w-5 h-5 mr-2" />
+                                    Submit Laporan
+                                </>
+                            )}
+                        </Button>
+                    </div>
                 )}
 
                 {!isKoordinator && (
                     <p className="text-center text-base text-gray-500">
-                        Hanya Koordinator yang dapat submit laporan
+                        Hanya Koordinator yang dapat submit laporan, silahkan simpan draft terlebih dahulu
                     </p>
                 )}
             </div>
