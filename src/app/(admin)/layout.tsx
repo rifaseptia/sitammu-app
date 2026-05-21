@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import {
@@ -154,9 +155,14 @@ export default function AdminLayout({
             )}>
                 {/* Sidebar Header */}
                 <div className="flex items-center justify-between h-20 px-6 border-b-2 border-gray-100">
-                    <div>
-                        <h1 className="text-xl font-black text-gray-900">{APP.name}</h1>
-                        <p className="text-xs text-gray-500 font-medium">Admin Panel</p>
+                    <div className="flex items-center gap-3">
+                        <div className="relative w-10 h-12">
+                            <Image src="/logo.png" alt="Logo" fill className="object-contain" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-black text-gray-900">{APP.name}</h1>
+                            <p className="text-xs text-gray-500 font-medium">Admin Panel</p>
+                        </div>
                     </div>
                     <button
                         onClick={() => setSidebarOpen(false)}

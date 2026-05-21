@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2, ShieldCheck, UserCircle2, Sparkles } from 'lucide-react'
@@ -147,8 +148,14 @@ export default function LoginPage() {
 
                     {/* Logo & Title */}
                     <div className="text-center space-y-4">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-pink-600 mx-auto">
-                            <Sparkles className="w-8 h-8 text-white" />
+                        <div className="mx-auto w-24 h-32 relative">
+                            <Image 
+                                src="/logo.png" 
+                                alt="Logo Tana Toraja" 
+                                fill 
+                                className="object-contain" 
+                                priority
+                            />
                         </div>
                         <h1 className="text-2xl font-black tracking-tight text-gray-900">
                             SITAMMU
