@@ -81,18 +81,8 @@ export default function DashboardPage() {
 
     const statusInfo = getStatusInfo()
 
-    const VISIT_TARGET = 50
-    const REVENUE_TARGET = 1000000
-
     const totalVisitors = status?.total_visitors || 0
     const totalRevenue = status?.total_revenue || 0
-
-    const visitorPercent = Math.min(100, Math.round((totalVisitors / VISIT_TARGET) * 100))
-    const visitorPercentLeft = Math.max(0, 100 - visitorPercent)
-    const remainingVisitors = Math.max(0, VISIT_TARGET - totalVisitors)
-
-    const revenuePercent = Math.min(100, Math.round((totalRevenue / REVENUE_TARGET) * 100))
-    const remainingRevenue = Math.max(0, REVENUE_TARGET - totalRevenue)
 
     const anakPercent = totalVisitors > 0 ? Math.round(((status?.anak_count || 0) / totalVisitors) * 100) : 0
 
@@ -121,18 +111,9 @@ export default function DashboardPage() {
             </header>
 
             <div className="px-5 space-y-6">
-                {/* Date and Status Header */}
-                <div className="flex items-center justify-between px-1">
-                    <span className="text-base font-bold text-gray-800">{formatDate(today)}</span>
-                    <div className={cn("flex items-center text-sm font-medium", statusInfo.className)}>
-                        <statusInfo.icon className="w-4 h-4 mr-1.5 shrink-0" />
-                        <span>{statusInfo.label}</span>
-                    </div>
-                </div>
-
                 {isLoading ? (
                     <div className="space-y-6 animate-pulse">
-                        <div className="bg-white rounded-3xl p-6 h-56" />
+                        <div className="bg-white rounded-3xl p-6 h-36" />
                         <div className="grid grid-cols-2 gap-4">
                             <div className="bg-white rounded-3xl p-5 h-36" />
                             <div className="bg-white rounded-3xl p-5 h-36" />
@@ -142,106 +123,66 @@ export default function DashboardPage() {
                     </div>
                 ) : (
                     <>
-                        {/* Target Progress Card: Revenue */}
-                        <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-gray-50 overflow-hidden flex flex-col justify-between">
-                            <div>
-                                <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Total Pendapatan Hari Ini</span>
-                                <div className="mt-1 flex items-baseline gap-2">
-                                    <span className="text-3xl font-extrabold text-gray-800">
-                                        {formatRupiah(status?.total_revenue || 0)}
-                                    </span>
+                        {/* Status Card: Total Revenue */}
+                        <div className="bg-white rounded-3xl p-6 space-y-4">
+                            {/* Date and Status Header */}
+                            <div className="flex items-center justify-between">
+                                <span className="text-base font-bold text-gray-800">{formatDate(today)}</span>
+                                <div className={cn("flex items-center text-sm font-medium", statusInfo.className)}>
+                                    <statusInfo.icon className="w-4 h-4 mr-1.5 shrink-0" />
+                                    <span>{statusInfo.label}</span>
                                 </div>
-                                <span className="text-xs text-gray-400 mt-1 block">
-                                    dari target {formatRupiah(REVENUE_TARGET)}
+                            </div>
+
+                            {/* Total Revenue */}
+                            <div className="space-y-1.5 pt-1">
+                                <span className="text-[14px] text-gray-600 block tracking-wider">Total Pendapatan Hari Ini</span>
+                                <span className="text-[38px] font-black text-gray-900 block tracking-tight leading-none">
+                                    {formatRupiah(totalRevenue)}
                                 </span>
-
-                                {/* Progress Bar with Waypoints */}
-                                <div className="relative my-5">
-                                    {/* Progress Track */}
-                                    <div className="h-2.5 bg-indigo-50 rounded-full w-full relative">
-                                        {/* Filled Progress */}
-                                        <div className="h-full bg-indigo-600 rounded-full transition-all duration-500" style={{ width: `${revenuePercent}%` }} />
-                                    </div>
-                                    {/* Waypoint Dots */}
-                                    <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 flex justify-between px-1 pointer-events-none">
-                                        <div className={cn("w-3 h-3 rounded-full border-2 border-white shadow-sm transition-all", revenuePercent >= 0 ? "bg-indigo-600" : "bg-indigo-200")} />
-                                        <div className={cn("w-3 h-3 rounded-full border-2 border-white shadow-sm transition-all", revenuePercent >= 25 ? "bg-indigo-600" : "bg-indigo-200")} />
-                                        <div className={cn("w-3 h-3 rounded-full border-2 border-white shadow-sm transition-all", revenuePercent >= 50 ? "bg-indigo-600" : "bg-indigo-200")} />
-                                        <div className={cn("w-3 h-3 rounded-full border-2 border-white shadow-sm transition-all", revenuePercent >= 75 ? "bg-indigo-600" : "bg-indigo-200")} />
-                                        <div className={cn("w-3 h-3 rounded-full border-2 border-white shadow-sm transition-all", revenuePercent >= 100 ? "bg-indigo-600" : "bg-indigo-200")} />
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center justify-between text-xs font-bold text-gray-400">
-                                    <span>Progres Hari Ini</span>
-                                    <span>{remainingRevenue > 0 ? `Sisa ${formatRupiah(remainingRevenue, { compact: true })}` : 'Lunas / Terlampaui'}</span>
-                                </div>
-                            </div>
-
-                            {/* bottom banner inside Card 2 */}
-                            <div className="bg-[#1C274C] text-white py-3.5 px-6 flex items-center justify-between text-xs font-bold rounded-b-3xl -mx-6 -mb-6 mt-6">
-                                <span>Hari ini terkumpul {formatRupiah(status?.total_revenue || 0, { compact: true })}</span>
-                                <span className="flex items-center gap-1">🔥 x{status?.total_visitors || 0}</span>
                             </div>
                         </div>
 
-                        {/* Statistik Kategori Title */}
-                        <div className="flex items-center justify-between pt-2">
-                            <h2 className="text-xl font-extrabold text-gray-700">Statistik Harian</h2>
-                            <span className="text-sm font-semibold text-gray-400">Lihat Semua</span>
-                        </div>
+
 
                         {/* Grid 2x2 */}
                         <div className="grid grid-cols-2 gap-4">
                             {/* Card 1: Anak-anak */}
-                            <div className="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-gray-50 flex flex-col justify-between h-[155px]">
-                                <div className="relative w-11 h-11 flex items-center justify-center shrink-0">
-                                    <svg className="w-11 h-11 transform -rotate-90 shrink-0" viewBox="0 0 36 36">
-                                        <circle className="text-gray-100" strokeWidth="4" stroke="currentColor" fill="none" r="16" cx="18" cy="18" />
-                                        <circle className="text-indigo-600 transition-all duration-500" strokeWidth="4" strokeDasharray={`${anakPercent}, 100`} strokeLinecap="round" stroke="currentColor" fill="none" r="16" cx="18" cy="18" />
-                                    </svg>
-                                    <span className="absolute text-[10px] font-extrabold text-gray-700">{anakPercent}%</span>
-                                </div>
+                            <div className="bg-white rounded-3xl p-5 border border-gray-50 flex flex-col justify-between h-[155px]">
+
                                 <div className="mt-2">
-                                    <h4 className="font-extrabold text-gray-800 text-sm">Anak-anak</h4>
-                                    <p className="text-[11px] text-gray-400 font-semibold mt-0.5">{status?.anak_count || 0} pengunjung</p>
-                                    <p className="text-xs text-gray-400 font-bold mt-0.5">{formatRupiah(status?.anak_revenue || 0, { compact: true })}</p>
+                                    <h4 className="font-extrabold text-gray-800 text-[20px]">Anak-anak</h4>
+                                    <p className="text-[15px] text-gray-600  mt-0.5">{status?.anak_count || 0} pengunjung</p>
+                                    <p className="text-[15px] text-gray-600  mt-0.5">{formatRupiah(status?.anak_revenue || 0)}</p>
                                 </div>
                             </div>
 
                             {/* Card 2: Dewasa */}
-                            <div className="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-gray-50 flex flex-col justify-between h-[155px]">
-                                <div className="w-11 h-11 rounded-full bg-[#1C274C] flex items-center justify-center text-white shrink-0">
-                                    <Users className="w-5 h-5 text-white" strokeWidth={2.5} />
-                                </div>
+                            <div className="bg-white rounded-3xl p-5 border border-gray-50 flex flex-col justify-between h-[155px]">
+
                                 <div className="mt-2">
-                                    <h4 className="font-extrabold text-gray-800 text-sm">Dewasa</h4>
-                                    <p className="text-[11px] text-gray-400 font-semibold mt-0.5">{status?.dewasa_count || 0} pengunjung</p>
-                                    <p className="text-xs text-gray-400 font-bold mt-0.5">{formatRupiah(status?.dewasa_revenue || 0, { compact: true })}</p>
+                                    <h4 className="font-extrabold text-gray-800 text-[20px]">Dewasa</h4>
+                                    <p className="text-[15px] text-gray-600  mt-0.5">{status?.dewasa_count || 0} pengunjung</p>
+                                    <p className="text-[15px] text-gray-600  mt-0.5">{formatRupiah(status?.dewasa_revenue || 0)}</p>
                                 </div>
                             </div>
 
                             {/* Card 3: Mancanegara */}
-                            <div className="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-gray-50 flex flex-col justify-between h-[155px]">
-                                <div className="w-11 h-11 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 shrink-0">
-                                    <Globe className="w-5 h-5" strokeWidth={2.5} />
-                                </div>
+                            <div className="bg-white rounded-3xl p-5 border border-gray-50 flex flex-col justify-between h-[155px]">
+
                                 <div className="mt-2">
-                                    <h4 className="font-extrabold text-gray-800 text-sm">Mancanegara</h4>
-                                    <p className="text-[11px] text-gray-400 font-semibold mt-0.5">{status?.wna_count || 0} pengunjung</p>
-                                    <p className="text-xs text-gray-400 font-bold mt-0.5">{formatRupiah(status?.wna_revenue || 0, { compact: true })}</p>
+                                    <h4 className="font-extrabold text-gray-800 text-[20px]">Mancanegara</h4>
+                                    <p className="text-[15px] text-gray-600  mt-0.5">{status?.wna_count || 0} pengunjung</p>
+                                    <p className="text-[15px] text-gray-600  mt-0.5">{formatRupiah(status?.wna_revenue || 0)}</p>
                                 </div>
                             </div>
 
-                            {/* Card 4: Total Hari Ini */}
-                            <div className="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-gray-50 flex flex-col justify-between h-[155px]">
-                                <div className="w-11 h-11 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
-                                    <Banknote className="w-5 h-5" strokeWidth={2.5} />
-                                </div>
+                            {/* Card 4: Atraksi & Toilet */}
+                            <div className="bg-white rounded-3xl p-5 border border-gray-50 flex flex-col justify-between h-[155px]">
                                 <div className="mt-2">
-                                    <h4 className="font-extrabold text-gray-800 text-sm">Total</h4>
-                                    <p className="text-[11px] text-gray-400 font-semibold mt-0.5">{status?.total_visitors || 0} pengunjung</p>
-                                    <p className="text-xs text-gray-400 font-bold mt-0.5">{formatRupiah(status?.total_revenue || 0, { compact: true })}</p>
+                                    <h4 className="font-extrabold text-gray-800 text-[20px]">Atraksi & Toilet</h4>
+                                    <p className="text-[15px] text-gray-600  mt-0.5">Pendapatan</p>
+                                    <p className="text-[15px] text-gray-600  mt-0.5">{formatRupiah(status?.attraction_revenue || 0)}</p>
                                 </div>
                             </div>
                         </div>

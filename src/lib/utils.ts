@@ -35,7 +35,7 @@ export function formatRupiah(
     return `${prefix ? 'Rp ' : ''}${value.toLocaleString('id-ID')} rb`
   }
 
-  const formatted = amount.toLocaleString('id-ID')
+  const formatted = amount.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   return prefix ? `Rp ${formatted}` : formatted
 }
 
