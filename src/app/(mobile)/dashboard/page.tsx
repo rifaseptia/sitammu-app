@@ -124,11 +124,11 @@ export default function DashboardPage() {
                 ) : (
                     <>
                         {/* Status Card: Total Revenue */}
-                        <div className="bg-white rounded-3xl p-6 space-y-4">
+                        <div className="bg-zinc-900 rounded-3xl p-6 space-y-4 shadow-[0_8px_30px_rgba(0,0,0,0.06)]">
                             {/* Date and Status Header */}
                             <div className="flex items-center justify-between">
-                                <span className="text-base font-bold text-gray-800">{formatDate(today)}</span>
-                                <div className={cn("flex items-center text-sm font-medium", statusInfo.className)}>
+                                <span className="text-base font-bold text-white">{formatDate(today)}</span>
+                                <div className={cn("flex items-center text-sm font-semibold text-zinc-300")}>
                                     <statusInfo.icon className="w-4 h-4 mr-1.5 shrink-0" />
                                     <span>{statusInfo.label}</span>
                                 </div>
@@ -136,8 +136,8 @@ export default function DashboardPage() {
 
                             {/* Total Revenue */}
                             <div className="space-y-1.5 pt-1">
-                                <span className="text-[14px] text-gray-600 block tracking-wider">Total Pendapatan Hari Ini</span>
-                                <span className="text-[38px] font-black text-gray-900 block tracking-tight leading-none">
+                                <span className="text-[14px] text-zinc-400 block tracking-wider font-semibold">Total Pendapatan Hari Ini</span>
+                                <span className="text-[38px] font-black text-white block tracking-tight leading-none">
                                     {formatRupiah(totalRevenue)}
                                 </span>
                             </div>
