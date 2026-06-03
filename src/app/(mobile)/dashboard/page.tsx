@@ -15,7 +15,8 @@ import {
     UserCircle,
     BarChart3,
     HelpCircle,
-    Bell
+    Bell,
+    Globe
 } from 'lucide-react'
 
 import { useAuthStore } from '@/lib/stores/auth-store'
@@ -80,6 +81,21 @@ export default function DashboardPage() {
 
     const statusInfo = getStatusInfo()
 
+    const VISIT_TARGET = 50
+    const REVENUE_TARGET = 1000000
+
+    const totalVisitors = status?.total_visitors || 0
+    const totalRevenue = status?.total_revenue || 0
+
+    const visitorPercent = Math.min(100, Math.round((totalVisitors / VISIT_TARGET) * 100))
+    const visitorPercentLeft = Math.max(0, 100 - visitorPercent)
+    const remainingVisitors = Math.max(0, VISIT_TARGET - totalVisitors)
+
+    const revenuePercent = Math.min(100, Math.round((totalRevenue / REVENUE_TARGET) * 100))
+    const remainingRevenue = Math.max(0, REVENUE_TARGET - totalRevenue)
+
+    const anakPercent = totalVisitors > 0 ? Math.round(((status?.anak_count || 0) / totalVisitors) * 100) : 0
+
     return (
         <div className="pb-8 space-y-6">
             {/* Header */}
@@ -104,106 +120,151 @@ export default function DashboardPage() {
                 </div>
             </header>
 
-            <div className="px-5 space-y-8">
-                {/* Today's Status Card */}
-                <section className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
-                    {/* Card Header */}
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50/80">
-                        <div className="flex items-center gap-2 text-gray-800">
-                            <span className="text-base font-bold">{formatDate(today)}</span>
-                        </div>
-                        <div className={cn("flex items-center text-sm font-medium", statusInfo.className)}>
-                            <statusInfo.icon className="w-4 h-4 mr-1 shrink-0" />
-                            {statusInfo.label}
+            <div className="px-5 space-y-6">
+                {/* Date and Status Header */}
+                <div className="flex items-center justify-between px-1">
+                    <span className="text-base font-bold text-gray-800">{formatDate(today)}</span>
+                    <div className={cn("flex items-center text-sm font-medium", statusInfo.className)}>
+                        <statusInfo.icon className="w-4 h-4 mr-1.5 shrink-0" />
+                        <span>{statusInfo.label}</span>
+                    </div>
+                </div>
+
+                {isLoading ? (
+                    <div className="space-y-6 animate-pulse">
+                        <div className="bg-white rounded-3xl p-6 h-56" />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-white rounded-3xl p-5 h-36" />
+                            <div className="bg-white rounded-3xl p-5 h-36" />
+                            <div className="bg-white rounded-3xl p-5 h-36" />
+                            <div className="bg-white rounded-3xl p-5 h-36" />
                         </div>
                     </div>
-
-                    {/* Card Content */}
-                    <div className="p-5">
-                        {isLoading ? (
-                            <div className="animate-pulse space-y-4">
-                                <div className="h-8 bg-gray-100 rounded-xl w-1/2" />
-                                <div className="h-14 bg-gray-100 rounded-xl" />
-                            </div>
-                        ) : status?.daily_status === 'pending' ? (
-                            <div className="space-y-5">
-                                <div className="text-center py-4">
-                                    <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                                    <p className="text-xl font-bold text-gray-900">Belum ada laporan</p>
-                                    <p className="text-base text-gray-500">Hari ini</p>
+                ) : (
+                    <>
+                        {/* Target Progress Card: Revenue */}
+                        <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-gray-50 overflow-hidden flex flex-col justify-between">
+                            <div>
+                                <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Total Pendapatan Hari Ini</span>
+                                <div className="mt-1 flex items-baseline gap-2">
+                                    <span className="text-3xl font-extrabold text-gray-800">
+                                        {formatRupiah(status?.total_revenue || 0)}
+                                    </span>
                                 </div>
-                                <Link href="/input">
-                                    <Button className="w-full h-14 text-lg font-bold rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white">
-                                        <PenSquare className="w-5 h-5 mr-2" />
-                                        Input Rekap Sekarang
-                                    </Button>
-                                </Link>
-                            </div>
-                        ) : (
-                            <div className="space-y-5">
-                                {/* Summary List */}
-                                <div className="space-y-1">
-                                    <div className="flex items-center justify-between px-2 pb-3 mb-2 border-b border-gray-100">
-                                        <span className="text-lg font-bold text-gray-900">Total Hari Ini</span>
-                                        <span className="font-bold text-gray-900 text-lg">{formatRupiah(status?.total_revenue ?? 0, { compact: true })}</span>
+                                <span className="text-xs text-gray-400 mt-1 block">
+                                    dari target {formatRupiah(REVENUE_TARGET)}
+                                </span>
+
+                                {/* Progress Bar with Waypoints */}
+                                <div className="relative my-5">
+                                    {/* Progress Track */}
+                                    <div className="h-2.5 bg-indigo-50 rounded-full w-full relative">
+                                        {/* Filled Progress */}
+                                        <div className="h-full bg-indigo-600 rounded-full transition-all duration-500" style={{ width: `${revenuePercent}%` }} />
                                     </div>
-
-                                    {/* Anak-anak */}
-                                    <div className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-2xl transition-colors">
-                                        <div>
-                                            <p className="font-bold text-gray-900 text-lg">Anak-anak</p>
-                                            <p className="text-sm text-gray-500 font-medium">{status?.anak_count ?? 0} pengunjung</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="font-bold text-gray-900 text-lg">{formatRupiah(status?.anak_revenue ?? 0, { compact: true })}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="border-b border-gray-100 mx-2 my-1" />
-
-                                    {/* Dewasa */}
-                                    <div className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-2xl transition-colors">
-                                        <div>
-                                            <p className="font-bold text-gray-900 text-lg">Dewasa</p>
-                                            <p className="text-sm text-gray-500 font-medium">{status?.dewasa_count ?? 0} pengunjung</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="font-bold text-gray-900 text-lg">{formatRupiah(status?.dewasa_revenue ?? 0, { compact: true })}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="border-b border-gray-100 mx-2 my-1" />
-
-                                    {/* Mancanegara */}
-                                    <div className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-2xl transition-colors">
-                                        <div>
-                                            <p className="font-bold text-gray-900 text-lg">Mancanegara</p>
-                                            <p className="text-sm text-gray-500 font-medium">{status?.wna_count ?? 0} pengunjung</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="font-bold text-gray-900 text-lg">{formatRupiah(status?.wna_revenue ?? 0, { compact: true })}</p>
-                                        </div>
+                                    {/* Waypoint Dots */}
+                                    <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 flex justify-between px-1 pointer-events-none">
+                                        <div className={cn("w-3 h-3 rounded-full border-2 border-white shadow-sm transition-all", revenuePercent >= 0 ? "bg-indigo-600" : "bg-indigo-200")} />
+                                        <div className={cn("w-3 h-3 rounded-full border-2 border-white shadow-sm transition-all", revenuePercent >= 25 ? "bg-indigo-600" : "bg-indigo-200")} />
+                                        <div className={cn("w-3 h-3 rounded-full border-2 border-white shadow-sm transition-all", revenuePercent >= 50 ? "bg-indigo-600" : "bg-indigo-200")} />
+                                        <div className={cn("w-3 h-3 rounded-full border-2 border-white shadow-sm transition-all", revenuePercent >= 75 ? "bg-indigo-600" : "bg-indigo-200")} />
+                                        <div className={cn("w-3 h-3 rounded-full border-2 border-white shadow-sm transition-all", revenuePercent >= 100 ? "bg-indigo-600" : "bg-indigo-200")} />
                                     </div>
                                 </div>
 
-                                {/* Action Button */}
-                                <Link href={status?.daily_status === 'draft' ? '/input' : '/laporan'}>
-                                    <Button className="w-full h-14 text-lg font-bold rounded-4xl bg-zinc-900 hover:bg-zinc-800 text-white ">
-                                        {status?.daily_status === 'draft' ? (
-                                            <>
-                                                Lanjutkan Input
-                                            </>
-                                        ) : (
-                                            <>
-                                                Lihat Laporan
-                                            </>
-                                        )}
-                                    </Button>
-                                </Link>
+                                <div className="flex items-center justify-between text-xs font-bold text-gray-400">
+                                    <span>Progres Hari Ini</span>
+                                    <span>{remainingRevenue > 0 ? `Sisa ${formatRupiah(remainingRevenue, { compact: true })}` : 'Lunas / Terlampaui'}</span>
+                                </div>
                             </div>
-                        )}
-                    </div>
-                </section>
+
+                            {/* bottom banner inside Card 2 */}
+                            <div className="bg-[#1C274C] text-white py-3.5 px-6 flex items-center justify-between text-xs font-bold rounded-b-3xl -mx-6 -mb-6 mt-6">
+                                <span>Hari ini terkumpul {formatRupiah(status?.total_revenue || 0, { compact: true })}</span>
+                                <span className="flex items-center gap-1">🔥 x{status?.total_visitors || 0}</span>
+                            </div>
+                        </div>
+
+                        {/* Statistik Kategori Title */}
+                        <div className="flex items-center justify-between pt-2">
+                            <h2 className="text-xl font-extrabold text-gray-700">Statistik Harian</h2>
+                            <span className="text-sm font-semibold text-gray-400">Lihat Semua</span>
+                        </div>
+
+                        {/* Grid 2x2 */}
+                        <div className="grid grid-cols-2 gap-4">
+                            {/* Card 1: Anak-anak */}
+                            <div className="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-gray-50 flex flex-col justify-between h-[155px]">
+                                <div className="relative w-11 h-11 flex items-center justify-center shrink-0">
+                                    <svg className="w-11 h-11 transform -rotate-90 shrink-0" viewBox="0 0 36 36">
+                                        <circle className="text-gray-100" strokeWidth="4" stroke="currentColor" fill="none" r="16" cx="18" cy="18" />
+                                        <circle className="text-indigo-600 transition-all duration-500" strokeWidth="4" strokeDasharray={`${anakPercent}, 100`} strokeLinecap="round" stroke="currentColor" fill="none" r="16" cx="18" cy="18" />
+                                    </svg>
+                                    <span className="absolute text-[10px] font-extrabold text-gray-700">{anakPercent}%</span>
+                                </div>
+                                <div className="mt-2">
+                                    <h4 className="font-extrabold text-gray-800 text-sm">Anak-anak</h4>
+                                    <p className="text-[11px] text-gray-400 font-semibold mt-0.5">{status?.anak_count || 0} pengunjung</p>
+                                    <p className="text-xs text-gray-400 font-bold mt-0.5">{formatRupiah(status?.anak_revenue || 0, { compact: true })}</p>
+                                </div>
+                            </div>
+
+                            {/* Card 2: Dewasa */}
+                            <div className="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-gray-50 flex flex-col justify-between h-[155px]">
+                                <div className="w-11 h-11 rounded-full bg-[#1C274C] flex items-center justify-center text-white shrink-0">
+                                    <Users className="w-5 h-5 text-white" strokeWidth={2.5} />
+                                </div>
+                                <div className="mt-2">
+                                    <h4 className="font-extrabold text-gray-800 text-sm">Dewasa</h4>
+                                    <p className="text-[11px] text-gray-400 font-semibold mt-0.5">{status?.dewasa_count || 0} pengunjung</p>
+                                    <p className="text-xs text-gray-400 font-bold mt-0.5">{formatRupiah(status?.dewasa_revenue || 0, { compact: true })}</p>
+                                </div>
+                            </div>
+
+                            {/* Card 3: Mancanegara */}
+                            <div className="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-gray-50 flex flex-col justify-between h-[155px]">
+                                <div className="w-11 h-11 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 shrink-0">
+                                    <Globe className="w-5 h-5" strokeWidth={2.5} />
+                                </div>
+                                <div className="mt-2">
+                                    <h4 className="font-extrabold text-gray-800 text-sm">Mancanegara</h4>
+                                    <p className="text-[11px] text-gray-400 font-semibold mt-0.5">{status?.wna_count || 0} pengunjung</p>
+                                    <p className="text-xs text-gray-400 font-bold mt-0.5">{formatRupiah(status?.wna_revenue || 0, { compact: true })}</p>
+                                </div>
+                            </div>
+
+                            {/* Card 4: Total Hari Ini */}
+                            <div className="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-gray-50 flex flex-col justify-between h-[155px]">
+                                <div className="w-11 h-11 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+                                    <Banknote className="w-5 h-5" strokeWidth={2.5} />
+                                </div>
+                                <div className="mt-2">
+                                    <h4 className="font-extrabold text-gray-800 text-sm">Total</h4>
+                                    <p className="text-[11px] text-gray-400 font-semibold mt-0.5">{status?.total_visitors || 0} pengunjung</p>
+                                    <p className="text-xs text-gray-400 font-bold mt-0.5">{formatRupiah(status?.total_revenue || 0, { compact: true })}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <div className="pt-2">
+                            <Link href={status?.daily_status === 'pending' ? '/input' : status?.daily_status === 'draft' ? '/input' : '/laporan'}>
+                                <Button className="w-full h-14 text-base font-extrabold rounded-full bg-zinc-900 hover:bg-zinc-800 text-white transition-all shadow-md active:scale-[0.98]">
+                                    {status?.daily_status === 'pending' ? (
+                                        <>
+                                            <PenSquare className="w-5 h-5 mr-2" />
+                                            Input Laporan Hari Ini
+                                        </>
+                                    ) : status?.daily_status === 'draft' ? (
+                                        "Lanjutkan Input"
+                                    ) : (
+                                        "Lihat Laporan"
+                                    )}
+                                </Button>
+                            </Link>
+                        </div>
+                    </>
+                )}
 
                 {/* Quick Actions */}
                 <section className="space-y-4">
