@@ -58,8 +58,8 @@ export default function BantuanPage() {
 
             <main className="flex-1 p-5 space-y-6">
                 <div className="text-center space-y-2 mb-8 mt-2">
-                    <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <HelpCircle className="w-8 h-8 text-pink-600" />
+                    <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <HelpCircle className="w-8 h-8 text-zinc-700" />
                     </div>
                     <h2 className="text-2xl font-black text-gray-900">Ada yang bisa dibantu?</h2>
                     <p className="text-gray-500 text-sm">Pilih topik pertanyaan yang sering diajukan di bawah ini.</p>
@@ -97,10 +97,10 @@ export default function BantuanPage() {
                     ))}
                 </div>
 
-                <div className="mt-8 p-5 bg-pink-50 rounded-2xl border-2 border-pink-100 text-center space-y-3">
-                    <MessageCircle className="w-8 h-8 text-pink-600 mx-auto" />
-                    <h3 className="font-bold text-pink-900">Masih Butuh Bantuan?</h3>
-                    <p className="text-pink-700/80 text-sm">Hubungi Koordinator lapangan Anda atau Administrator sistem untuk bantuan lebih lanjut.</p>
+                <div className="mt-8 p-5 bg-zinc-50 rounded-2xl border-2 border-zinc-200 text-center space-y-3">
+                    <MessageCircle className="w-8 h-8 text-zinc-700 mx-auto" />
+                    <h3 className="font-bold text-zinc-900">Masih Butuh Bantuan?</h3>
+                    <p className="text-zinc-700/80 text-sm">Hubungi Koordinator lapangan Anda atau Administrator sistem untuk bantuan lebih lanjut.</p>
                 </div>
             </main>
         </div>

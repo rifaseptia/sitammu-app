@@ -105,7 +105,7 @@ export default function LaporanPage() {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-zinc-900" />
             </div>
         )
     }
@@ -121,7 +121,7 @@ export default function LaporanPage() {
                     <p className="text-gray-500 mb-6">
                         Laporan hari ini belum dibuat
                     </p>
-                    <Button onClick={() => router.push('/input')} className="w-full h-14 text-lg font-bold rounded-xl bg-pink-600 hover:bg-pink-700">
+                    <Button onClick={() => router.push('/input')} className="w-full h-14 text-lg font-bold rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white">
                         Buat Laporan
                     </Button>
                 </div>
@@ -149,7 +149,7 @@ export default function LaporanPage() {
                     </Badge>
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
-                    <MapPin className="w-5 h-5 text-pink-600" />
+                    <MapPin className="w-5 h-5 text-zinc-800" />
                     <span className="text-lg font-bold">{user?.destination?.name}</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-500">
@@ -160,17 +160,17 @@ export default function LaporanPage() {
 
             {/* Summary Card */}
             <section className="border-2 border-gray-200 rounded-2xl overflow-hidden bg-white">
-                <div className="bg-pink-600 px-5 py-5">
+                <div className="bg-zinc-900 px-5 py-5">
                     <div className="grid grid-cols-2 gap-6 text-white">
                         <div>
-                            <div className="flex items-center gap-2 text-pink-200 mb-1">
+                            <div className="flex items-center gap-2 text-zinc-400 mb-1">
                                 <Users className="w-4 h-4" />
                                 <span className="text-sm">Total Pengunjung</span>
                             </div>
                             <p className="text-3xl font-black">{report.total_visitors.toLocaleString('id-ID')}</p>
                         </div>
                         <div>
-                            <div className="flex items-center gap-2 text-pink-200 mb-1">
+                            <div className="flex items-center gap-2 text-zinc-400 mb-1">
                                 <Banknote className="w-4 h-4" />
                                 <span className="text-sm">Total Pendapatan</span>
                             </div>
@@ -183,7 +183,7 @@ export default function LaporanPage() {
             {/* Visitor Breakdown */}
             <section className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
                 <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100">
-                    <Ticket className="w-5 h-5 text-pink-600" />
+                    <Ticket className="w-5 h-5 text-zinc-800" />
                     <h2 className="text-lg font-bold text-gray-900">Rincian Pengunjung</h2>
                 </div>
                 <div className="p-5 space-y-4">
@@ -240,7 +240,7 @@ export default function LaporanPage() {
             {((report as any).ticket_blocks?.length > 0 || attractionReportsForWA.length > 0) && (
                 <section className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
                     <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100">
-                        <Ticket className="w-5 h-5 text-pink-600" />
+                        <Ticket className="w-5 h-5 text-zinc-800" />
                         <h2 className="text-lg font-bold text-gray-900">Rincian Tiket</h2>
                     </div>
                     <div className="p-5 space-y-5">
@@ -324,7 +324,7 @@ export default function LaporanPage() {
             {/* Payment Breakdown */}
             <section className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
                 <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100">
-                    <CreditCard className="w-5 h-5 text-pink-600" />
+                    <CreditCard className="w-5 h-5 text-zinc-800" />
                     <h2 className="text-lg font-bold text-gray-900">Pembayaran</h2>
                 </div>
                 <div className="p-5 space-y-4">
@@ -373,7 +373,7 @@ export default function LaporanPage() {
             {/* Actions */}
             <div className="space-y-4 pt-2 pb-6">
                 {report.status === 'draft' && (
-                    <Button onClick={() => router.push('/input')} className="w-full h-14 text-lg font-bold rounded-xl bg-pink-600 hover:bg-pink-700">
+                    <Button onClick={() => router.push('/input')} className="w-full h-14 text-lg font-bold rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white">
                         <PenSquare className="w-5 h-5 mr-2" />
                         Edit Laporan
                     </Button>

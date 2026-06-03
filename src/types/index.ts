@@ -228,7 +228,14 @@ export interface TodayReportStatus {
     status: ReportStatus | null
     total_visitors: number | null
     total_revenue: number | null
+    anak_count?: number | null
+    dewasa_count?: number | null
+    wna_count?: number | null
+    anak_revenue?: number | null
+    dewasa_revenue?: number | null
+    wna_revenue?: number | null
     submitted_at: string | null
+    updated_at?: string | null
     daily_status: 'pending' | 'draft' | 'submitted'
 }
 

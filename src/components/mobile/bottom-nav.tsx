@@ -22,7 +22,7 @@ export function BottomNav() {
     }
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-gray-100 safe-area-bottom">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-t border-white/40 shadow-[0_-8px_30px_rgb(0,0,0,0.04)] safe-area-bottom">
             <div className="flex items-center justify-around h-20 max-w-lg mx-auto px-2">
                 {navItems.map((item) => {
                     // /laporan should highlight Riwayat menu
@@ -39,7 +39,7 @@ export function BottomNav() {
                             <div className={cn(
                                 'w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-200',
                                 isActive
-                                    ? 'bg-gradient-to-br from-pink-500 to-pink-600 shadow-lg shadow-pink-200'
+                                    ? 'bg-gradient-to-br from-zinc-800 to-zinc-950 shadow-lg shadow-zinc-200'
                                     : 'bg-transparent'
                             )}>
                                 <item.icon className={cn(
@@ -49,7 +49,7 @@ export function BottomNav() {
                             </div>
                             <span className={cn(
                                 'text-xs mt-1.5 transition-all',
-                                isActive ? 'font-bold text-pink-600' : 'font-medium text-gray-400'
+                                isActive ? 'font-bold text-zinc-900' : 'font-medium text-gray-400'
                             )}>
                                 {item.label}
                             </span>

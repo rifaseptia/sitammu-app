@@ -52,7 +52,7 @@ export default function RiwayatPage() {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-zinc-900" />
             </div>
         )
     }
@@ -63,7 +63,7 @@ export default function RiwayatPage() {
             <header className="space-y-1">
                 <h1 className="text-2xl font-black text-gray-900">Riwayat Laporan</h1>
                 <div className="flex items-center gap-2 text-gray-700">
-                    <MapPin className="w-5 h-5 text-pink-600" />
+                    <MapPin className="w-5 h-5 text-zinc-800" />
                     <span className="text-lg font-bold">{user?.destination?.name}</span>
                 </div>
                 <p className="text-base text-gray-500">7 hari terakhir</p>
@@ -113,7 +113,7 @@ export default function RiwayatPage() {
                                     {/* Stats */}
                                     <div className="flex items-center gap-5 text-base text-gray-600">
                                         <span className="flex items-center gap-2">
-                                            <Users className="w-5 h-5 text-pink-600" />
+                                            <Users className="w-5 h-5 text-zinc-700" />
                                             <span className="font-bold">{report.total_visitors.toLocaleString('id-ID')}</span>
                                             <span className="text-gray-400">orang</span>
                                         </span>

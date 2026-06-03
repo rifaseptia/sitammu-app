@@ -215,7 +215,7 @@ export function TicketBlockInput({
                                 variant="outline"
                                 onClick={() => addBlock(key)}
                                 disabled={disabled}
-                                className="w-full h-12 text-base font-bold rounded-xl border-2 border-dashed border-gray-300 text-gray-600 hover:border-pink-300 hover:text-pink-600"
+                                className="w-full h-12 text-base font-bold rounded-xl border-2 border-dashed border-gray-300 text-gray-600 hover:border-zinc-400 hover:text-zinc-800"
                             >
                                 <Plus className="w-5 h-5 mr-2" />
                                 Tambah Blok

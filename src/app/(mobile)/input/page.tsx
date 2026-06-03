@@ -325,7 +325,7 @@ export default function InputPage() {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-8 h-8 animate-spin text-pink-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-zinc-900" />
             </div>
         )
     }
@@ -355,7 +355,7 @@ export default function InputPage() {
             <header className="space-y-1">
                 <h1 className="text-2xl font-black text-gray-900">Input Rekap Harian</h1>
                 <div className="flex items-center gap-2 text-gray-700">
-                    <MapPin className="w-5 h-5 text-pink-600" />
+                    <MapPin className="w-5 h-5 text-zinc-800" />
                     <span className="text-lg font-bold">{user?.destination?.name}</span>
                 </div>
                 <p className="text-base text-gray-500">{formatDate(new Date())}</p>
@@ -363,14 +363,14 @@ export default function InputPage() {
 
             {/* Summary Card */}
             <section className="border-2 border-gray-200 rounded-2xl overflow-hidden bg-white">
-                <div className="bg-pink-600 px-5 py-4">
+                <div className="bg-zinc-900 px-5 py-4">
                     <div className="grid grid-cols-2 gap-4 text-white">
                         <div>
-                            <p className="text-pink-200 text-sm">Total Pengunjung</p>
+                            <p className="text-zinc-400 text-sm">Total Pengunjung</p>
                             <p className="text-3xl font-black">{totalVisitors.toLocaleString('id-ID')}</p>
                         </div>
                         <div>
-                            <p className="text-pink-200 text-sm">Total Pendapatan</p>
+                            <p className="text-zinc-400 text-sm">Total Pendapatan</p>
                             <p className="text-2xl font-bold">{formatRupiah(totalRevenue, { compact: true })}</p>
                         </div>
                     </div>
@@ -380,7 +380,7 @@ export default function InputPage() {
             {/* Visitor Counts Section */}
             <section className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
                 <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100">
-                    <Users className="w-5 h-5 text-pink-600" />
+                    <Users className="w-5 h-5 text-zinc-700" />
                     <h2 className="text-lg font-bold text-gray-900">Jumlah Pengunjung</h2>
                 </div>
                 <div className="p-5 space-y-5">
@@ -478,7 +478,7 @@ export default function InputPage() {
                             <button
                                 type="button"
                                 onClick={() => setShowWnaSection(!showWnaSection)}
-                                className="flex items-center gap-1 text-base text-pink-600 font-bold"
+                                className="flex items-center gap-1 text-base text-zinc-800 font-bold"
                             >
                                 Rincian Negara
                                 {showWnaSection ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -499,7 +499,7 @@ export default function InputPage() {
             {/* Ticket Block Section */}
             <section className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden">
                 <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100">
-                    <Ticket className="w-5 h-5 text-pink-600" />
+                    <Ticket className="w-5 h-5 text-zinc-700" />
                     <div>
                         <h2 className="text-lg font-bold text-gray-900">Blok Tiket</h2>
                         <p className="text-sm text-gray-500">Input nomor blok tiket untuk audit trail</p>
@@ -522,7 +522,7 @@ export default function InputPage() {
             {attractions.length > 0 && (
                 <section className="space-y-4">
                     <div className="flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-pink-600" />
+                        <Sparkles className="w-5 h-5 text-zinc-700" />
                         <h2 className="text-lg font-bold text-gray-900">Atraksi</h2>
                     </div>
                     {attractions.map(att => (
@@ -618,7 +618,7 @@ export default function InputPage() {
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         placeholder="Contoh: Hari libur nasional, pengunjung ramai..."
-                        className="w-full h-28 p-4 border-2 border-gray-200 rounded-xl resize-none text-base focus:outline-none focus:border-pink-400"
+                        className="w-full h-28 p-4 border-2 border-gray-200 rounded-xl resize-none text-base focus:outline-none focus:border-zinc-800"
                         maxLength={500}
                     />
                     <p className="text-sm text-gray-500 text-right mt-2">{notes.length}/500</p>
@@ -654,7 +654,7 @@ export default function InputPage() {
                     >
                         {/* Floating Tooltip */}
                         {showSubmitTooltip && disabledReason && (
-                            <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-max max-w-[280px] bg-slate-900 text-white text-sm font-semibold px-4 py-3 rounded-2xl shadow-xl border border-pink-500/20 z-50 text-center animate-in fade-in slide-in-from-bottom-2 duration-200">
+                            <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-max max-w-[280px] bg-slate-900 text-white text-sm font-semibold px-4 py-3 rounded-2xl shadow-xl border border-zinc-500/20 z-50 text-center animate-in fade-in slide-in-from-bottom-2 duration-200">
                                 {disabledReason}
                                 {/* Arrow */}
                                 <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-slate-900" />

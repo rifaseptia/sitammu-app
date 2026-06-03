@@ -28,7 +28,7 @@ export async function getTodayReportStatus(
         // Get today's report if exists
         const { data: report, error: reportError } = await supabase
             .from('daily_reports')
-            .select('id, status, total_visitors, total_revenue, submitted_at')
+            .select('id, status, total_visitors, total_revenue, anak_count, dewasa_count, wna_count, anak_revenue, dewasa_revenue, wna_revenue, submitted_at, updated_at')
             .eq('destination_id', destinationId)
             .eq('report_date', today)
             .maybeSingle()
@@ -41,7 +41,14 @@ export async function getTodayReportStatus(
             status: report?.status ?? null,
             total_visitors: report?.total_visitors ?? null,
             total_revenue: report?.total_revenue ?? null,
+            anak_count: report?.anak_count ?? null,
+            dewasa_count: report?.dewasa_count ?? null,
+            wna_count: report?.wna_count ?? null,
+            anak_revenue: report?.anak_revenue ?? null,
+            dewasa_revenue: report?.dewasa_revenue ?? null,
+            wna_revenue: report?.wna_revenue ?? null,
             submitted_at: report?.submitted_at ?? null,
+            updated_at: report?.updated_at ?? null,
             daily_status: !report ? 'pending' : report.status === 'draft' ? 'draft' : 'submitted',
         }
 

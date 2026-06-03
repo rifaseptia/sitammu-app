@@ -65,12 +65,12 @@ export default function MobileLayout({
     // Show loading state during hydration
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+            <div className="h-[100dvh] bg-gray-50 flex items-center justify-center p-4 font-ios">
                 <div className="animate-pulse text-gray-400 flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-pink-600 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-12 h-12 border-4 border-zinc-900 border-t-transparent rounded-full animate-spin" />
                     <button
                         onClick={() => window.location.href = '/login'}
-                        className="text-xs text-pink-600 underline mt-4"
+                        className="text-xs text-zinc-900 underline mt-4"
                     >
                         Klik jika loading terlalu lama
                     </button>
@@ -83,12 +83,12 @@ export default function MobileLayout({
     if (!isAuthenticated) {
         // Fallback UI with manual login button if redirect is slow/blocked
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+            <div className="h-[100dvh] bg-gray-50 flex items-center justify-center p-4 font-ios">
                 <div className="text-center space-y-4">
                     <p className="text-gray-500">Sesi Anda telah berakhir</p>
                     <button
                         onClick={() => window.location.href = '/login'}
-                        className="bg-pink-600 text-white px-6 py-2 rounded-full font-bold shadow-lg active:scale-95 transition-transform"
+                        className="bg-zinc-900 hover:bg-zinc-800 text-white px-6 py-2 rounded-full font-bold shadow-lg active:scale-95 transition-transform"
                     >
                         Masuk Kembali
                     </button>
@@ -98,8 +98,8 @@ export default function MobileLayout({
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-24">
-            <main className="max-w-md mx-auto min-h-[calc(100vh-6rem)] flex flex-col">
+        <div className="h-[100dvh] bg-gray-50 overflow-hidden flex flex-col select-none touch-pan-y font-ios">
+            <main className="flex-1 overflow-y-auto scrollbar-hide max-w-md w-full mx-auto flex flex-col pb-24 safe-area-top">
                 <div className="flex-1">
                     {children}
                 </div>
