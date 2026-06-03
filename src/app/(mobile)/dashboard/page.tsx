@@ -13,7 +13,8 @@ import {
     CalendarClock,
     AlertCircle,
     UserCircle,
-    BarChart3
+    BarChart3,
+    HelpCircle
 } from 'lucide-react'
 
 import { useAuthStore } from '@/lib/stores/auth-store'
@@ -206,17 +207,19 @@ export default function DashboardPage() {
                         </div>
                     </Link>
 
-                    <div className="border-2 border-gray-200 rounded-2xl p-5 bg-white opacity-60">
-                        <div className="flex flex-col items-center gap-3 text-center">
-                            <div className="w-14 h-14 rounded-2xl bg-gray-400 flex items-center justify-center">
-                                <BarChart3 className="w-7 h-7 text-white" />
-                            </div>
-                            <div>
-                                <p className="font-bold text-gray-900 text-lg">Ringkasan</p>
-                                <p className="text-base text-gray-500">Segera Hadir</p>
+                    <Link href="/bantuan">
+                        <div className="border-2 border-gray-200 rounded-2xl p-5 bg-white hover:border-pink-300 active:scale-[0.98] transition-all">
+                            <div className="flex flex-col items-center gap-3 text-center">
+                                <div className="w-14 h-14 rounded-2xl bg-pink-100 flex items-center justify-center">
+                                    <HelpCircle className="w-7 h-7 text-pink-600" />
+                                </div>
+                                <div>
+                                    <p className="font-bold text-gray-900 text-lg">Bantuan</p>
+                                    <p className="text-base text-gray-500">Tanya Jawab</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </Link>
 
                     <div className="border-2 border-gray-200 rounded-2xl p-5 bg-white opacity-60">
                         <div className="flex flex-col items-center gap-3 text-center">
